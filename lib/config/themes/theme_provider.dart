@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../data/datasources/app_local_datasource.dart';
+import 'package:pass_vault_it/core/utils/app_constants.dart';
+import '../../data/datasources/app_local_datasource.dart';
 
 class ThemeProvider with ChangeNotifier {
+
   late AppLocalDataSource _appLocalDataSource;
   ThemeMode _themeMode = ThemeMode.system;
 
@@ -13,14 +15,26 @@ class ThemeProvider with ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
 
+  bool get isDarkMode {
+    return _themeMode == ThemeMode.dark;
+  }
+
+  bool get isLightMode {
+    return _themeMode == ThemeMode.light;
+  }
+
+  bool get isSystemMode {
+    return _themeMode == ThemeMode.system;
+  }
+
   void _loadThemeMode() async {
     try {
       final themeString = await _appLocalDataSource.getThemeMode();
       switch (themeString) {
-        case 'light':
+        case AppConstants.light:
           _themeMode = ThemeMode.light;
           break;
-        case 'dark':
+        case AppConstants.dark:
           _themeMode = ThemeMode.dark;
           break;
         default:
@@ -38,30 +52,18 @@ class ThemeProvider with ChangeNotifier {
       String themeString;
       switch (mode) {
         case ThemeMode.light:
-          themeString = 'light';
+          themeString = AppConstants.light;
           break;
         case ThemeMode.dark:
-          themeString = 'dark';
+          themeString = AppConstants.dark;
           break;
         default:
-          themeString = 'system';
+          themeString = AppConstants.system;
       }
       await _appLocalDataSource.setThemeMode(themeString);
       notifyListeners();
     } catch (e) {
       debugPrint('Error saving theme mode: $e');
     }
-  }
-
-  bool get isDarkMode {
-    return _themeMode == ThemeMode.dark;
-  }
-
-  bool get isLightMode {
-    return _themeMode == ThemeMode.light;
-  }
-
-  bool get isSystemMode {
-    return _themeMode == ThemeMode.system;
   }
 }

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
 import 'package:provider/provider.dart';
 import '../../../../config/routes/app_routes.dart';
 import '../../../../core/utils/app_strings.dart';
 import '../providers/onboarding_provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -16,19 +18,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingPage> _pages = [
     OnboardingPage(
-      title: "Welcome to ${AppStrings.appName}",
-      description: "Your secure password manager that keeps your credentials safe and organized.",
-      icon: Icons.security,
+      title: AppStrings.onboardingTitle1.tr,
+      description: AppStrings.onboardingDesc1.tr,
+      image: AppImageAssets.onboarding1,
     ),
     OnboardingPage(
-      title: "Secure Storage",
-      description: "All your passwords are encrypted and stored locally on your device.",
-      icon: Icons.lock_outline,
+      title: AppStrings.onboardingTitle2.tr,
+      description: AppStrings.onboardingDesc2.tr,
+      image: AppImageAssets.onboarding2,
     ),
     OnboardingPage(
-      title: "Password Generator",
-      description: "Generate strong, unique passwords for all your accounts.",
-      icon: Icons.vpn_key,
+      title: AppStrings.onboardingTitle3.tr,
+      description: AppStrings.onboardingDesc3.tr,
+      image: AppImageAssets.onboarding3,
     ),
   ];
 
@@ -40,6 +42,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Text(
+              AppStrings.appName.tr.toUpperCase(),
+              style: TextStyle(
+                fontSize: 20,
+                letterSpacing: 1.4,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          )),
       body: SafeArea(
         child: Column(
           children: [
@@ -47,7 +62,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (index) {
-                  Provider.of<OnboardingProvider>(context, listen: false).setCurrentPage(index);
+                  Provider.of<OnboardingProvider>(context, listen: false)
+                      .setCurrentPage(index);
                 },
                 itemCount: _pages.length,
                 itemBuilder: (context, index) {
@@ -68,12 +84,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            page.icon,
-            size: 120,
-            color: Theme.of(context).primaryColor,
-          ),
-          const SizedBox(height: 48),
           Text(
             page.title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -81,12 +91,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+          Image.asset(page.image, height: 200,),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.05),
           Text(
             page.description,
             style: Theme.of(context).textTheme.bodyLarge,
             textAlign: TextAlign.center,
           ),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
         ],
       ),
     );
@@ -127,13 +140,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           curve: Curves.easeInOut,
                         );
                       },
-                      child: const Text("Back"),
+                      child: Text(AppStrings.back.tr),
                     ),
                   const Spacer(),
-                  if (onboardingProvider.currentPage == _pages.length - 1)
+                  if (onboardingProvider.currentPage == 3 - 1)
                     ElevatedButton(
                       onPressed: _completeOnboarding,
-                      child: const Text(AppStrings.getStarted),
+                      child: Text(AppStrings.getStarted.tr),
                     )
                   else
                     ElevatedButton(
@@ -143,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           curve: Curves.easeInOut,
                         );
                       },
-                      child: const Text(AppStrings.next),
+                      child: Text(AppStrings.next.tr),
                     ),
                 ],
               ),
@@ -172,11 +185,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingPage {
   final String title;
   final String description;
-  final IconData icon;
+  final String image;
 
   OnboardingPage({
     required this.title,
     required this.description,
-    required this.icon,
+    required this.image,
   });
 }

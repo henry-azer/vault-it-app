@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/themes/theme_provider.dart';
+import 'package:pass_vault_it/core/utils/app_media_query_values.dart';
 import 'package:provider/provider.dart';
 import '../../../../config/routes/app_routes.dart';
+import '../../../../core/utils/app_assets_manager.dart';
 import '../../../../core/utils/app_strings.dart';
-import '../../../onboarding/presentation/providers/onboarding_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -21,20 +24,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToNextScreen() async {
     await Future.delayed(const Duration(seconds: 2));
-    
     if (!mounted) return;
-    
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    // Check if this is a first-time user (no user data + no onboarding completed)
-    final isFirstTime = await authProvider.isFirstTimeUser();
-    
-    if (isFirstTime) {
-      // First time user - show onboarding which will lead to registration
+    final isUserOnboarded = await authProvider.isUserOnboarded();
+    final isUserCreated = await authProvider.isUserCreated();
+
+    if (!isUserOnboarded) {
       Navigator.pushReplacementNamed(context, Routes.onboarding);
     } else {
-      // Existing user - check if authenticated
-      if (authProvider.isAuthenticated) {
+      if (!isUserCreated) {
+        Navigator.pushReplacementNamed(context, Routes.register);
+      } else if (authProvider.isAuthenticated) {
         Navigator.pushReplacementNamed(context, Routes.app);
       } else {
         Navigator.pushReplacementNamed(context, Routes.login);
@@ -44,35 +44,36 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo placeholder
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.circular(20),
+    return Material(
+      child: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Consumer<ThemeProvider>(builder: (context, theme, child) {
+                return Image.asset(
+                  theme.isDarkMode
+                      ? AppImageAssets.darkLogo
+                      : AppImageAssets.lightLogo,
+                  height: 220,
+                  width: 350,
+                );
+              }),
+              SizedBox(
+                height: context.height * 0.01,
               ),
-              child: const Icon(
-                Icons.lock,
-                size: 60,
-                color: Colors.white,
+              Text(
+                AppStrings.appName.tr.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 44,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              AppStrings.appName,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+              SizedBox(
+                height: context.height * 0.08,
               ),
-            ),
-            const SizedBox(height: 16),
-            const CircularProgressIndicator(),
-          ],
+            ],
+          ),
         ),
       ),
     );

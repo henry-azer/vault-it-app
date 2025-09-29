@@ -1,56 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
 import '../../core/utils/app_colors.dart';
 
 ThemeData appTheme() {
   return ThemeData(
     useMaterial3: true,
-    primaryColor: AppColors.primary,
-    hintColor: AppColors.secondary,
+    fontFamily: AppFonts.roboto,
     brightness: Brightness.light,
-    scaffoldBackgroundColor: AppColors.background,
-    unselectedWidgetColor: AppColors.surface,
-    
+    scaffoldBackgroundColor: AppColors.lightBackground,
+    colorScheme: ColorScheme(
+      brightness: Brightness.light,
+      primary: AppColors.lightPrimary,
+      onPrimary: AppColors.lightOnPrimary,
+      secondary: AppColors.lightSecondary,
+      onSecondary: AppColors.lightOnSecondary,
+      surface: AppColors.lightSurface,
+      onSurface: AppColors.lightOnSurface,
+      error: AppColors.lightError,
+      onError: AppColors.lightOnError,
+    ),
     appBarTheme: AppBarTheme(
       centerTitle: true,
-      backgroundColor: AppColors.surface,
-      foregroundColor: AppColors.onSurface,
+      backgroundColor: AppColors.lightSurface,
+      foregroundColor: AppColors.lightOnSurface,
       elevation: 0,
     ),
-    
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        backgroundColor: AppColors.lightPrimary,
+        foregroundColor: AppColors.lightOnPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 2,
       ),
     ),
-    
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: AppColors.lightSurface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.outline),
+        borderSide: BorderSide(color: AppColors.lightOutline),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.primary, width: 2),
+        borderSide: BorderSide(color: AppColors.lightPrimary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.error, width: 2),
+        borderSide: BorderSide(color: AppColors.lightError, width: 2),
       ),
-    ),
-    
-    colorScheme: ColorScheme.fromSwatch(
-      primarySwatch: AppColors.primarySwatch,
-    ).copyWith(
-      background: AppColors.background,
-      surface: AppColors.surface,
-      error: AppColors.error,
     ),
   );
 }
@@ -58,50 +55,49 @@ ThemeData appTheme() {
 ThemeData appDarkTheme() {
   return ThemeData(
     useMaterial3: true,
-    primaryColor: AppColors.secondary,
-    hintColor: AppColors.primary,
+    fontFamily: AppFonts.roboto,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    unselectedWidgetColor: const Color(0xFF2C2C2C),
-    
-    appBarTheme: const AppBarTheme(
+    scaffoldBackgroundColor: AppColors.darkBackground,
+    colorScheme: ColorScheme(
+      brightness: Brightness.dark,
+      primary: AppColors.darkPrimary,
+      onPrimary: AppColors.darkOnPrimary,
+      secondary: AppColors.darkSecondary,
+      onSecondary: AppColors.darkOnSecondary,
+      surface: AppColors.darkSurface,
+      onSurface: AppColors.darkOnSurface,
+      error: AppColors.darkError,
+      onError: AppColors.darkOnError,
+    ),
+    appBarTheme: AppBarTheme(
       centerTitle: true,
-      backgroundColor: Color(0xFF1E1E1E),
-      foregroundColor: Colors.white,
+      backgroundColor: AppColors.darkSurface,
+      foregroundColor: AppColors.darkOnSurface,
       elevation: 0,
     ),
-    
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.secondary,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        backgroundColor: AppColors.darkPrimary,
+        foregroundColor: AppColors.darkOnPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 2,
       ),
     ),
-    
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF2C2C2C),
+      fillColor: AppColors.darkSurface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF424242)),
+        borderSide: BorderSide(color: AppColors.darkOutline),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.secondary, width: 2),
+        borderSide: BorderSide(color: AppColors.darkPrimary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
+        borderSide: BorderSide(color: AppColors.darkError, width: 2),
       ),
-    ),
-    
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.secondary,
-      brightness: Brightness.dark,
     ),
   );
 }

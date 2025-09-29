@@ -1,30 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/core/utils/app_local_storage_strings.dart';
+import 'package:pass_vault_it/data/entities/LanguageOption.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/utils/localization_helper.dart';
 
 class LanguageProvider extends ChangeNotifier {
-  static const String _languageKey = 'selected_language';
-  
+
+  bool _isLoading = false;
   Locale _currentLocale = const Locale('en');
   List<LanguageOption> _availableLanguages = [];
-  bool _isLoading = false;
-
-  Locale get currentLocale => _currentLocale;
-  List<LanguageOption> get availableLanguages => _availableLanguages;
-  bool get isLoading => _isLoading;
-  
-  String get currentLanguageName {
-    final currentLang = _availableLanguages.firstWhere(
-      (lang) => lang.code == _currentLocale.languageCode,
-      orElse: () => LanguageOption(code: 'en', name: 'English', nativeName: 'English'),
-    );
-    return currentLang.name;
-  }
-
-  String get currentLanguageCode => _currentLocale.languageCode;
 
   LanguageProvider() {
     _initialize();
+  }
+
+  bool get isLoading => _isLoading;
+  Locale get currentLocale => _currentLocale;
+  String get currentLanguageCode => _currentLocale.languageCode;
+  List<LanguageOption> get availableLanguages => _availableLanguages;
+  TextDirection get textDirection => AppLocalization.textDirection;
+  bool get isRTL => AppLocalization.isRTL;
+
+  List<Locale> get availableLanguagesLocales =>
+      _availableLanguages.map((lang) => Locale(lang.code)).toList();
+
+  String get currentLanguageName {
+    final currentLang = _availableLanguages.firstWhere(
+      (lang) => lang.code == _currentLocale.languageCode,
+      orElse: () =>
+          LanguageOption(code: 'en', name: 'English', nativeName: 'English'),
+    );
+    return currentLang.name;
   }
 
   Future<void> _initialize() async {
@@ -32,20 +38,14 @@ class LanguageProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Load available languages from assets
-      _availableLanguages = await LocalizationHelper.getAvailableLanguages();
-      
-      // Load saved language preference
+      _availableLanguages = await AppLocalization.getAvailableLanguages();
       await _loadSavedLanguage();
-      
-      // Initialize localization helper
-      await LocalizationHelper.initialize(language: _currentLocale.languageCode);
+      await AppLocalization.initialize(language: _currentLocale.languageCode);
     } catch (e) {
       debugPrint('Error initializing language provider: $e');
       // Set defaults if initialization fails
       _availableLanguages = [
         LanguageOption(code: 'en', name: 'English', nativeName: 'English'),
-        LanguageOption(code: 'fr', name: 'Français', nativeName: 'Français'),
       ];
       _currentLocale = const Locale('en');
     } finally {
@@ -57,10 +57,9 @@ class LanguageProvider extends ChangeNotifier {
   Future<void> _loadSavedLanguage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final savedLanguage = prefs.getString(_languageKey);
-      
+      final savedLanguage = prefs.getString(AppLocalStorageKeys.selectedLanguage);
+
       if (savedLanguage != null) {
-        // Validate that the saved language is still available
         final isValid = _availableLanguages.any((lang) => lang.code == savedLanguage);
         if (isValid) {
           _currentLocale = Locale(savedLanguage);
@@ -89,16 +88,11 @@ class LanguageProvider extends ChangeNotifier {
         return;
       }
 
-      // Save preference
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_languageKey, languageCode);
-      
-      // Update locale
+      await prefs.setString(AppLocalStorageKeys.selectedLanguage, languageCode);
       _currentLocale = Locale(languageCode);
-      
-      // Update localization helper
-      await LocalizationHelper.changeLanguage(languageCode);
-      
+      await AppLocalization.changeLanguage(languageCode);
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error changing language: $e');
@@ -108,34 +102,27 @@ class LanguageProvider extends ChangeNotifier {
   Future<void> _clearSavedLanguage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_languageKey);
+      await prefs.remove(AppLocalStorageKeys.selectedLanguage);
     } catch (e) {
       debugPrint('Error clearing saved language: $e');
     }
   }
 
-  /// Get language option by code
   LanguageOption? getLanguageByCode(String code) {
     try {
       return _availableLanguages.firstWhere((lang) => lang.code == code);
     } catch (e) {
+      debugPrint('Error getting language by code: $e');
       return null;
     }
   }
 
-  /// Refresh available languages
   Future<void> refreshLanguages() async {
     try {
-      _availableLanguages = await LocalizationHelper.getAvailableLanguages();
+      _availableLanguages = await AppLocalization.getAvailableLanguages();
       notifyListeners();
     } catch (e) {
       debugPrint('Error refreshing languages: $e');
     }
   }
-
-  /// Get text direction for current language
-  TextDirection get textDirection => LocalizationHelper.textDirection;
-
-  /// Check if current language is RTL
-  bool get isRTL => LocalizationHelper.isRTL;
 }

@@ -154,11 +154,20 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> isFirstTimeUser() async {
+  Future<bool> isUserOnboarded() async {
+    try {
+      final isOnboarded = await _userLocalDataSource.isOnboardingCompleted();
+      return isOnboarded;
+    } catch (e) {
+      debugPrint('Error checking first time user: $e');
+      return true; // Default to true to show onboarding/registration
+    }
+  }
+
+  Future<bool> isUserCreated() async {
     try {
       final user = await _userLocalDataSource.getUser();
-      final isOnboarded = await _userLocalDataSource.isOnboardingCompleted();
-      return user == null && !isOnboarded;
+      return user != null;
     } catch (e) {
       debugPrint('Error checking first time user: $e');
       return true; // Default to true to show onboarding/registration

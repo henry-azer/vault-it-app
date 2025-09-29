@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../config/routes/app_routes.dart';
 import '../../../../core/utils/app_strings.dart';
-import '../../../../core/utils/localization_helper.dart';
 import '../../../vault/data/services/backup_service.dart';
-import '../providers/theme_provider.dart';
-import '../providers/language_provider.dart';
+import '../../../../config/themes/theme_provider.dart';
+import '../../../../config/localization/language_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../vault/presentation/providers/password_provider.dart';
 import 'about_screen.dart';
@@ -41,11 +41,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Future<void> _initializeGoogleSync() async {
   //   try {
-      // final googleSyncProvider = Provider.of<GoogleSyncProvider>(context, listen: false);
-      // await googleSyncProvider.initialize();
-    // } catch (e) {
-    //   debugPrint('Error initializing Google Sync: $e');
-    // }
+  // final googleSyncProvider = Provider.of<GoogleSyncProvider>(context, listen: false);
+  // await googleSyncProvider.initialize();
+  // } catch (e) {
+  //   debugPrint('Error initializing Google Sync: $e');
+  // }
   // }
 
   @override
@@ -83,7 +83,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       radius: 30,
                       backgroundColor: Colors.white.withOpacity(0.2),
                       child: Text(
-                        authProvider.currentUser?.username.substring(0, 1).toUpperCase() ?? 'U',
+                        authProvider.currentUser?.username
+                                .substring(0, 1)
+                                .toUpperCase() ??
+                            'U',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -148,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
-          
+
           // Security Section
           _buildSectionHeader('security'.tr),
           _buildSettingsTile(
@@ -174,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: '5 minutes',
             onTap: () => _showAutoLockDialog(),
           ),
-          
+
           // Data Management Section
           _buildSectionHeader('Data Management'),
           Consumer<PasswordProvider>(
@@ -192,11 +195,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Export Data',
             subtitle: 'Backup your passwords to a file',
             onTap: _exportData,
-            trailing: _isLoading ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ) : null,
+            trailing: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
           ),
           _buildSettingsTile(
             icon: Icons.restore,
@@ -209,7 +214,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           //     return _buildGoogleSyncSection(googleSyncProvider);
           //   },
           // ),
-          
+
           // Support & Info Section
           _buildSectionHeader('Support & Information'),
           _buildSettingsTile(
@@ -239,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               MaterialPageRoute(builder: (context) => const AboutScreen()),
             ),
           ),
-          
+
           // Danger Zone
           _buildSectionHeader('Danger Zone', color: Colors.red),
           _buildSettingsTile(
@@ -301,7 +306,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: (iconColor ?? Theme.of(context).primaryColor).withOpacity(0.1),
+            color:
+                (iconColor ?? Theme.of(context).primaryColor).withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -442,8 +448,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   itemCount: languageProvider.availableLanguages.length,
                   itemBuilder: (context, index) {
                     final language = languageProvider.availableLanguages[index];
-                    final isSelected = language.code == languageProvider.currentLanguageCode;
-                    
+                    final isSelected =
+                        language.code == languageProvider.currentLanguageCode;
                     return RadioListTile<String>(
                       title: Text(language.name),
                       value: language.code,
@@ -467,26 +473,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _exportData() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
-    
+
     try {
-      final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+      final passwordProvider =
+          Provider.of<PasswordProvider>(context, listen: false);
       final passwords = passwordProvider.passwords;
-      
+
       if (passwords.isEmpty) {
         _showMessage('No passwords to export', isError: false);
         return;
       }
-      
+
       // Show export options dialog
       final choice = await _showExportOptionsDialog();
       if (choice == null) return;
-      
+
       bool success = false;
-      
+
       if (choice == 'file') {
         success = await BackupService.exportToFile(passwords);
         if (success) {
-          _showMessage('Successfully exported ${passwords.length} passwords to file');
+          _showMessage(
+              'Successfully exported ${passwords.length} passwords to file');
         } else {
           _showMessage('Export cancelled or failed', isError: true);
         }
@@ -512,35 +520,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Show import options dialog
       final choice = await _showImportOptionsDialog();
       if (choice == null) return;
-      
+
       if (choice == 'validate') {
         await _validateBackupFile();
         return;
       }
-      
+
       // Import from file
       final result = await BackupService.importFromFile();
-      
+
       if (!result.success) {
         _showMessage(result.error ?? 'Import failed', isError: true);
         return;
       }
-      
+
       if (result.passwords == null || result.passwords!.isEmpty) {
         _showMessage('No passwords found in backup file', isError: true);
         return;
       }
-      
+
       // Show confirmation dialog
       if (!mounted) return;
       final confirmed = await _showImportConfirmationDialog(result);
       if (!confirmed) return;
-      
+
       // Import passwords
-      final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+      final passwordProvider =
+          Provider.of<PasswordProvider>(context, listen: false);
       int imported = 0;
       int skipped = 0;
-      
+
       for (final password in result.passwords!) {
         final exists = await passwordProvider.passwordExists(password.id);
         if (!exists) {
@@ -550,14 +559,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           skipped++;
         }
       }
-      
+
       _showMessage(
         'Import complete! $imported imported, $skipped skipped',
       );
-      
+
       // Refresh password list
       await passwordProvider.loadPasswords();
-      
     } catch (e) {
       _showMessage('Import failed: $e', isError: true);
     }
@@ -573,9 +581,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildStatRow('Total Passwords', '${provider.passwordCount}'),
-            _buildStatRow('Strong Passwords', '${(provider.passwordCount * 0.7).round()}'),
-            _buildStatRow('Weak Passwords', '${(provider.passwordCount * 0.2).round()}'),
-            _buildStatRow('Duplicate Passwords', '${(provider.passwordCount * 0.1).round()}'),
+            _buildStatRow('Strong Passwords',
+                '${(provider.passwordCount * 0.7).round()}'),
+            _buildStatRow(
+                'Weak Passwords', '${(provider.passwordCount * 0.2).round()}'),
+            _buildStatRow('Duplicate Passwords',
+                '${(provider.passwordCount * 0.1).round()}'),
           ],
         ),
         actions: [
@@ -606,8 +617,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Additional Dialog Methods
   void _showAutoLockDialog() {
-    final timeouts = ['1 minute', '5 minutes', '15 minutes', '30 minutes', 'Never'];
-    
+    final timeouts = [
+      '1 minute',
+      '5 minutes',
+      '15 minutes',
+      '30 minutes',
+      'Never'
+    ];
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -635,7 +652,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('$feature Coming Soon!'),
-        content: Text('The $feature feature is coming in a future update. Stay tuned!'),
+        content: Text(
+            'The $feature feature is coming in a future update. Stay tuned!'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -721,9 +739,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               );
-              
+
               if (confirmed == true && mounted) {
-                final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+                final passwordProvider =
+                    Provider.of<PasswordProvider>(context, listen: false);
                 await passwordProvider.deleteAllPasswords();
                 _showMessage('All data has been deleted');
               }
@@ -750,7 +769,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              final authProvider =
+                  Provider.of<AuthProvider>(context, listen: false);
               await authProvider.logout();
               if (mounted) {
                 Navigator.pushNamedAndRemoveUntil(
@@ -851,47 +871,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<bool> _showImportConfirmationDialog(BackupImportResult result) async {
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Confirm Import'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Found ${result.passwords!.length} passwords in backup:'),
-            const SizedBox(height: 12),
-            if (result.backupInfo != null) ...[
-              _buildInfoRow('App', result.backupInfo!.appName),
-              _buildInfoRow('Version', result.backupInfo!.version),
-              _buildInfoRow('Date', result.backupInfo!.formattedExportDate),
-              const SizedBox(height: 12),
-            ],
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'Duplicate passwords will be skipped. This operation cannot be undone.',
-                style: TextStyle(fontSize: 13),
-              ),
+          context: context,
+          builder: (context) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Confirm Import'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Found ${result.passwords!.length} passwords in backup:'),
+                const SizedBox(height: 12),
+                if (result.backupInfo != null) ...[
+                  _buildInfoRow('App', result.backupInfo!.appName),
+                  _buildInfoRow('Version', result.backupInfo!.version),
+                  _buildInfoRow('Date', result.backupInfo!.formattedExportDate),
+                  const SizedBox(height: 12),
+                ],
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Duplicate passwords will be skipped. This operation cannot be undone.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Import'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Import'),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   Widget _buildInfoRow(String label, String value) {

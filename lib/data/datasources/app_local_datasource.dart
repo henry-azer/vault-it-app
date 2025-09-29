@@ -19,7 +19,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
 
   @override
   Future<App?> getAppData() async {
-    final appData = await storageManager.getValue<Map<String, dynamic>>('app_data');
+    final appData = await storageManager.getValue<Map<String, dynamic>>(AppLocalStorageKeys.appData);
     if (appData != null) {
       return App.fromMap(appData);
     }
@@ -28,7 +28,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
 
   @override
   Future<void> setAppData(App app) async {
-    await storageManager.setValue('app_data', app.toMap());
+    await storageManager.setValue(AppLocalStorageKeys.appData, app.toMap());
   }
 
   @override
@@ -38,7 +38,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
 
   @override
   Future<String> getThemeMode() async {
-    return await storageManager.getValue<String>(AppLocalStorageKeys.themeMode) ?? 'system';
+    return await storageManager.getValue<String>(AppLocalStorageKeys.themeMode) ?? '';
   }
 
   @override
@@ -57,7 +57,7 @@ class AppLocalDataSourceImpl implements AppLocalDataSource {
 
   @override
   Future<void> clearAppData() async {
-    storageManager.removeValue('app_data');
+    storageManager.removeValue(AppLocalStorageKeys.appData);
     storageManager.removeValue(AppLocalStorageKeys.themeMode);
     storageManager.removeValue(AppLocalStorageKeys.lastBackupDate);
   }

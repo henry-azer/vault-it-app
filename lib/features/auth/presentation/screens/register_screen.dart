@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../config/routes/app_routes.dart';
 import '../../../../core/utils/app_strings.dart';
+import '../../../onboarding/presentation/providers/onboarding_provider.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -173,6 +174,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (mounted) {
       if (success) {
+        final onboardingProvider = Provider.of<OnboardingProvider>(context, listen: false);
+        await onboardingProvider.completeOnboarding();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Account created successfully!'),
