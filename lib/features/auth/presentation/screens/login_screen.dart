@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/routes/app_routes.dart';
+import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
+import 'package:pass_vault_it/core/utils/app_colors.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../../config/routes/app_routes.dart';
-import '../../../../core/utils/app_strings.dart';
-import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -23,78 +26,96 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Text(
+              AppStrings.login.tr.toUpperCase(),
+              style: TextStyle(
+                fontSize: 20,
+                letterSpacing: 1.4,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          )),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Logo
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(16),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+                  Image.asset(
+                    AppImageAssets.signin,
+                    height: MediaQuery.of(context).size.height * 0.25,
                   ),
-                  child: const Icon(
-                    Icons.lock,
-                    size: 50,
-                    color: Colors.white,
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  Text(
+                    AppStrings.loginSubtitle.tr,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  AppStrings.enterMasterPassword,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                  Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
                     return TextFormField(
                       controller: _passwordController,
                       obscureText: authProvider.obscurePassword,
                       decoration: InputDecoration(
-                        labelText: AppStrings.masterPassword,
+                        labelText: AppStrings.password.tr,
                         suffixIcon: IconButton(
-                          icon: Icon(authProvider.obscurePassword ? Icons.visibility : Icons.visibility_off),
+                          icon: Icon(authProvider.obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off),
                           onPressed: authProvider.togglePasswordVisibility,
                         ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your master password';
+                          return AppStrings.validationPasswordRequired.tr;
                         }
                         return null;
                       },
+                      onChanged: (value) {
+                        final formState = Form.of(context);
+                        formState.validate();
+                      },
                     );
-                  },
-                ),
-                const SizedBox(height: 24),
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
-                    return ElevatedButton(
-                      onPressed: authProvider.isLoading ? null : _login,
-                      child: authProvider.isLoading
-                          ? const CircularProgressIndicator()
-                          : const Text(AppStrings.login),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.changePassword);
-                  },
-                  child: const Text(AppStrings.changePassword),
-                ),
-              ],
+                  }),
+                  const SizedBox(height: 24),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return ElevatedButton(
+                        onPressed: authProvider.isLoading ? null : _login,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: authProvider.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                AppStrings.login.tr,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(color: Colors.white),
+                              ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -113,9 +134,9 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacementNamed(context, Routes.app);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid master password'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: Text(AppStrings.validationPasswordInvalid.tr),
+            backgroundColor: AppColors.snackbarError,
           ),
         );
       }

@@ -6,9 +6,9 @@ import '../../../../data/entities/user.dart';
 class AuthProvider with ChangeNotifier {
   late UserLocalDataSource _userLocalDataSource;
   bool _isAuthenticated = false;
-  bool _isLoading = false;
   bool _obscurePassword = true;
-  String? _masterPassword;
+  bool _isLoading = false;
+  String? _userPassword;
   User? _currentUser;
 
   AuthProvider() {
@@ -20,13 +20,13 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   bool get obscurePassword => _obscurePassword;
-  String? get masterPassword => _masterPassword;
+  String? get userPassword => _userPassword;
   User? get currentUser => _currentUser;
 
   void _loadAuthenticationStatus() async {
     try {
       _isAuthenticated = await _userLocalDataSource.isAuthenticated();
-      _masterPassword = await _userLocalDataSource.getMasterPassword();
+      _userPassword = await _userLocalDataSource.getUserPassword();
       _currentUser = await _userLocalDataSource.getUser();
       notifyListeners();
     } catch (e) {
@@ -37,12 +37,12 @@ class AuthProvider with ChangeNotifier {
   Future<bool> login(String password) async {
     _setLoading(true);
     try {
-      final storedPassword = await _userLocalDataSource.getMasterPassword();
+      final storedPassword = await _userLocalDataSource.getUserPassword();
       
       if (storedPassword == password) {
         await _userLocalDataSource.setAuthenticated(true);
         _isAuthenticated = true;
-        _masterPassword = password;
+        _userPassword = password;
         notifyListeners();
         return true;
       }
@@ -58,14 +58,14 @@ class AuthProvider with ChangeNotifier {
   Future<bool> register(String username, String password) async {
     _setLoading(true);
     try {
-      await _userLocalDataSource.setMasterPassword(password);
+      await _userLocalDataSource.setUserPassword(password);
       await _userLocalDataSource.setAuthenticated(true);
       
       // Create user entity
       final user = User(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         username: username,
-        masterPassword: password,
+        password: password,
         isAuthenticated: true,
         isOnboardingCompleted: true,
         createdDate: DateTime.now(),
@@ -74,7 +74,7 @@ class AuthProvider with ChangeNotifier {
       await _userLocalDataSource.setUser(user);
       
       _isAuthenticated = true;
-      _masterPassword = password;
+      _userPassword= password;
       _currentUser = user;
       notifyListeners();
       return true;
@@ -89,21 +89,21 @@ class AuthProvider with ChangeNotifier {
   Future<bool> changePassword(String currentPassword, String newPassword) async {
     _setLoading(true);
     try {
-      final storedPassword = await _userLocalDataSource.getMasterPassword();
+      final storedPassword = await _userLocalDataSource.getUserPassword();
       
       if (storedPassword != currentPassword) {
         return false;
       }
       
-      await _userLocalDataSource.setMasterPassword(newPassword);
+      await _userLocalDataSource.setUserPassword(newPassword);
       
       if (_currentUser != null) {
-        final updatedUser = _currentUser!.copyWith(masterPassword: newPassword);
+        final updatedUser = _currentUser!.copyWith(password: newPassword);
         await _userLocalDataSource.setUser(updatedUser);
         _currentUser = updatedUser;
       }
       
-      _masterPassword = newPassword;
+      _userPassword = newPassword;
       notifyListeners();
       return true;
     } catch (e) {
@@ -134,9 +134,9 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> hasMasterPassword() async {
+  Future<bool> hasPassword() async {
     try {
-      final password = await _userLocalDataSource.getMasterPassword();
+      final password = await _userLocalDataSource.getUserPassword();
       return password != null && password.isNotEmpty;
     } catch (e) {
       debugPrint('Error checking master password: $e');
@@ -160,7 +160,7 @@ class AuthProvider with ChangeNotifier {
       return isOnboarded;
     } catch (e) {
       debugPrint('Error checking first time user: $e');
-      return true; // Default to true to show onboarding/registration
+      return false;
     }
   }
 
@@ -170,7 +170,7 @@ class AuthProvider with ChangeNotifier {
       return user != null;
     } catch (e) {
       debugPrint('Error checking first time user: $e');
-      return true; // Default to true to show onboarding/registration
+      return false;
     }
   }
 
@@ -178,7 +178,7 @@ class AuthProvider with ChangeNotifier {
     try {
       await _userLocalDataSource.clearUserData();
       _isAuthenticated = false;
-      _masterPassword = null;
+      _userPassword = null;
       _currentUser = null;
       notifyListeners();
     } catch (e) {

@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/routes/app_routes.dart';
+import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
+import 'package:pass_vault_it/core/utils/app_colors.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../../config/routes/app_routes.dart';
-import '../../../../core/utils/app_strings.dart';
-import '../../../onboarding/presentation/providers/onboarding_provider.dart';
-import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormFieldState> _usernameKey = GlobalKey<FormFieldState>();
+  final GlobalKey<FormFieldState> _passwordKey = GlobalKey<FormFieldState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
+  bool _isRegistering = false;
 
   @override
   void initState() {
@@ -28,133 +31,124 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Text(
+              AppStrings.register.tr.toUpperCase(),
+              style: TextStyle(
+                fontSize: 20,
+                letterSpacing: 1.4,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          )),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Logo
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(16),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                  Image.asset(
+                    AppImageAssets.signup,
+                    height: MediaQuery.of(context).size.height * 0.25,
                   ),
-                  child: const Icon(
-                    Icons.lock,
-                    size: 50,
-                    color: Colors.white,
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  Text(
+                    AppStrings.registerSubtitle.tr,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  AppStrings.createMasterPassword,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Create a strong master password to secure your vault',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                // Username Field
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: AppStrings.username,
-                    prefixIcon: Icon(Icons.person_outline),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a username';
-                    }
-                    if (value.trim().length < 3) {
-                      return 'Username must be at least 3 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Password Field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: AppStrings.masterPassword,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                  TextFormField(
+                    maxLength: 18,
+                    key: _usernameKey,
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      labelText: AppStrings.username.tr,
+                      prefixIcon: Icon(Icons.person_outline),
                     ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return AppStrings.validationUsernameRequired.tr;
+                      }
+                      if (value.trim().length < 3) {
+                        return AppStrings.validationUsernameMinLength.tr;
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      _usernameKey.currentState?.validate();
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a master password';
-                    }
-                    if (value.length < 8) {
-                      return 'Password must be at least 8 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  decoration: InputDecoration(
-                    labelText: AppStrings.confirmPassword,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
-                    return ElevatedButton(
-                      onPressed: authProvider.isLoading ? null : _register,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  TextFormField(
+                    maxLength: 22,
+                    key: _passwordKey,
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: AppStrings.password.tr,
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
                       ),
-                      child: authProvider.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text(AppStrings.register),
-                    );
-                  },
-                ),
-              ],
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return AppStrings.validationPasswordRequired.tr;
+                      }
+                      if (value.trim().length < 3) {
+                        return AppStrings.validationPasswordMinLength.tr;
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      _passwordKey.currentState?.validate();
+                    },
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return ElevatedButton(
+                        onPressed: _isRegistering ? null : _register,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: _isRegistering
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                AppStrings.register.tr,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(color: Colors.white),
+                              ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -165,8 +159,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() {
+      _isRegistering = true;
+    });
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
     final success = await authProvider.register(
       _usernameController.text.trim(),
       _passwordController.text,
@@ -174,23 +171,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (mounted) {
       if (success) {
-        final onboardingProvider = Provider.of<OnboardingProvider>(context, listen: false);
-        await onboardingProvider.completeOnboarding();
+        await authProvider.login(_passwordController.text);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created successfully!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: Text(AppStrings.accountCreationSuccess.tr),
+            backgroundColor: AppColors.snackbarSuccess,
           ),
         );
-        Navigator.pushReplacementNamed(context, Routes.app);
+        Navigator.pushReplacementNamed(context, Routes.login);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to create account. Please try again.'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: Text(AppStrings.accountCreationError.tr),
+            backgroundColor: AppColors.snackbarError,
           ),
         );
       }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isRegistering = false;
+      });
     }
   }
 
@@ -198,7 +200,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 }

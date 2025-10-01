@@ -16,24 +16,21 @@ class AppStrings {
   static const String success = "success";
   static const String close = "close";
   static const String done = "done";
-  static const String continueText = "continue"; // 'continue' is a reserved keyword
+  // static const String continueText = "continue";
 
   // Auth
   static const String login = "login";
+  static const String loginSubtitle = "login_subtitle";
   static const String register = "register";
+  static const String registerSubtitle = "register_subtitle";
+  static const String accountCreationSuccess = "account_creation_success";
+  static const String accountCreationError = "account_creation_error";
   static const String logout = "logout";
-  static const String logoutConfirmation = "logout_confirmation";
   static const String password = "password";
-  static const String confirmPassword = "confirm_password";
-  static const String masterPassword = "master_password";
-  static const String createMasterPassword = "create_master_password";
-  static const String enterMasterPassword = "enter_master_password";
+  static const String changePassword = "change_password";
   static const String currentPassword = "current_password";
+  static const String confirmPassword = "confirm_password";
   static const String newPassword = "new_password";
-  static const String passwordRequired = "password_required";
-  static const String passwordsDoNotMatch = "passwords_do_not_match";
-  static const String authenticationRequired = "authentication_required";
-  static const String unlockVault = "unlock_vault";
 
   // Vault
   static const String vault = "vault";
@@ -80,7 +77,6 @@ class AppStrings {
   static const String security = "security";
   static const String biometricAuth = "biometric_auth";
   static const String autoLock = "auto_lock";
-  static const String changePassword = "change_password";
   static const String changeMasterPassword = "change_master_password";
   static const String dataManagement = "data_management";
   static const String vaultStatistics = "vault_statistics";
@@ -168,7 +164,13 @@ class AppStrings {
   // Validation
   static const String validationTitleRequired = "validation_title_required";
   static const String validationUsernameRequired = "validation_username_required";
+  static const String validationUsernameMinLength = "validation_username_min_length";
+  static const String validationUsernameMaxLength = "validation_username_max_length";
+  static const String validationPasswordInvalid = "validation_password_invalid";
   static const String validationPasswordRequired = "validation_password_required";
+  static const String validationPasswordMinLength = "validation_password_min_length";
+  static const String validationPasswordMaxLength = "validation_password_max_length";
+  static const String validationPasswordDoNotMatch = "validation_password_do_not_match";
   static const String validationUrlInvalid = "validation_url_invalid";
 
 

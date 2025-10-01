@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/routes/app_routes.dart';
 import 'package:pass_vault_it/config/themes/theme_provider.dart';
+import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
 import 'package:pass_vault_it/core/utils/app_media_query_values.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../../config/routes/app_routes.dart';
-import '../../../../core/utils/app_assets_manager.dart';
-import '../../../../core/utils/app_strings.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,6 +16,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+
   @override
   void initState() {
     super.initState();
@@ -34,8 +35,6 @@ class _SplashScreenState extends State<SplashScreen> {
     } else {
       if (!isUserCreated) {
         Navigator.pushReplacementNamed(context, Routes.register);
-      } else if (authProvider.isAuthenticated) {
-        Navigator.pushReplacementNamed(context, Routes.app);
       } else {
         Navigator.pushReplacementNamed(context, Routes.login);
       }

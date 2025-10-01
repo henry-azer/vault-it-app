@@ -18,17 +18,17 @@
   "continue": "Continue",
 
   "login": "Login",
+  "login_subtitle": "Enter your password to access to your vault",
   "register": "Register",
+  "register_subtitle": "Register with a strong password to secure your vault",
+  "account_creation_success": "Account created successfully!",
+  "account_creation_error": "Failed to create account. Please try again!",
   "logout": "Logout",
   "password": "Password",
-  "confirm_password": "Confirm Password",
-  "master_password": "Master Password",
-  "create_master_password": "Create Master Password",
-  "enter_master_password": "Enter Master Password",
+  "change_password": "Change Password",
   "current_password": "Current Password",
+  "confirm_password": "Confirm Password",
   "new_password": "New Password",
-  "password_required": "Password is required",
-  "passwords_do_not_match": "Passwords do not match",
 
   "vault": "Vault",
   "passwords": "Passwords",
@@ -155,7 +155,13 @@
 
   "validation_title_required": "Title is required",
   "validation_username_required": "Username is required",
+  "validation_username_min_length": "Username must be at least 3 characters",
+  "validation_username_max_length": "Username must be at most 20 characters",
   "validation_password_required": "Password is required",
+  "validation_password_invalid": "Invalid Password",
+  "validation_password_min_length": "Password must be at least 4 characters",
+  "validation_password_max_length": "Password must be at most 20 characters",
+  "validation_password_do_not_match": "Passwords do not match",
   "validation_url_invalid": "Please enter a valid URL",
 
   "languages": {

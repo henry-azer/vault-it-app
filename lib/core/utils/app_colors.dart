@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Light Theme
-  static const Color lightPrimary = Color(0xFFFF5722);
+  static const Color lightPrimary = Color(0xFFFF645C);
   static const Color lightOnPrimary = Color(0xFFFFFFFF);
   static const Color lightSecondary = Color(0xFFFF9800);
   static const Color lightOnSecondary = Color(0xFFFFFFFF);
@@ -28,6 +28,8 @@ class AppColors {
   static const Color darkOnError = Color(0xFF000000);
 
   // Shared
+  static const Color snackbarError = Color(0xFFB00020);
+  static const Color snackbarSuccess = Color(0xFF3B7315);
   static const MaterialColor primarySwatch = MaterialColor(
     0xFFFF5722,
     <int, Color>{

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/routes/app_routes.dart';
 import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../../config/routes/app_routes.dart';
-import '../../../../core/utils/app_strings.dart';
-import '../providers/onboarding_provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -122,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     height: 8,
                     decoration: BoxDecoration(
                       color: onboardingProvider.currentPage == index
-                          ? Theme.of(context).primaryColor
+                          ? Theme.of(context).colorScheme.primary
                           : Colors.grey[300],
                       borderRadius: BorderRadius.circular(4),
                     ),

@@ -1,12 +1,14 @@
-import '../entities/user.dart';
-import '../../core/managers/storage-manager/i_storage_manager.dart';
-import '../../core/utils/app_local_storage_strings.dart';
+
+
+import 'package:pass_vault_it/core/managers/storage-manager/i_storage_manager.dart';
+import 'package:pass_vault_it/core/utils/app_local_storage_strings.dart';
+import 'package:pass_vault_it/data/entities/user.dart';
 
 abstract class UserLocalDataSource {
   Future<User?> getUser();
   Future<void> setUser(User user);
-  Future<void> setMasterPassword(String password);
-  Future<String?> getMasterPassword();
+  Future<void> setUserPassword(String password);
+  Future<String?> getUserPassword();
   Future<void> setAuthenticated(bool isAuthenticated);
   Future<bool> isAuthenticated();
   Future<void> setOnboardingCompleted(bool isCompleted);
@@ -21,7 +23,7 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
 
   @override
   Future<User?> getUser() async {
-    final userData = await storageManager.getValue<Map<String, dynamic>>(AppLocalStorageKeys.userPreferences);
+    final userData = await storageManager.getValue<Map<String, dynamic>>(AppLocalStorageKeys.userData);
     if (userData != null) {
       return User.fromMap(userData);
     }
@@ -30,17 +32,17 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
 
   @override
   Future<void> setUser(User user) async {
-    await storageManager.setValue(AppLocalStorageKeys.userPreferences, user.toMap());
+    await storageManager.setValue(AppLocalStorageKeys.userData, user.toMap());
   }
 
   @override
-  Future<void> setMasterPassword(String password) async {
-    await storageManager.setValue(AppLocalStorageKeys.masterPassword, password);
+  Future<void> setUserPassword(String password) async {
+    await storageManager.setValue(AppLocalStorageKeys.password, password);
   }
 
   @override
-  Future<String?> getMasterPassword() async {
-    return await storageManager.getValue<String>(AppLocalStorageKeys.masterPassword);
+  Future<String?> getUserPassword() async {
+    return await storageManager.getValue<String>(AppLocalStorageKeys.password);
   }
 
   @override
@@ -65,8 +67,8 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
 
   @override
   Future<void> clearUserData() async {
-    storageManager.removeValue(AppLocalStorageKeys.userPreferences);
-    storageManager.removeValue(AppLocalStorageKeys.masterPassword);
+    storageManager.removeValue(AppLocalStorageKeys.userData);
+    storageManager.removeValue(AppLocalStorageKeys.password);
     storageManager.removeValue(AppLocalStorageKeys.isAuthenticated);
     storageManager.removeValue(AppLocalStorageKeys.isOnboardingCompleted);
   }

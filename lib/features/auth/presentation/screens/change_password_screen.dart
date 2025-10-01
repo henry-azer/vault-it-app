@@ -4,7 +4,7 @@ import '../../../../data/datasources/user_local_datasource.dart';
 import '../../../../core/utils/app_strings.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
-  const ChangePasswordScreen({Key? key}) : super(key: key);
+  const ChangePasswordScreen({super.key});
 
   @override
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
@@ -136,7 +136,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     });
 
     try {
-      final storedPassword = await _userLocalDataSource.getMasterPassword();
+      final storedPassword = await _userLocalDataSource.getUserPassword();
       
       if (storedPassword != _currentPasswordController.text) {
         if (mounted) {
@@ -150,7 +150,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         return;
       }
 
-      await _userLocalDataSource.setMasterPassword(_newPasswordController.text);
+      await _userLocalDataSource.setUserPassword(_newPasswordController.text);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
