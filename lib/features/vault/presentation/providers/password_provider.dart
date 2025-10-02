@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../data/datasources/password_local_datasource.dart';
-import '../../../../data/entities/password.dart';
+import 'package:pass_vault_it/data/datasources/password_local_datasource.dart';
+import 'package:pass_vault_it/data/entities/password.dart';
 
 class PasswordProvider with ChangeNotifier {
   late PasswordLocalDataSource _passwordLocalDataSource;
@@ -16,14 +16,19 @@ class PasswordProvider with ChangeNotifier {
     loadPasswords();
   }
 
-  // Getters
-  List<Password> get passwords => _filteredPasswords.isEmpty && _searchQuery.isEmpty 
-      ? _passwords 
-      : _filteredPasswords;
-  List<Password> get filteredPasswords =>  _filteredPasswords;
+  List<Password> get passwords =>
+      _filteredPasswords.isEmpty && _searchQuery.isEmpty
+          ? _passwords
+          : _filteredPasswords;
+
+  List<Password> get filteredPasswords => _filteredPasswords;
+
   bool get isLoading => _isLoading;
+
   String get searchQuery => _searchQuery;
+
   Password? get selectedPassword => _selectedPassword;
+
   int get passwordCount => _passwords.length;
 
   Future<void> loadPasswords() async {
@@ -52,10 +57,14 @@ class PasswordProvider with ChangeNotifier {
 
   Future<bool> updatePassword(Password password) async {
     try {
-      await _passwordLocalDataSource.updatePassword(password);
-      final index = _passwords.indexWhere((p) => p.id == password.id);
+      final updatedPassword = password.copyWith(
+        lastModified: DateTime.now(),
+      );
+
+      await _passwordLocalDataSource.updatePassword(updatedPassword);
+      final index = _passwords.indexWhere((p) => p.id == updatedPassword.id);
       if (index != -1) {
-        _passwords[index] = password;
+        _passwords[index] = updatedPassword;
         _applySearch();
       }
       return true;
@@ -106,9 +115,12 @@ class PasswordProvider with ChangeNotifier {
       _filteredPasswords = [];
     } else {
       _filteredPasswords = _passwords.where((password) {
-        return password.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               password.username.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               (password.url?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+        return password.title
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            password.username
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase());
       }).toList();
     }
     notifyListeners();
@@ -143,39 +155,32 @@ class PasswordProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Helper method to generate password ID
   String generatePasswordId() {
     return DateTime.now().millisecondsSinceEpoch.toString();
   }
 
-  // Get passwords by category or filter
-  List<Password> getPasswordsByFilter(String filter) {
-    switch (filter.toLowerCase()) {
-      case 'recent':
-        final sortedPasswords = List<Password>.from(_passwords);
-        sortedPasswords.sort((a, b) => b.addedDate.compareTo(a.addedDate));
-        return sortedPasswords.take(10).toList();
-      case 'favorites':
-        // Could be implemented with a favorite field in Password entity
-        return [];
-      default:
-        return _passwords;
-    }
-  }
+  Future<bool> toggleFavorite(String id) async {
+    try {
+      final index = _passwords.indexWhere((p) => p.id == id);
+      if (index != -1) {
+        final password = _passwords[index];
+        final updatedPassword =
+            password.copyWith(isFavorite: !password.isFavorite);
 
-  // Get password statistics
-  Map<String, int> getPasswordStats() {
-    return {
-      'total': _passwords.length,
-      'this_month': _passwords.where((p) {
-        final now = DateTime.now();
-        return p.addedDate.year == now.year && p.addedDate.month == now.month;
-      }).length,
-      'this_week': _passwords.where((p) {
-        final now = DateTime.now();
-        final weekAgo = now.subtract(const Duration(days: 7));
-        return p.addedDate.isAfter(weekAgo);
-      }).length,
-    };
+        await _passwordLocalDataSource.updatePassword(updatedPassword);
+        _passwords[index] = updatedPassword;
+
+        if (_selectedPassword?.id == id) {
+          _selectedPassword = updatedPassword;
+        }
+
+        _applySearch();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error toggling favorite: $e');
+      return false;
+    }
   }
 }

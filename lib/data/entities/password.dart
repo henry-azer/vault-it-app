@@ -8,6 +8,8 @@ class Password {
   final String password;
   final String? notes;
   final DateTime addedDate;
+  final DateTime lastModified;
+  final bool isFavorite;
 
   const Password({
     required this.id,
@@ -15,9 +17,11 @@ class Password {
     required this.username,
     required this.password,
     required this.addedDate,
+    DateTime? lastModified,
     this.url,
     this.notes,
-  });
+    this.isFavorite = false,
+  }) : lastModified = lastModified ?? addedDate;
 
   Map<String, dynamic> toMap() {
     return {
@@ -27,11 +31,14 @@ class Password {
       'username': username,
       'password': password,
       'notes': notes,
-      'addeddate': DateFormat.yMd().format(addedDate).toString(),
+      'addedDate': DateFormat.yMd().format(addedDate).toString(),
+      'lastModified': DateFormat.yMd().format(lastModified).toString(),
+      'isFavorite': isFavorite ? 1 : 0,
     };
   }
 
   factory Password.fromMap(Map<String, dynamic> map) {
+    final addedDate = DateFormat.yMd().parse(map['addedDate']);
     return Password(
       id: map['id'] ?? '',
       title: map['title'] ?? '',
@@ -39,7 +46,11 @@ class Password {
       username: map['username'] ?? '',
       password: map['password'] ?? '',
       notes: map['notes'],
-      addedDate: DateFormat.yMd().parse(map['addeddate']),
+      addedDate: addedDate,
+      lastModified: map['lastModified'] != null 
+          ? DateFormat.yMd().parse(map['lastModified'])
+          : addedDate,
+      isFavorite: (map['isFavorite'] ?? 0) == 1,
     );
   }
 
@@ -51,6 +62,8 @@ class Password {
     String? password,
     String? notes,
     DateTime? addedDate,
+    DateTime? lastModified,
+    bool? isFavorite,
   }) {
     return Password(
       id: id ?? this.id,
@@ -60,6 +73,8 @@ class Password {
       password: password ?? this.password,
       notes: notes ?? this.notes,
       addedDate: addedDate ?? this.addedDate,
+      lastModified: lastModified ?? this.lastModified,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 }

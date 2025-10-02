@@ -50,6 +50,15 @@ class AppStrings {
   static const String copyPassword = "copy_password";
   static const String copyUsername = "copy_username";
   static const String copiedToClipboard = "copied_to_clipboard";
+  static const String failedToFavorite = "failed_to_favorite";
+  static const String justNow = "just_now";
+  static const String minutesAgo = "minutes_ago";
+  static const String hoursAgo = "hours_ago";
+  static const String yesterday = "yesterday";
+  static const String daysAgo = "days_ago";
+  static const String weeksAgo = "weeks_ago";
+  static const String monthsAgo = "months_ago";
+  static const String yearsAgo = "years_ago";
 
   // Generator
   static const String generator = "generator";
@@ -154,12 +163,43 @@ class AppStrings {
 
   // Search / Filters
   static const String searchPasswords = "search_passwords";
+  static const String searchPasswordsHintActive = "search_passwords_hint_active";
   static const String noResults = "no_results";
+  static const String noMatchesFound = "no_matches_found";
+  static const String tryDifferentKeywords = "try_different_keywords";
+  static const String clearSearch = "clear_search";
+  static const String clearFilter = "clear_filter";
+  static const String filter = "filter";
+  static const String sort = "sort";
   static const String filterBy = "filter_by";
   static const String sortBy = "sort_by";
+  static const String filterPasswords = "filter_passwords";
+  static const String sortPasswords = "sort_passwords";
+  static const String allPasswords = "all_passwords";
+  static const String showAllPasswords = "show_all_passwords";
+  static const String weakPasswordsTitle = "weak_passwords_title";
+  static const String weakPasswordsDesc = "weak_passwords_desc";
+  static const String stalePasswordsTitle = "stale_passwords_title";
+  static const String stalePasswordsDesc = "stale_passwords_desc";
+  static const String favoritesTitle = "favorites_title";
+  static const String favoritesDesc = "favorites_desc";
+  static const String noWeakPasswords = "no_weak_passwords";
+  static const String noStalePasswords = "no_stale_passwords";
+  static const String noFavorites = "no_favorites";
+  static const String noFilterResults = "no_filter_results";
+  static const String vaultEmpty = "vault_empty";
+  static const String vaultEmptyDesc = "vault_empty_desc";
+  static const String addFirstPassword = "add_first_password";
+  static const String passwordsCount = "passwords_count";
   static const String sortAlphabetical = "sort_alphabetical";
   static const String sortDateCreated = "sort_date_created";
   static const String sortDateModified = "sort_date_modified";
+  static const String sortDateAdded = "sort_date_added";
+  static const String sortNameAZ = "sort_name_az";
+  static const String sortLastModified = "sort_last_modified";
+  static const String sortNewestFirst = "sort_newest_first";
+  static const String sortAlphabeticalOrder = "sort_alphabetical_order";
+  static const String sortRecentlyUpdated = "sort_recently_updated";
 
   // Validation
   static const String validationTitleRequired = "validation_title_required";

@@ -1,7 +1,7 @@
+import 'package:pass_vault_it/core/managers/database-manager/i_database_manager.dart';
+import 'package:pass_vault_it/core/utils/app_local_storage_strings.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import '../../utils/app_local_storage_strings.dart';
-import 'i_database_manager.dart';
 
 class SqliteDatabaseManager extends IDatabaseManager {
   static Database? _database;
@@ -23,7 +23,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute(
-      'CREATE TABLE ${AppLocalStorageKeys.passwordsTable}(id TEXT PRIMARY KEY, title TEXT, url TEXT, username TEXT, password TEXT, notes TEXT, addeddate TEXT)',
+      'CREATE TABLE ${AppLocalStorageKeys.passwordsTable}(id TEXT PRIMARY KEY, title TEXT, url TEXT, username TEXT, password TEXT, notes TEXT, addedDate TEXT, lastModified TEXT, isFavorite INTEGER DEFAULT 0)',
     );
   }
 

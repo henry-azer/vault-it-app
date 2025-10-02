@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../core/utils/app_strings.dart';
-import '../../features/splash/presentation/screens/splash_screen.dart';
-import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/register_screen.dart';
-import '../../features/auth/presentation/screens/change_password_screen.dart';
-import '../../features/app-navigator/presentation/screens/app_navigator_screen.dart';
-import '../../features/vault/presentation/screens/vault_screen.dart';
-import '../../features/vault/presentation/screens/add_password_screen.dart';
-import '../../features/vault/presentation/screens/view_password_screen.dart';
-import '../../features/generator/presentation/screens/generator_screen.dart';
-import '../../features/settings/presentation/screens/settings_screen.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/app-navigator/presentation/screens/app_navigator_screen.dart';
+import 'package:pass_vault_it/features/auth/presentation/screens/change_password_screen.dart';
+import 'package:pass_vault_it/features/auth/presentation/screens/login_screen.dart';
+import 'package:pass_vault_it/features/auth/presentation/screens/register_screen.dart';
+import 'package:pass_vault_it/features/generator/presentation/screens/generator_screen.dart';
+import 'package:pass_vault_it/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:pass_vault_it/features/settings/presentation/screens/settings_screen.dart';
+import 'package:pass_vault_it/features/splash/presentation/screens/splash_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/add_password_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/vault_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/view_password_screen.dart';
 
 class Routes {
   static const String initial = '/';
