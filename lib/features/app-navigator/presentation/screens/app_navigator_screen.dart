@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/themes/theme_provider.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/app-navigator/presentation/providers/navigation_provider.dart';
+import 'package:pass_vault_it/features/generator/presentation/screens/generator_screen.dart';
+import 'package:pass_vault_it/features/settings/presentation/screens/settings_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/vault_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_clipped_nav_bar/sliding_clipped_nav_bar.dart';
-import '../providers/navigation_provider.dart';
-import '../../../vault/presentation/screens/vault_screen.dart';
-import '../../../generator/presentation/screens/generator_screen.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
 
 class AppNavigatorScreen extends StatefulWidget {
-  const AppNavigatorScreen({Key? key}) : super(key: key);
+  const AppNavigatorScreen({super.key});
 
   @override
   State<AppNavigatorScreen> createState() => _AppNavigatorScreenState();
 }
 
 class _AppNavigatorScreenState extends State<AppNavigatorScreen> {
+
   final List<Widget> _screens = [
     const VaultScreen(),
     const GeneratorScreen(),
@@ -22,8 +26,8 @@ class _AppNavigatorScreenState extends State<AppNavigatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<NavigationProvider>(
-      builder: (context, navigationProvider, child) {
+    return Consumer2<NavigationProvider, ThemeProvider>(
+      builder: (context, navigationProvider, themeProvider, child) {
         return Scaffold(
           body: PageView(
             controller: navigationProvider.pageController,
@@ -32,23 +36,23 @@ class _AppNavigatorScreenState extends State<AppNavigatorScreen> {
             children: _screens,
           ),
           bottomNavigationBar: SlidingClippedNavBar(
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             onButtonPressed: navigationProvider.setSelectedIndex,
             iconSize: 30,
-            activeColor: const Color(0xFFFF5722),
+            activeColor: Theme.of(context).colorScheme.primary,
             selectedIndex: navigationProvider.selectedIndex,
             barItems: [
               BarItem(
                 icon: Icons.lock,
-                title: 'Vault',
+                title: AppStrings.vault.tr,
               ),
               BarItem(
                 icon: Icons.vpn_key,
-                title: 'Generator',
+                title: AppStrings.generator.tr,
               ),
               BarItem(
                 icon: Icons.settings,
-                title: 'Settings',
+                title: AppStrings.settings.tr,
               ),
             ],
           ),

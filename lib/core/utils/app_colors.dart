@@ -15,16 +15,16 @@ class AppColors {
   static const Color lightOnError = Color(0xFFFFFFFF);
 
   // Dark Theme
-  static const Color darkPrimary = Color(0xFFFF9800);
+  static const Color darkPrimary = Color(0xFFFF645C);
   static const Color darkOnPrimary = Color(0xFF000000);
-  static const Color darkSecondary = Color(0xFFFF5722);
+  static const Color darkSecondary = Color(0xFFFF9800);
   static const Color darkOnSecondary = Color(0xFF000000);
   static const Color darkBackground = Color(0xFF000000);
   static const Color darkSurface = Color(0xFF1E1E1E);
   static const Color darkOnBackground = Color(0xFFFFFFFF);
   static const Color darkOnSurface = Color(0xFFFFFFFF);
   static const Color darkOutline = Color(0xFF424242);
-  static const Color darkError = Color(0xFFCF6679);
+  static const Color darkError = Color(0xFFB00020);
   static const Color darkOnError = Color(0xFF000000);
 
   // Shared
