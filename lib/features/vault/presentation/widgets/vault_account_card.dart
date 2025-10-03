@@ -4,16 +4,16 @@ import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/config/routes/app_routes.dart';
 import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/data/entities/password.dart';
-import 'package:pass_vault_it/features/vault/presentation/providers/password_provider.dart';
+import 'package:pass_vault_it/data/entities/account.dart';
+import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:provider/provider.dart';
 
-class VaultPasswordCard extends StatefulWidget {
-  final Password data;
+class VaultAccountCard extends StatefulWidget {
+  final Account data;
   final bool isDark;
   final VoidCallback? onTap;
 
-  const VaultPasswordCard({
+  const VaultAccountCard({
     super.key,
     required this.data,
     required this.isDark,
@@ -21,10 +21,10 @@ class VaultPasswordCard extends StatefulWidget {
   });
 
   @override
-  State<VaultPasswordCard> createState() => _VaultPasswordCardState();
+  State<VaultAccountCard> createState() => _VaultAccountCardState();
 }
 
-class _VaultPasswordCardState extends State<VaultPasswordCard>
+class _VaultAccountCardState extends State<VaultAccountCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -66,15 +66,15 @@ class _VaultPasswordCardState extends State<VaultPasswordCard>
 
   void _handleTap() {
     FocusManager.instance.primaryFocus?.unfocus();
-    final passwordProvider = context.read<PasswordProvider>();
-    passwordProvider.selectPassword(widget.data);
+    final accountProvider = context.read<AccountProvider>();
+    accountProvider.selectAccount(widget.data);
 
     if (widget.onTap != null) {
       widget.onTap!();
     } else {
       Navigator.pushNamed(
         context,
-        Routes.viewPassword,
+        Routes.viewAccount,
         arguments: widget.data,
       );
     }
@@ -121,7 +121,7 @@ class _VaultPasswordCardState extends State<VaultPasswordCard>
             padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
             child: Row(
               children: [
-                _buildModernAvatar(),
+                _buildAvatar(),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -201,7 +201,7 @@ class _VaultPasswordCardState extends State<VaultPasswordCard>
     return GestureDetector(
       onTap: () async {
         HapticFeedback.selectionClick();
-        final provider = context.read<PasswordProvider>();
+        final provider = context.read<AccountProvider>();
         final success = await provider.toggleFavorite(widget.data.id);
 
         if (!success && context.mounted) {
@@ -233,9 +233,9 @@ class _VaultPasswordCardState extends State<VaultPasswordCard>
     );
   }
 
-  Widget _buildModernAvatar() {
+  Widget _buildAvatar() {
     return Hero(
-      tag: 'password_avatar_${widget.data.id}',
+      tag: '${widget.data.id}',
       child: Container(
         width: 56,
         height: 56,

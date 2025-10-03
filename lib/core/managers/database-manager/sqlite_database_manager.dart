@@ -23,7 +23,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute(
-      'CREATE TABLE ${AppLocalStorageKeys.passwordsTable}(id TEXT PRIMARY KEY, title TEXT, url TEXT, username TEXT, password TEXT, notes TEXT, addedDate TEXT, lastModified TEXT, isFavorite INTEGER DEFAULT 0)',
+      'CREATE TABLE ${AppLocalStorageKeys.accountsTable}(id TEXT PRIMARY KEY, title TEXT, url TEXT, username TEXT, password TEXT, notes TEXT, addedDate TEXT, lastModified TEXT, isFavorite INTEGER DEFAULT 0)',
     );
   }
 

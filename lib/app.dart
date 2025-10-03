@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/localization/language_provider.dart';
+import 'package:pass_vault_it/config/routes/app_routes.dart';
+import 'package:pass_vault_it/config/themes/app_theme.dart';
+import 'package:pass_vault_it/config/themes/theme_provider.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/app-navigator/presentation/providers/navigation_provider.dart';
+import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
+import 'package:pass_vault_it/features/generator/presentation/providers/generator_provider.dart';
+import 'package:pass_vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:provider/provider.dart';
-import 'config/routes/app_routes.dart';
-import 'config/themes/app_theme.dart';
-import 'config/localization/app_localization.dart';
-import 'config/localization/language_provider.dart';
-import 'config/themes/theme_provider.dart';
-import 'features/app-navigator/presentation/providers/navigation_provider.dart';
-import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/generator/presentation/providers/generator_provider.dart';
-import 'features/onboarding/presentation/providers/onboarding_provider.dart';
-import 'features/vault/presentation/providers/password_provider.dart';
 
 class PassVaultItApp extends StatelessWidget {
   const PassVaultItApp({super.key});
@@ -27,7 +27,7 @@ class PassVaultItApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => PasswordProvider()),
+        ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => GeneratorProvider()),
       ],
       builder: (context, child) {

@@ -8,9 +8,8 @@ import 'package:pass_vault_it/features/generator/presentation/screens/generator_
 import 'package:pass_vault_it/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:pass_vault_it/features/settings/presentation/screens/settings_screen.dart';
 import 'package:pass_vault_it/features/splash/presentation/screens/splash_screen.dart';
-import 'package:pass_vault_it/features/vault/presentation/screens/add_password_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/add_account_screen.dart';
 import 'package:pass_vault_it/features/vault/presentation/screens/vault_screen.dart';
-import 'package:pass_vault_it/features/vault/presentation/screens/view_password_screen.dart';
 
 class Routes {
   static const String initial = '/';
@@ -21,8 +20,8 @@ class Routes {
   
   static const String app = '/app';
   static const String vault = '/app/vault';
-  static const String addPassword = '/app/vault/add';
-  static const String viewPassword = '/app/vault/view';
+  static const String addAccount = '/app/vault/add';
+  static const String viewAccount = '/app/vault/view';
   static const String generator = '/app/generator';
   static const String settings = '/app/settings';
 }
@@ -79,20 +78,20 @@ class AppRoutes {
             },
             settings: routeSettings);
 
-      case Routes.addPassword:
+      case Routes.addAccount:
         return MaterialPageRoute(
             builder: (context) {
-              return const AddPasswordScreen();
+              return const AddAccountScreen();
             },
             settings: routeSettings);
 
-      case Routes.viewPassword:
-        final password = routeSettings.arguments;
-        return MaterialPageRoute(
-            builder: (context) {
-              return ViewPasswordScreen(password: password);
-            },
-            settings: routeSettings);
+      // case Routes.viewPassword:
+      //   final password = routeSettings.arguments;
+      //   return MaterialPageRoute(
+      //       builder: (context) {
+      //         return ViewPasswordScreen(password: password);
+      //       },
+      //       settings: routeSettings);
 
       case Routes.generator:
         return MaterialPageRoute(

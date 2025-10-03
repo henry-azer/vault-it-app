@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/config/routes/app_routes.dart';
+import 'package:pass_vault_it/core/enums/vault_enums.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/data/entities/password.dart';
-import 'package:pass_vault_it/features/vault/presentation/providers/password_provider.dart';
-import 'package:pass_vault_it/features/vault/presentation/widgets/vault_password_card.dart';
+import 'package:pass_vault_it/data/entities/account.dart';
+import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
+import 'package:pass_vault_it/features/vault/presentation/widgets/vault_account_card.dart';
 import 'package:provider/provider.dart';
 
 class VaultScreen extends StatefulWidget {
@@ -21,8 +22,8 @@ class _VaultScreenState extends State<VaultScreen>
   final FocusNode _searchFocusNode = FocusNode();
   late AnimationController _animationController;
   bool _isSearchActive = false;
-  String _sortBy = 'date';
-  String _filterBy = 'all';
+  AccountSortType _sortBy = AccountSortType.dateAdded;
+  AccountFilterType _filterBy = AccountFilterType.all;
 
   @override
   void initState() {
@@ -34,7 +35,7 @@ class _VaultScreenState extends State<VaultScreen>
     _searchController.addListener(_onSearchChanged);
     _searchFocusNode.addListener(_onSearchFocusChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PasswordProvider>().loadPasswords();
+      context.read<AccountProvider>().loadAccounts();
     });
   }
 
@@ -50,7 +51,7 @@ class _VaultScreenState extends State<VaultScreen>
 
   void _onSearchChanged() {
     final query = _searchController.text;
-    context.read<PasswordProvider>().searchPasswords(query);
+    context.read<AccountProvider>().searchAccounts(query);
     setState(() {});
   }
 
@@ -118,19 +119,19 @@ class _VaultScreenState extends State<VaultScreen>
           Row(
             children: [
               Expanded(
-                child: Consumer<PasswordProvider>(
+                child: Consumer<AccountProvider>(
                   builder: (context, provider, child) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          AppStrings.appName.tr,
+                          AppStrings.accountsVault.tr,
                           style: Theme.of(context)
                               .textTheme
                               .headlineSmall
                               ?.copyWith(
                                   fontWeight: FontWeight.w500,
-                                  letterSpacing: 1.5),
+                                  letterSpacing: 1.2),
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -156,7 +157,7 @@ class _VaultScreenState extends State<VaultScreen>
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '${provider.passwordCount} ${AppStrings.passwordsCount.tr}',
+                                    '${provider.accountCount} ${AppStrings.accountsCount.tr}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
@@ -178,15 +179,15 @@ class _VaultScreenState extends State<VaultScreen>
             ],
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-          _buildPersistentSearchBar(isDark),
+          _buildSearchBar(isDark),
         ],
       ),
     );
   }
 
   Widget _buildHeaderActions(bool isDark) {
-    final bool isFilterActive = _filterBy != 'all';
-    final bool isSortActive = _sortBy != 'date';
+    final bool isFilterActive = _filterBy != AccountFilterType.all;
+    final bool isSortActive = _sortBy != AccountSortType.dateAdded;
 
     return Row(
       children: [
@@ -242,7 +243,7 @@ class _VaultScreenState extends State<VaultScreen>
     );
   }
 
-  Widget _buildPersistentSearchBar(bool isDark) {
+  Widget _buildSearchBar(bool isDark) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
@@ -292,8 +293,8 @@ class _VaultScreenState extends State<VaultScreen>
               ),
               decoration: InputDecoration(
                 hintText: _isSearchActive
-                    ? AppStrings.searchPasswordsHintActive.tr
-                    : AppStrings.searchPasswords.tr,
+                    ? AppStrings.searchAccountsHintActive.tr
+                    : AppStrings.searchAccounts.tr,
                 hintStyle: TextStyle(
                   color: Colors.grey[500],
                   fontWeight: FontWeight.normal,
@@ -344,27 +345,26 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildContent(bool isDark) {
     return RefreshIndicator(
-      onRefresh: () => context.read<PasswordProvider>().loadPasswords(),
+      onRefresh: () => context.read<AccountProvider>().loadAccounts(),
       color: Theme.of(context).colorScheme.primary,
-      child: Consumer<PasswordProvider>(
-        builder: (context, passwordProvider, child) {
-          if (passwordProvider.isLoading &&
-              passwordProvider.passwords.isEmpty) {
+      child: Consumer<AccountProvider>(
+        builder: (context, accountProvider, child) {
+          if (accountProvider.isLoading && accountProvider.accounts.isEmpty) {
             return _buildLoadingState(isDark);
           }
 
-          List<Password> passwords = passwordProvider.searchQuery.isNotEmpty
-              ? passwordProvider.filteredPasswords
-              : passwordProvider.passwords;
+          List<Account> accounts = accountProvider.searchQuery.isNotEmpty
+              ? accountProvider.filteredAccounts
+              : accountProvider.accounts;
 
-          passwords = _applyFilter(passwords);
-          passwords = _applySort(passwords);
+          List<Account> filteredAccounts = _applyFilter(accounts);
+          filteredAccounts = _applySort(filteredAccounts);
 
-          if (passwords.isEmpty) {
-            return _buildEmptyState(passwordProvider, isDark);
+          if (filteredAccounts.isEmpty) {
+            return _buildEmptyState(accountProvider, isDark);
           }
 
-          return _buildPasswordList(passwords, isDark);
+          return _buildAccountList(filteredAccounts, isDark);
         },
       ),
     );
@@ -386,14 +386,14 @@ class _VaultScreenState extends State<VaultScreen>
     );
   }
 
-  Widget _buildEmptyState(PasswordProvider provider, bool isDark) {
+  Widget _buildEmptyState(AccountProvider provider, bool isDark) {
     if (provider.searchQuery.isNotEmpty) {
       return _buildNoSearchResults(isDark);
     }
-    if (_filterBy != 'all') {
+    if (_filterBy != AccountFilterType.all) {
       return _buildNoFilterResults(isDark);
     }
-    return _buildNoPasswords(isDark);
+    return _buildNoAccounts(isDark);
   }
 
   Widget _buildNoSearchResults(bool isDark) {
@@ -466,15 +466,15 @@ class _VaultScreenState extends State<VaultScreen>
     String filterDescription;
 
     switch (_filterBy) {
-      case 'weak':
+      case AccountFilterType.weak:
         filterIcon = Icons.warning_rounded;
         filterDescription = AppStrings.noWeakPasswords.tr;
         break;
-      case 'stale':
+      case AccountFilterType.stale:
         filterIcon = Icons.history_rounded;
         filterDescription = AppStrings.noStalePasswords.tr;
         break;
-      case 'favorites':
+      case AccountFilterType.favorites:
         filterIcon = Icons.star_rounded;
         filterDescription = AppStrings.noFavorites.tr;
         break;
@@ -530,7 +530,7 @@ class _VaultScreenState extends State<VaultScreen>
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _filterBy = 'all';
+                    _filterBy = AccountFilterType.all;
                   });
                   HapticFeedback.lightImpact();
                 },
@@ -553,7 +553,7 @@ class _VaultScreenState extends State<VaultScreen>
     );
   }
 
-  Widget _buildNoPasswords(bool isDark) {
+  Widget _buildNoAccounts(bool isDark) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Center(
@@ -616,10 +616,10 @@ class _VaultScreenState extends State<VaultScreen>
     );
   }
 
-  Widget _buildPasswordList(List<Password> passwords, bool isDark) {
+  Widget _buildAccountList(List<Account> accounts, bool isDark) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-      itemCount: passwords.length,
+      itemCount: accounts.length,
       physics: const BouncingScrollPhysics(),
       itemBuilder: (context, index) {
         return TweenAnimationBuilder<double>(
@@ -633,14 +633,14 @@ class _VaultScreenState extends State<VaultScreen>
                 opacity: value,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: VaultPasswordCard(
-                    data: passwords[index],
+                  child: VaultAccountCard(
+                    data: accounts[index],
                     isDark: isDark,
                     onTap: () async {
                       await Navigator.pushNamed(
                         context,
-                        Routes.viewPassword,
-                        arguments: passwords[index],
+                        Routes.viewAccount,
+                        arguments: accounts[index],
                       );
                       if (mounted && _searchController.text.isNotEmpty) {
                         _clearSearch();
@@ -660,7 +660,7 @@ class _VaultScreenState extends State<VaultScreen>
     return FloatingActionButton(
       onPressed: () {
         HapticFeedback.mediumImpact();
-        Navigator.pushNamed(context, Routes.addPassword);
+        Navigator.pushNamed(context, Routes.addAccount);
       },
       backgroundColor: Theme.of(context).colorScheme.primary,
       foregroundColor: Colors.white,
@@ -671,51 +671,48 @@ class _VaultScreenState extends State<VaultScreen>
 
   void _clearSearch() {
     _searchController.clear();
-    context.read<PasswordProvider>().clearSearch();
+    context.read<AccountProvider>().clearSearch();
     _searchFocusNode.unfocus();
   }
 
-  List<Password> _applyFilter(List<Password> passwords) {
+  List<Account> _applyFilter(List<Account> accounts) {
     switch (_filterBy) {
-      case 'weak':
-        return passwords.where((p) {
+      case AccountFilterType.weak:
+        return accounts.where((p) {
           final pwd = p.password;
           return pwd.length < 8 ||
               pwd == pwd.toLowerCase() ||
               pwd == pwd.toUpperCase() ||
               !RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(pwd);
         }).toList();
-
-      case 'stale':
-        final threeMonthsAgo =
-            DateTime.now().subtract(const Duration(days: 90));
-        return passwords
-            .where((p) => p.lastModified.isBefore(threeMonthsAgo))
-            .toList();
-
-      case 'favorites':
-        return passwords.where((p) => p.isFavorite).toList();
-
-      case 'all':
+      case AccountFilterType.stale:
+        return accounts.where((p) {
+          final daysSinceModified =
+              DateTime.now().difference(p.lastModified).inDays;
+          return daysSinceModified > 90;
+        }).toList();
+      case AccountFilterType.favorites:
+        return accounts.where((p) => p.isFavorite).toList();
+      case AccountFilterType.all:
       default:
-        return passwords;
+        return accounts;
     }
   }
 
-  List<Password> _applySort(List<Password> passwords) {
-    final sortedList = List<Password>.from(passwords);
+  List<Account> _applySort(List<Account> accounts) {
+    final sortedList = List<Account>.from(accounts);
 
     switch (_sortBy) {
-      case 'name':
+      case AccountSortType.name:
         sortedList.sort(
             (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
         break;
 
-      case 'modified':
+      case AccountSortType.lastModified:
         sortedList.sort((a, b) => b.lastModified.compareTo(a.lastModified));
         break;
 
-      case 'date':
+      case AccountSortType.dateAdded:
       default:
         sortedList.sort((a, b) => b.addedDate.compareTo(a.addedDate));
         break;
@@ -757,7 +754,7 @@ class _VaultScreenState extends State<VaultScreen>
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  AppStrings.filterPasswords.tr,
+                  AppStrings.filterAccounts.tr,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -767,27 +764,27 @@ class _VaultScreenState extends State<VaultScreen>
             const SizedBox(height: 24),
             _buildFilterOption(
               Icons.grid_view_rounded,
-              AppStrings.allPasswords.tr,
-              AppStrings.showAllPasswords.tr,
-              'all',
+              AppStrings.allAccounts.tr,
+              AppStrings.showAllAccounts.tr,
+              AccountFilterType.all,
             ),
             _buildFilterOption(
               Icons.warning_rounded,
               AppStrings.weakPasswordsTitle.tr,
               AppStrings.weakPasswordsDesc.tr,
-              'weak',
+              AccountFilterType.weak,
             ),
             _buildFilterOption(
               Icons.history_rounded,
               AppStrings.stalePasswordsTitle.tr,
               AppStrings.stalePasswordsDesc.tr,
-              'stale',
+              AccountFilterType.stale,
             ),
             _buildFilterOption(
               Icons.star_rounded,
               AppStrings.favoritesTitle.tr,
               AppStrings.favoritesDesc.tr,
-              'favorites',
+              AccountFilterType.favorites,
             ),
             const SizedBox(height: 16),
           ],
@@ -797,7 +794,7 @@ class _VaultScreenState extends State<VaultScreen>
   }
 
   Widget _buildFilterOption(
-      IconData icon, String title, String subtitle, String value) {
+      IconData icon, String title, String subtitle, AccountFilterType value) {
     final isSelected = _filterBy == value;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -892,7 +889,7 @@ class _VaultScreenState extends State<VaultScreen>
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  AppStrings.sortPasswords.tr,
+                  AppStrings.sortAccounts.tr,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -904,19 +901,19 @@ class _VaultScreenState extends State<VaultScreen>
               Icons.access_time_rounded,
               AppStrings.sortDateAdded.tr,
               AppStrings.sortNewestFirst.tr,
-              'date',
+              AccountSortType.dateAdded,
             ),
             _buildSortOption(
               Icons.sort_by_alpha_rounded,
               AppStrings.sortNameAZ.tr,
               AppStrings.sortAlphabeticalOrder.tr,
-              'name',
+              AccountSortType.name,
             ),
             _buildSortOption(
               Icons.update_rounded,
               AppStrings.sortLastModified.tr,
               AppStrings.sortRecentlyUpdated.tr,
-              'modified',
+              AccountSortType.lastModified,
             ),
             const SizedBox(height: 16),
           ],
@@ -926,7 +923,7 @@ class _VaultScreenState extends State<VaultScreen>
   }
 
   Widget _buildSortOption(
-      IconData icon, String title, String subtitle, String value) {
+      IconData icon, String title, String subtitle, AccountSortType value) {
     final isSelected = _sortBy == value;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

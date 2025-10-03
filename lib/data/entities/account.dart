@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-class Password {
+class Account {
   final String id;
   final String title;
   final String? url;
@@ -11,7 +11,7 @@ class Password {
   final DateTime lastModified;
   final bool isFavorite;
 
-  const Password({
+  const Account({
     required this.id,
     required this.title,
     required this.username,
@@ -37,9 +37,9 @@ class Password {
     };
   }
 
-  factory Password.fromMap(Map<String, dynamic> map) {
+  factory Account.fromMap(Map<String, dynamic> map) {
     final addedDate = DateFormat.yMd().parse(map['addedDate']);
-    return Password(
+    return Account(
       id: map['id'] ?? '',
       title: map['title'] ?? '',
       url: map['url'],
@@ -54,7 +54,7 @@ class Password {
     );
   }
 
-  Password copyWith({
+  Account copyWith({
     String? id,
     String? title,
     String? url,
@@ -65,7 +65,7 @@ class Password {
     DateTime? lastModified,
     bool? isFavorite,
   }) {
-    return Password(
+    return Account(
       id: id ?? this.id,
       title: title ?? this.title,
       url: url ?? this.url,

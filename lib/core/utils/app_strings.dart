@@ -35,9 +35,48 @@ class AppStrings {
   // Vault
   static const String vault = "vault";
   static const String passwords = "passwords";
+  static const String accounts = "accounts";
+  static const String accountsVault = "accounts_vault";
   static const String addPassword = "add_password";
+  static const String addAccount = "add_account";
   static const String editPassword = "edit_password";
+  static const String editAccount = "edit_account";
+  static const String addNewPassword = "add_new_password";
+  static const String editYourPassword = "edit_your_password";
+  static const String secureYourAccount = "secure_your_account";
+  static const String updateYourCredentials = "update_your_credentials";
+  static const String quickSelect = "quick_select";
+  static const String popularWebsites = "popular_websites";
+  static const String customWebsite = "custom_website";
+  static const String markAsFavorite = "mark_as_favorite";
+  static const String copyPasswordHint = "copy_password_hint";
+  static const String generateNewPassword = "generate_new_password";
+  static const String passwordStrengthIndicator = "password_strength_indicator";
+  static const String websiteOptional = "website_optional";
+  static const String notesOptional = "notes_optional";
+  static const String enterTitle = "enter_title";
+  static const String enterUsernameEmail = "enter_username_email";
+  static const String enterPassword = "enter_password";
+  static const String enterWebsiteUrl = "enter_website_url";
+  static const String addNotes = "add_notes";
+  static const String titleRequired = "title_required";
+  static const String usernameEmailRequired = "username_email_required";
+  static const String passwordRequiredField = "password_required_field";
+  static const String validationTitleEmpty = "validation_title_empty";
+  static const String validationUsernameEmpty = "validation_username_empty";
+  static const String validationPasswordEmpty = "validation_password_empty";
+  static const String savePasswordBtn = "save_password_btn";
+  static const String updatePasswordBtn = "update_password_btn";
+  static const String deletePasswordBtn = "delete_password_btn";
+  static const String deleteConfirmation = "delete_confirmation";
+  static const String deletePasswordMessage = "delete_password_message";
+  static const String passwordSavedSuccess = "password_saved_success";
+  static const String passwordUpdatedSuccess = "password_updated_success";
+  static const String passwordDeletedSuccess = "password_deleted_success";
+  static const String failedSavePassword = "failed_save_password";
+  static const String failedDeletePassword = "failed_delete_password";
   static const String viewPassword = "view_password";
+  static const String viewAccount = "view_account";
   static const String deletePassword = "delete_password";
   static const String title = "title";
   static const String username = "username";
@@ -59,6 +98,28 @@ class AppStrings {
   static const String weeksAgo = "weeks_ago";
   static const String monthsAgo = "months_ago";
   static const String yearsAgo = "years_ago";
+  
+  // Popular Websites
+  static const String linkedin = "linkedin";
+  static const String facebook = "facebook";
+  static const String twitter = "twitter";
+  static const String instagram = "instagram";
+  static const String github = "github";
+  static const String google = "google";
+  static const String microsoft = "microsoft";
+  static const String amazon = "amazon";
+  static const String netflix = "netflix";
+  static const String spotify = "spotify";
+  static const String dropbox = "dropbox";
+  static const String reddit = "reddit";
+  static const String pinterest = "pinterest";
+  static const String tiktok = "tiktok";
+  static const String youtube = "youtube";
+  static const String slack = "slack";
+  static const String discord = "discord";
+  static const String twitch = "twitch";
+  static const String paypal = "paypal";
+  static const String apple = "apple";
 
   // Generator
   static const String generator = "generator";
@@ -113,8 +174,6 @@ class AppStrings {
   // Danger Zone
   static const String dangerZone = "danger_zone";
   static const String deleteAllData = "delete_all_data";
-  static const String deleteConfirmation = "delete_confirmation";
-  static const String deletePasswordMessage = "delete_password_message";
   static const String deleteAllDataMessage = "delete_all_data_message";
 
   // About
@@ -162,8 +221,9 @@ class AppStrings {
   static const String strong = "strong";
 
   // Search / Filters
-  static const String searchPasswords = "search_passwords";
-  static const String searchPasswordsHintActive = "search_passwords_hint_active";
+  static const String searchAccounts = "search_accounts";
+  static const String searchAccountsHintActive = "search_accounts_hint_active";
+  static const String sortAccounts = "sort_accounts";
   static const String noResults = "no_results";
   static const String noMatchesFound = "no_matches_found";
   static const String tryDifferentKeywords = "try_different_keywords";
@@ -173,10 +233,9 @@ class AppStrings {
   static const String sort = "sort";
   static const String filterBy = "filter_by";
   static const String sortBy = "sort_by";
-  static const String filterPasswords = "filter_passwords";
-  static const String sortPasswords = "sort_passwords";
-  static const String allPasswords = "all_passwords";
-  static const String showAllPasswords = "show_all_passwords";
+  static const String filterAccounts = "filter_accounts";
+  static const String allAccounts = "all_accounts";
+  static const String showAllAccounts = "show_all_accounts";
   static const String weakPasswordsTitle = "weak_passwords_title";
   static const String weakPasswordsDesc = "weak_passwords_desc";
   static const String stalePasswordsTitle = "stale_passwords_title";
@@ -189,8 +248,7 @@ class AppStrings {
   static const String noFilterResults = "no_filter_results";
   static const String vaultEmpty = "vault_empty";
   static const String vaultEmptyDesc = "vault_empty_desc";
-  static const String addFirstPassword = "add_first_password";
-  static const String passwordsCount = "passwords_count";
+  static const String accountsCount = "accounts_count";
   static const String sortAlphabetical = "sort_alphabetical";
   static const String sortDateCreated = "sort_date_created";
   static const String sortDateModified = "sort_date_modified";
