@@ -108,7 +108,7 @@ class _VaultScreenState extends State<VaultScreen>
         boxShadow: [
           BoxShadow(
             color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
-            blurRadius: 20,
+            blurRadius: 2,
             offset: const Offset(0, 4),
           ),
         ],
@@ -192,20 +192,18 @@ class _VaultScreenState extends State<VaultScreen>
     return Row(
       children: [
         _buildActionButton(
-          icon: Icons.tune_rounded,
-          onPressed: _showFilterSheet,
-          isDark: isDark,
-          tooltip: AppStrings.filter.tr,
-          isActive: isFilterActive,
-        ),
-        const SizedBox(width: 8),
-        _buildActionButton(
           icon: Icons.sort_rounded,
           onPressed: _showSortSheet,
           isDark: isDark,
-          tooltip: AppStrings.sort.tr,
           isActive: isSortActive,
         ),
+        const SizedBox(width: 8),
+        _buildActionButton(
+          icon: Icons.tune_rounded,
+          onPressed: _showFilterSheet,
+          isDark: isDark,
+          isActive: isFilterActive,
+        )
       ],
     );
   }
@@ -214,7 +212,6 @@ class _VaultScreenState extends State<VaultScreen>
     required IconData icon,
     required VoidCallback onPressed,
     required bool isDark,
-    required String tooltip,
     bool isActive = false,
   }) {
     return Container(
@@ -236,7 +233,6 @@ class _VaultScreenState extends State<VaultScreen>
           color: isActive ? Theme.of(context).colorScheme.primary : null,
         ),
         onPressed: onPressed,
-        tooltip: tooltip,
         padding: const EdgeInsets.all(8),
         constraints: const BoxConstraints(),
       ),
@@ -264,7 +260,7 @@ class _VaultScreenState extends State<VaultScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: _isSearchActive
               ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
@@ -274,9 +270,9 @@ class _VaultScreenState extends State<VaultScreen>
         boxShadow: [
           BoxShadow(
             color: _isSearchActive
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
                 : (isDark ? Colors.black26 : Colors.black.withOpacity(0.04)),
-            blurRadius: _isSearchActive ? 12 : 6,
+            blurRadius: _isSearchActive ? 8 : 6,
             offset: Offset(0, _isSearchActive ? 3 : 2),
           ),
         ],
@@ -618,7 +614,7 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildAccountList(List<Account> accounts, bool isDark) {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       itemCount: accounts.length,
       physics: const BouncingScrollPhysics(),
       itemBuilder: (context, index) {
@@ -634,7 +630,7 @@ class _VaultScreenState extends State<VaultScreen>
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: VaultAccountCard(
-                    data: accounts[index],
+                    account: accounts[index],
                     isDark: isDark,
                     onTap: () async {
                       await Navigator.pushNamed(
@@ -660,7 +656,7 @@ class _VaultScreenState extends State<VaultScreen>
     return FloatingActionButton(
       onPressed: () {
         HapticFeedback.mediumImpact();
-        Navigator.pushNamed(context, Routes.addAccount);
+        Navigator.pushNamed(context, Routes.account);
       },
       backgroundColor: Theme.of(context).colorScheme.primary,
       foregroundColor: Colors.white,

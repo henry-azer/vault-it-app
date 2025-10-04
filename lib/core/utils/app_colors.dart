@@ -29,7 +29,7 @@ class AppColors {
 
   // Shared
   static const Color snackbarError = Color(0xFFB00020);
-  static const Color snackbarSuccess = Color(0xFF3B7315);
+  static const Color snackbarSuccess = Color(0xFFF35350);
   static const MaterialColor primarySwatch = MaterialColor(
     0xFFFF5722,
     <int, Color>{

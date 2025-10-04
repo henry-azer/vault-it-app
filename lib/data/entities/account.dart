@@ -1,4 +1,29 @@
+import 'dart:convert';
 import 'package:intl/intl.dart';
+
+class PasswordHistoryItem {
+  final String password;
+  final DateTime changedDate;
+
+  const PasswordHistoryItem({
+    required this.password,
+    required this.changedDate,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'password': password,
+      'changedDate': changedDate.toIso8601String(),
+    };
+  }
+
+  factory PasswordHistoryItem.fromMap(Map<String, dynamic> map) {
+    return PasswordHistoryItem(
+      password: map['password'] ?? '',
+      changedDate: DateTime.parse(map['changedDate']),
+    );
+  }
+}
 
 class Account {
   final String id;
@@ -10,6 +35,7 @@ class Account {
   final DateTime addedDate;
   final DateTime lastModified;
   final bool isFavorite;
+  final List<PasswordHistoryItem> passwordHistory;
 
   const Account({
     required this.id,
@@ -21,6 +47,7 @@ class Account {
     this.url,
     this.notes,
     this.isFavorite = false,
+    this.passwordHistory = const [],
   }) : lastModified = lastModified ?? addedDate;
 
   Map<String, dynamic> toMap() {
@@ -31,14 +58,38 @@ class Account {
       'username': username,
       'password': password,
       'notes': notes,
-      'addedDate': DateFormat.yMd().format(addedDate).toString(),
-      'lastModified': DateFormat.yMd().format(lastModified).toString(),
+      'addedDate': addedDate.toIso8601String(),
+      'lastModified': lastModified.toIso8601String(),
       'isFavorite': isFavorite ? 1 : 0,
+      'passwordHistory': jsonEncode(passwordHistory.map((e) => e.toMap()).toList()),
     };
   }
 
   factory Account.fromMap(Map<String, dynamic> map) {
-    final addedDate = DateFormat.yMd().parse(map['addedDate']);
+    DateTime parseDate(String dateStr) {
+      try {
+        return DateTime.parse(dateStr);
+      } catch (e) {
+        try {
+          return DateFormat.yMd().parse(dateStr);
+        } catch (e) {
+          return DateTime.now();
+        }
+      }
+    }
+    
+    final addedDate = parseDate(map['addedDate']);
+    
+    List<PasswordHistoryItem> history = [];
+    if (map['passwordHistory'] != null && map['passwordHistory'].toString().isNotEmpty) {
+      try {
+        final List<dynamic> historyJson = jsonDecode(map['passwordHistory']);
+        history = historyJson.map((e) => PasswordHistoryItem.fromMap(e)).toList();
+      } catch (e) {
+        history = [];
+      }
+    }
+    
     return Account(
       id: map['id'] ?? '',
       title: map['title'] ?? '',
@@ -48,9 +99,10 @@ class Account {
       notes: map['notes'],
       addedDate: addedDate,
       lastModified: map['lastModified'] != null 
-          ? DateFormat.yMd().parse(map['lastModified'])
+          ? parseDate(map['lastModified'])
           : addedDate,
       isFavorite: (map['isFavorite'] ?? 0) == 1,
+      passwordHistory: history,
     );
   }
 
@@ -64,6 +116,7 @@ class Account {
     DateTime? addedDate,
     DateTime? lastModified,
     bool? isFavorite,
+    List<PasswordHistoryItem>? passwordHistory,
   }) {
     return Account(
       id: id ?? this.id,
@@ -75,6 +128,7 @@ class Account {
       addedDate: addedDate ?? this.addedDate,
       lastModified: lastModified ?? this.lastModified,
       isFavorite: isFavorite ?? this.isFavorite,
+      passwordHistory: passwordHistory ?? this.passwordHistory,
     );
   }
 }

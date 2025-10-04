@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/data/entities/account.dart';
 import 'package:pass_vault_it/features/app-navigator/presentation/screens/app_navigator_screen.dart';
 import 'package:pass_vault_it/features/auth/presentation/screens/change_password_screen.dart';
 import 'package:pass_vault_it/features/auth/presentation/screens/login_screen.dart';
@@ -8,8 +9,9 @@ import 'package:pass_vault_it/features/generator/presentation/screens/generator_
 import 'package:pass_vault_it/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:pass_vault_it/features/settings/presentation/screens/settings_screen.dart';
 import 'package:pass_vault_it/features/splash/presentation/screens/splash_screen.dart';
-import 'package:pass_vault_it/features/vault/presentation/screens/add_account_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/account_screen.dart';
 import 'package:pass_vault_it/features/vault/presentation/screens/vault_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/view_password_screen.dart';
 
 class Routes {
   static const String initial = '/';
@@ -20,7 +22,7 @@ class Routes {
   
   static const String app = '/app';
   static const String vault = '/app/vault';
-  static const String addAccount = '/app/vault/add';
+  static const String account = '/app/vault/account';
   static const String viewAccount = '/app/vault/view';
   static const String generator = '/app/generator';
   static const String settings = '/app/settings';
@@ -78,20 +80,21 @@ class AppRoutes {
             },
             settings: routeSettings);
 
-      case Routes.addAccount:
+      case Routes.account:
+        final account = routeSettings.arguments as Account?;
         return MaterialPageRoute(
             builder: (context) {
-              return const AddAccountScreen();
+              return AccountScreen(accountToEdit: account);
             },
             settings: routeSettings);
 
-      // case Routes.viewPassword:
-      //   final password = routeSettings.arguments;
-      //   return MaterialPageRoute(
-      //       builder: (context) {
-      //         return ViewPasswordScreen(password: password);
-      //       },
-      //       settings: routeSettings);
+      case Routes.viewAccount:
+        final account = routeSettings.arguments as Account;
+        return MaterialPageRoute(
+            builder: (context) {
+              return ViewAccountScreen(account: account);
+            },
+            settings: routeSettings);
 
       case Routes.generator:
         return MaterialPageRoute(

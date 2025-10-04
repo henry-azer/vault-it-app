@@ -57,8 +57,22 @@ class AccountProvider with ChangeNotifier {
 
   Future<bool> updateAccount(Account account) async {
     try {
+      final oldAccount = await _accountLocalDataSource.getAccountById(account.id);
+      List<PasswordHistoryItem> updatedHistory = List.from(account.passwordHistory);
+      
+      if (oldAccount != null && oldAccount.password != account.password) {
+        updatedHistory.insert(
+          0,
+          PasswordHistoryItem(
+            password: oldAccount.password,
+            changedDate: oldAccount.lastModified,
+          ),
+        );
+      }
+      
       final updatedAccount = account.copyWith(
         lastModified: DateTime.now(),
+        passwordHistory: updatedHistory,
       );
 
       await _accountLocalDataSource.updateAccount(updatedAccount);

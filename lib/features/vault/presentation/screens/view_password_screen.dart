@@ -1,39 +1,60 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/routes/app_routes.dart';
+import 'package:pass_vault_it/core/constants/popular_websites.dart';
+import 'package:pass_vault_it/core/utils/app_colors.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/data/entities/account.dart';
+import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../../data/entities/password.dart';
-import '../providers/password_provider.dart';
-import 'add_password_screen.dart';
+import 'package:intl/intl.dart';
 
-class ViewPasswordScreen extends StatefulWidget {
-  final dynamic password;
-  
-  const ViewPasswordScreen({Key? key, this.password}) : super(key: key);
+class ViewAccountScreen extends StatefulWidget {
+  final Account account;
+
+  const ViewAccountScreen({super.key, required this.account});
 
   @override
-  State<ViewPasswordScreen> createState() => _ViewPasswordScreenState();
+  State<ViewAccountScreen> createState() => _ViewAccountScreenState();
 }
 
-class _ViewPasswordScreenState extends State<ViewPasswordScreen> {
+class _ViewAccountScreenState extends State<ViewAccountScreen> {
   bool _obscurePassword = true;
-  late Password _password;
-  
-  @override
-  void initState() {
-    super.initState();
-    _password = widget.password as Password;
+  bool _showPasswordHistory = false;
+
+  String _formatDate(DateTime date) => DateFormat('MMM dd, yyyy').format(date);
+
+  String _formatTime(DateTime date) => DateFormat('hh:mm a').format(date);
+
+  String _formatDateTime(DateTime date) =>
+      DateFormat('MMM dd, yyyy • hh:mm a').format(date);
+
+  Account get currentAccount {
+    final provider = context.watch<AccountProvider>();
+    return provider.accounts.firstWhere(
+      (account) => account.id == widget.account.id,
+      orElse: () => widget.account,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final account = currentAccount;
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
       body: SafeArea(
         child: Column(
           children: [
-            _buildModernHeader(),
+            _buildHeader(isDark),
             Expanded(
-              child: _buildContent(),
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: _buildCompactAccountCard(isDark, account),
+              ),
             ),
           ],
         ),
@@ -41,581 +62,789 @@ class _ViewPasswordScreenState extends State<ViewPasswordScreen> {
     );
   }
 
-  Widget _buildModernHeader() {
+  Widget _buildHeader(bool isDark) {
+    final account = currentAccount;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: isDark
+              ? [Colors.grey[850]!, Colors.grey[900]!]
+              : [Colors.white, Colors.grey[50]!],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
+              color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 4))
         ],
       ),
       child: Row(
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+                color: isDark ? Colors.grey[800] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(12)),
+            child: IconButton(
+                icon: const Icon(Icons.arrow_back, size: 20),
+                onPressed: () => Navigator.pop(context)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+              child: Text(AppStrings.viewAccount.tr,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold))),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[800] : Colors.grey[100],
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 20),
-              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.edit_rounded,
+                  size: 20, color: Theme.of(context).colorScheme.primary),
+              onPressed: () async {
+                HapticFeedback.mediumImpact();
+                await Navigator.pushNamed(context, Routes.account,
+                    arguments: account);
+                if (mounted) {
+                  setState(() {});
+                }
+              },
             ),
           ),
-          const SizedBox(width: 16),
-          // Website Icon
-          _buildWebsiteIcon(),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _password.title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-                if (_password.url != null && _password.url!.isNotEmpty)
-                  Text(
-                    _getDisplayUrl(),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-              ],
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[800] : Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon:
+                  Icon(Icons.delete_outline, size: 20, color: Colors.red[400]),
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                _showDeleteConfirmation();
+              },
             ),
           ),
-          _buildHeaderActions(),
         ],
       ),
     );
   }
 
-  Widget _buildWebsiteIcon() {
+  Widget _buildCompactAccountCard(bool isDark, Account account) {
     return Container(
-      width: 50,
-      height: 50,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.8),
-          ],
+          colors: isDark
+              ? [Colors.grey[850]!, Colors.grey[900]!]
+              : [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Text(
-          _password.title.isNotEmpty ? _password.title[0].toUpperCase() : 'P',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        borderRadius: BorderRadius.circular(20),
+        border:
+            Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
-        ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: CachedNetworkImage(
+                  imageUrl: account.url != null && account.url!.isNotEmpty
+                      ? PopularWebsites.getFaviconUrl(account.url!)
+                      : PopularWebsites.getFaviconUrl(account.title),
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.8),
+                          Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.6),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(Icons.lock_rounded,
+                        size: 24, color: Colors.white.withOpacity(0.9)),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.8),
+                          Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.6),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(Icons.lock_rounded,
+                        size: 24, color: Colors.white.withOpacity(0.9)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      account.title,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    if (account.url != null && account.url!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(Icons.language_rounded,
+                              size: 12, color: Colors.grey[500]),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              account.url!,
+                              style: TextStyle(
+                                  color: Colors.grey[600], fontSize: 12),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (account.isFavorite)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.star,
+                      size: 16, color: Theme.of(context).colorScheme.primary),
+                ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildInfoField(
+            isDark: isDark,
+            icon: Icons.person_outline_rounded,
+            label: AppStrings.username.tr,
+            value: account.username,
+            onCopy: () {
+              Clipboard.setData(ClipboardData(text: account.username));
+              HapticFeedback.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(AppStrings.copiedToClipboard.tr),
+                  backgroundColor: AppColors.snackbarSuccess,
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildPasswordField(isDark: isDark, account: account),
+          const SizedBox(height: 12),
+          _buildInfoField(
+            isDark: isDark,
+            icon: Icons.note_outlined,
+            label: AppStrings.notes.tr,
+            value: account.notes ?? '',
+            maxLines: 3,
+          ),
+          const SizedBox(height: 20),
+          Divider(
+              color: isDark ? Colors.grey[800] : Colors.grey[300], height: 1),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetadataItem(
+                  isDark: isDark,
+                  icon: Icons.calendar_today_rounded,
+                  label: AppStrings.created.tr,
+                  dateTime: account.addedDate,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMetadataItem(
+                  isDark: isDark,
+                  icon: Icons.update_rounded,
+                  label: AppStrings.modified.tr,
+                  dateTime: account.lastModified,
+                ),
+              ),
+            ],
+          ),
+          if (account.passwordHistory.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Divider(
+                color: isDark ? Colors.grey[800] : Colors.grey[300], height: 1),
+            const SizedBox(height: 16),
+            _buildPasswordHistory(isDark, account),
+          ],
+        ],
       ),
     );
   }
 
-  Widget _buildHeaderActions() {
-    return Row(
+  Widget _buildInfoField({
+    required bool isDark,
+    required IconData icon,
+    required String label,
+    required String value,
+    VoidCallback? onCopy,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            onPressed: _editPassword,
-            tooltip: 'Edit',
-          ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon,
+                  size: 16, color: Theme.of(context).colorScheme.primary),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
+        const SizedBox(height: 8),
         Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.red[50],
-            borderRadius: BorderRadius.circular(12),
+            color: isDark ? Colors.grey[800] : Colors.grey[100],
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: IconButton(
-            icon: Icon(Icons.delete, size: 20, color: Colors.red[600]),
-            onPressed: _deletePassword,
-            tooltip: 'Delete',
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        height: maxLines > 1 ? 1.4 : 1,
+                      ),
+                  maxLines: maxLines,
+                  overflow: maxLines == 1 ? TextOverflow.ellipsis : null,
+                ),
+              ),
+              if (onCopy != null) ...[
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: onCopy,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      Icons.copy_rounded,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // Username Card
-          _buildInfoCard(
-            icon: Icons.person_outline,
-            label: 'Username/Email',
-            value: _password.username,
-            canCopy: true,
-          ),
-          const SizedBox(height: 16),
-          
-          // Password Card
-          _buildPasswordCard(),
-          const SizedBox(height: 16),
-          
-          // Website URL Card
-          if (_password.url != null && _password.url!.isNotEmpty)
-            _buildInfoCard(
-              icon: Icons.link,
-              label: 'Website URL',
-              value: _password.url!,
-              canCopy: true,
-              canLaunch: true,
-            ),
-          if (_password.url != null && _password.url!.isNotEmpty)
-            const SizedBox(height: 16),
-          
-          // Notes Card
-          if (_password.notes != null && _password.notes!.isNotEmpty)
-            _buildInfoCard(
-              icon: Icons.note_outlined,
-              label: 'Notes',
-              value: _password.notes!,
-              isMultiline: true,
-            ),
-          if (_password.notes != null && _password.notes!.isNotEmpty)
-            const SizedBox(height: 16),
-          
-          // Created Date Card
-          _buildInfoCard(
-            icon: Icons.schedule,
-            label: 'Created',
-            value: _formatDate(_password.addedDate),
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Quick Actions
-          _buildQuickActions(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPasswordCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.lock_outline,
-                  size: 20,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Password',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        size: 18,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.copy,
-                        size: 18,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: () => _copyToClipboard(_password.password),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              _obscurePassword ? '●' * _password.password.length : _password.password,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontFamily: 'monospace',
-                fontSize: 16,
-                color: Colors.grey[800],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String label,
-    required String value,
-    bool canCopy = false,
-    bool canLaunch = false,
-    bool isMultiline = false,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              if (canCopy || canLaunch)
-                Row(
-                  children: [
-                    if (canCopy)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.copy,
-                            size: 18,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          onPressed: () => _copyToClipboard(value),
-                        ),
-                      ),
-                    if (canLaunch) ...[
-                      if (canCopy) const SizedBox(width: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.launch,
-                            size: 18,
-                            color: Colors.blue,
-                          ),
-                          onPressed: () => _launchUrl(value),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[800],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Quick Actions',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  icon: Icons.edit,
-                  label: 'Edit',
-                  color: Theme.of(context).primaryColor,
-                  onTap: _editPassword,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  icon: Icons.copy,
-                  label: 'Copy All',
-                  color: Colors.blue,
-                  onTap: _copyAllDetails,
-                ),
-              ),
-            ],
-        ),
-    ]),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
+  Widget _buildPasswordField({required bool isDark, required Account account}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Icon(icon, color: color),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w500,
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
+              child: Icon(Icons.lock_outline_rounded,
+                  size: 16, color: Theme.of(context).colorScheme.primary),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              AppStrings.password.tr,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  String _getDisplayUrl() {
-    try {
-      final uri = Uri.parse(_password.url!);
-      return uri.host;
-    } catch (e) {
-      return _password.url!;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
-  }
-
-  void _copyToClipboard(String text) {
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Copied to clipboard'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _copyAllDetails() {
-    final details = StringBuffer();
-    details.writeln('Title: ${_password.title}');
-    details.writeln('Username: ${_password.username}');
-    details.writeln('Password: ${_password.password}');
-    if (_password.url != null && _password.url!.isNotEmpty) {
-      details.writeln('URL: ${_password.url}');
-    }
-    if (_password.notes != null && _password.notes!.isNotEmpty) {
-      details.writeln('Notes: ${_password.notes}');
-    }
-    
-    _copyToClipboard(details.toString());
-  }
-  
-  void _launchUrl(String url) {
-    // TODO: Implement URL launching
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('URL launching feature coming soon'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-  
-  void _editPassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddPasswordScreen(passwordToEdit: _password),
-      ),
-    ).then((result) {
-      // Refresh the password data if edited
-      if (result == true) {
-        Navigator.pop(context);
-      }
-    });
-  }
-  
-  void _deletePassword() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Password'),
-        content: Text('Are you sure you want to delete "${_password.title}"? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.grey[800] : Colors.grey[100],
+            borderRadius: BorderRadius.circular(10),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _obscurePassword
+                      ? '•' * account.password.length
+                      : account.password,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: _obscurePassword ? 4 : 0.5,
+                      ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                  HapticFeedback.lightImpact();
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[700] : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    size: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: account.password));
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(AppStrings.copiedToClipboard.tr),
+                      backgroundColor: AppColors.snackbarSuccess,
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    Icons.copy_rounded,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetadataItem({
+    required bool isDark,
+    required IconData icon,
+    required String label,
+    required DateTime dateTime,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[800] : Colors.grey[100],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: Colors.grey[600]),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _formatDate(dateTime),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11.5,
+                    ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _formatTime(dateTime),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
-    
-    if (confirmed == true && mounted) {
-      final passwordProvider = context.read<PasswordProvider>();
-      final success = await passwordProvider.deletePassword(_password.id);
-      
+  }
+
+  Widget _buildPasswordHistory(bool isDark, Account account) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () {
+            setState(() {
+              _showPasswordHistory = !_showPasswordHistory;
+            });
+            HapticFeedback.selectionClick();
+          },
+          borderRadius: BorderRadius.circular(10),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.history_rounded,
+                    size: 16, color: Theme.of(context).colorScheme.primary),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                 AppStrings.passwordHistory.tr,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${account.passwordHistory.length}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                _showPasswordHistory
+                    ? Icons.keyboard_arrow_up_rounded
+                    : Icons.keyboard_arrow_down_rounded,
+                size: 18,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ],
+          ),
+        ),
+        if (_showPasswordHistory) ...[
+          const SizedBox(height: 12),
+          ...account.passwordHistory.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            bool obscure = true;
+            return StatefulBuilder(
+              builder: (context, setItemState) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                      bottom:
+                          index < account.passwordHistory.length - 1 ? 8 : 0),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[800] : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '#${account.passwordHistory.length - index}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _formatDateTime(item.changedDate),
+                                style: TextStyle(
+                                    fontSize: 11, color: Colors.grey[600]),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                obscure
+                                    ? '•' * item.password.length
+                                    : item.password,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: obscure ? 3 : 0.5,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            InkWell(
+                              onTap: () {
+                                setItemState(() {
+                                  obscure = !obscure;
+                                });
+                                HapticFeedback.lightImpact();
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.grey[700]
+                                      : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Icon(
+                                  obscure
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  size: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: item.password));
+                                HapticFeedback.lightImpact();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content:
+                                        Text(AppStrings.copiedToClipboard.tr),
+                                    backgroundColor: AppColors.snackbarSuccess,
+                                    duration: const Duration(seconds: 1),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Icon(
+                                  Icons.copy_rounded,
+                                  size: 14,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }),
+        ],
+      ],
+    );
+  }
+
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_rounded, color: Colors.red[600], size: 28),
+            SizedBox(width: MediaQuery.of(context).size.width * 0.03),
+            Text(AppStrings.deleteAccountConfirmation.tr),
+          ],
+        ),
+        content: Text(
+          AppStrings.deleteAccountMessage.tr,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppStrings.cancel.tr,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteAccount();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[600],
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.06,
+                vertical: MediaQuery.of(context).size.height * 0.015,
+              ),
+            ),
+            child: Text(
+              AppStrings.delete.tr,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    try {
+      final success = await context
+          .read<AccountProvider>()
+          .deleteAccount(widget.account.id);
+
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password deleted successfully'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: Text(AppStrings.accountDeletedSuccess.tr),
+              backgroundColor: AppColors.snackbarSuccess,
             ),
           );
-          Navigator.pop(context);
+          Navigator.pushReplacementNamed(context, Routes.vault);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to delete password'),
-              backgroundColor: Colors.red,
+            SnackBar(
+              content: Text(AppStrings.failedDeleteAccount.tr),
+              backgroundColor: AppColors.snackbarError,
             ),
           );
         }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.error.tr}: $e'),
+            backgroundColor: AppColors.snackbarError,
+          ),
+        );
       }
     }
   }

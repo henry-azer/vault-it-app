@@ -16,7 +16,8 @@ class AppStrings {
   static const String success = "success";
   static const String close = "close";
   static const String done = "done";
-  // static const String continueText = "continue";
+  static const String created = "created";
+  static const String modified = "modified";
 
   // Auth
   static const String login = "login";
@@ -45,10 +46,13 @@ class AppStrings {
   static const String editYourPassword = "edit_your_password";
   static const String secureYourAccount = "secure_your_account";
   static const String updateYourCredentials = "update_your_credentials";
+  static const String website = "website";
+  static const String websiteDesc = "website_desc";
   static const String quickSelect = "quick_select";
   static const String popularWebsites = "popular_websites";
   static const String customWebsite = "custom_website";
   static const String markAsFavorite = "mark_as_favorite";
+  static const String passwordHistory = "password_history";
   static const String copyPasswordHint = "copy_password_hint";
   static const String generateNewPassword = "generate_new_password";
   static const String passwordStrengthIndicator = "password_strength_indicator";
@@ -65,24 +69,23 @@ class AppStrings {
   static const String validationTitleEmpty = "validation_title_empty";
   static const String validationUsernameEmpty = "validation_username_empty";
   static const String validationPasswordEmpty = "validation_password_empty";
-  static const String savePasswordBtn = "save_password_btn";
-  static const String updatePasswordBtn = "update_password_btn";
-  static const String deletePasswordBtn = "delete_password_btn";
-  static const String deleteConfirmation = "delete_confirmation";
-  static const String deletePasswordMessage = "delete_password_message";
-  static const String passwordSavedSuccess = "password_saved_success";
-  static const String passwordUpdatedSuccess = "password_updated_success";
-  static const String passwordDeletedSuccess = "password_deleted_success";
-  static const String failedSavePassword = "failed_save_password";
-  static const String failedDeletePassword = "failed_delete_password";
-  static const String viewPassword = "view_password";
+
+  static const String saveAccountBtn = "save_account_btn";
+  static const String updateAccountBtn = "update_account_btn";
+  static const String accountSavedSuccess = "account_saved_success";
+  static const String accountUpdatedSuccess = "account_updated_success";
+  static const String deleteAccountConfirmation = "delete_account_confirmation";
+  static const String deleteAccountMessage = "delete_account_message";
+  static const String accountDeletedSuccess = "account_deleted_success";
+  static const String failedSaveAccount = "failed_save_account";
+  static const String failedDeleteAccount = "failed_delete_account";
+
   static const String viewAccount = "view_account";
-  static const String deletePassword = "delete_password";
+  static const String deleteAccount = "delete_account";
   static const String title = "title";
   static const String username = "username";
   static const String url = "url";
   static const String notes = "notes";
-  static const String website = "website";
   static const String noPasswordsFound = "no_passwords_found";
   static const String passwordSaved = "password_saved";
   static const String passwordDeleted = "password_deleted";
@@ -223,6 +226,7 @@ class AppStrings {
   // Search / Filters
   static const String searchAccounts = "search_accounts";
   static const String searchAccountsHintActive = "search_accounts_hint_active";
+  static const String searchWebsitesHint = "search_websites_hint";
   static const String sortAccounts = "sort_accounts";
   static const String noResults = "no_results";
   static const String noMatchesFound = "no_matches_found";

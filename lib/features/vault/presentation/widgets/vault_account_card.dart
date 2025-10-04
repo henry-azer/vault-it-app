@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/config/routes/app_routes.dart';
+import 'package:pass_vault_it/core/constants/popular_websites.dart';
 import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
 import 'package:pass_vault_it/data/entities/account.dart';
@@ -9,13 +11,13 @@ import 'package:pass_vault_it/features/vault/presentation/providers/account_prov
 import 'package:provider/provider.dart';
 
 class VaultAccountCard extends StatefulWidget {
-  final Account data;
+  final Account account;
   final bool isDark;
   final VoidCallback? onTap;
 
   const VaultAccountCard({
     super.key,
-    required this.data,
+    required this.account,
     required this.isDark,
     this.onTap,
   });
@@ -24,50 +26,26 @@ class VaultAccountCard extends StatefulWidget {
   State<VaultAccountCard> createState() => _VaultAccountCardState();
 }
 
-class _VaultAccountCardState extends State<VaultAccountCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+class _VaultAccountCardState extends State<VaultAccountCard> {
   bool _isPressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 100),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   void _handleTapDown(TapDownDetails details) {
     setState(() => _isPressed = true);
-    _controller.forward();
     HapticFeedback.selectionClick();
   }
 
   void _handleTapUp(TapUpDetails details) {
     setState(() => _isPressed = false);
-    _controller.reverse();
   }
 
   void _handleTapCancel() {
     setState(() => _isPressed = false);
-    _controller.reverse();
   }
 
   void _handleTap() {
     FocusManager.instance.primaryFocus?.unfocus();
     final accountProvider = context.read<AccountProvider>();
-    accountProvider.selectAccount(widget.data);
+    accountProvider.selectAccount(widget.account);
 
     if (widget.onTap != null) {
       widget.onTap!();
@@ -75,122 +53,105 @@ class _VaultAccountCardState extends State<VaultAccountCard>
       Navigator.pushNamed(
         context,
         Routes.viewAccount,
-        arguments: widget.data,
+        arguments: widget.account,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: GestureDetector(
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
-        onTap: _handleTap,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: widget.isDark
-                  ? [Colors.grey[850]!, Colors.grey[900]!]
-                  : [Colors.white, Colors.grey[50]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: _isPressed
-                  ? Theme.of(context).colorScheme.primary
-                  : (widget.isDark ? Colors.grey[800]! : Colors.grey[200]!),
-              width: _isPressed ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: _isPressed
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
-                    : (widget.isDark
-                        ? Colors.black26
-                        : Colors.black.withOpacity(0.08)),
-                blurRadius: _isPressed ? 16 : 12,
-                offset: Offset(0, _isPressed ? 4 : 6),
-              ),
-            ],
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: _handleTap,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: widget.isDark
+                ? [Colors.grey[850]!, Colors.grey[900]!]
+                : [Colors.white, Colors.grey[50]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: Padding(
-            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
-            child: Row(
-              children: [
-                _buildAvatar(),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.data.title,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.3,
-                                ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.008),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.person_outline_rounded,
-                            size: 14,
-                            color: Colors.grey[500],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _isPressed
+                ? Theme.of(context).colorScheme.primary
+                : (widget.isDark ? Colors.grey[800]! : Colors.grey[200]!),
+            width: _isPressed ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _isPressed
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                  : (widget.isDark
+                      ? Colors.black26
+                      : Colors.black.withOpacity(0.08)),
+              blurRadius: _isPressed ? 4 : 2,
+              offset: Offset(0, _isPressed ? 4 : 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * 0.04,
+            vertical: MediaQuery.of(context).size.width * 0.015,
+          ),
+          child: Row(
+            children: [
+              _buildAvatar(),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.account.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.2,
                           ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              widget.data.username,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.008),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.access_time_rounded,
-                            size: 12,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _getTimeAgoText(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.002),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline_rounded,
+                          size: 14,
+                          color: Colors.grey[500],
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            widget.account.username,
                             style: TextStyle(
-                              color: Colors.grey[500],
-                              fontSize: 11,
+                              color: Colors.grey[600],
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  children: [
-                    _buildFavoriteButton(),
-                    const SizedBox(height: 8),
-                    _buildTrailingActions(),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.004),
                   ],
                 ),
-              ],
-            ),
+              ),
+              Column(
+                children: [
+                  _buildFavoriteButton(),
+                  const SizedBox(height: 8),
+                  _buildTrailingActions(),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -202,7 +163,7 @@ class _VaultAccountCardState extends State<VaultAccountCard>
       onTap: () async {
         HapticFeedback.selectionClick();
         final provider = context.read<AccountProvider>();
-        final success = await provider.toggleFavorite(widget.data.id);
+        final success = await provider.toggleFavorite(widget.account.id);
 
         if (!success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -217,17 +178,19 @@ class _VaultAccountCardState extends State<VaultAccountCard>
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: widget.data.isFavorite
+          color: widget.account.isFavorite
               ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
               : (widget.isDark ? Colors.grey[800] : Colors.grey[100]),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
-          widget.data.isFavorite ? Icons.star : Icons.star_border,
+          widget.account.isFavorite ? Icons.star : Icons.star_border,
           size: 18,
-          color: widget.data.isFavorite
+          color: widget.account.isFavorite
               ? Theme.of(context).colorScheme.primary
-              : Colors.grey[600],
+              : widget.isDark
+                  ? Colors.white
+                  : Colors.black,
         ),
       ),
     );
@@ -235,105 +198,124 @@ class _VaultAccountCardState extends State<VaultAccountCard>
 
   Widget _buildAvatar() {
     return Hero(
-      tag: '${widget.data.id}',
+      tag: widget.account.id,
       child: Container(
-        width: 56,
-        height: 56,
+        width: 50,
+        height: 50,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.primary.withOpacity(0.7),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: widget.isDark ? Colors.grey[850] : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Center(
-          child: _getIconOrLetter(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: _buildFaviconOrFallback(),
         ),
       ),
     );
   }
 
-  Widget _getIconOrLetter() {
-    if (widget.data.url != null && widget.data.url!.isNotEmpty) {
-      final uri = Uri.parse(widget.data.url!);
-      final domain = uri.host;
+  Widget _buildFaviconOrFallback() {
+    String? faviconUrl;
 
-      if (domain.isNotEmpty) {
-        final firstLetter = domain[0].toUpperCase();
-        return Text(
-          firstLetter,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      }
+    if (widget.account.url != null && widget.account.url!.isNotEmpty) {
+      faviconUrl = PopularWebsites.getFaviconUrl(widget.account.url!);
     }
 
-    final firstLetter =
-        widget.data.title.isNotEmpty ? widget.data.title[0].toUpperCase() : 'P';
-    return Text(
-      firstLetter,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
+    if (faviconUrl != null) {
+      return CachedNetworkImage(
+        imageUrl: faviconUrl,
+        fit: BoxFit.cover,
+        width: 56,
+        height: 56,
+        placeholder: (context, url) => _buildSkeletonLoader(),
+        errorWidget: (context, url, error) => _buildFallbackIcon(),
+      );
+    }
+
+    return _buildFallbackIcon();
+  }
+
+  Widget _buildSkeletonLoader() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: widget.isDark
+              ? [
+                  Colors.grey[800]!,
+                  Colors.grey[700]!,
+                  Colors.grey[800]!,
+                ]
+              : [
+                  Colors.grey[200]!,
+                  Colors.grey[100]!,
+                  Colors.grey[200]!,
+                ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          stops: const [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: 24,
+          color: widget.isDark ? Colors.grey[600] : Colors.grey[300],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackIcon() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary.withOpacity(0.8),
+            Theme.of(context).colorScheme.primary.withOpacity(0.6),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.lock_rounded,
+          size: 28,
+          color: Colors.white.withOpacity(0.9),
+        ),
       ),
     );
   }
 
   Widget _buildTrailingActions() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: widget.isDark ? Colors.grey[800] : Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: 16,
-        color: Colors.grey[600],
-      ),
-    );
-  }
-
-  String _getTimeAgoText() {
-    final now = DateTime.now();
-    final difference = now.difference(widget.data.addedDate);
-
-    if (difference.inDays == 0) {
-      if (difference.inHours == 0) {
-        if (difference.inMinutes == 0) {
-          return AppStrings.justNow.tr;
-        }
-        return '${difference.inMinutes}${AppStrings.minutesAgo.tr}';
-      }
-      return '${difference.inHours}${AppStrings.hoursAgo.tr}';
-    } else if (difference.inDays == 1) {
-      return AppStrings.yesterday.tr;
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}${AppStrings.daysAgo.tr}';
-    } else if (difference.inDays < 30) {
-      final weeks = (difference.inDays / 7).floor();
-      return '$weeks${AppStrings.weeksAgo.tr}';
-    } else if (difference.inDays < 365) {
-      final months = (difference.inDays / 30).floor();
-      return '$months${AppStrings.monthsAgo.tr}';
-    } else {
-      final years = (difference.inDays / 365).floor();
-      return '$years${AppStrings.yearsAgo.tr}';
-    }
+    return GestureDetector(
+        onTap: () async {
+          HapticFeedback.selectionClick();
+          await Navigator.pushNamed(context, Routes.account,
+              arguments: widget.account);
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: widget.isDark ? Colors.grey[800] : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.edit_outlined,
+            size: 16,
+            color: widget.isDark ? Colors.white : Colors.grey[700],
+          ),
+        ));
   }
 }
