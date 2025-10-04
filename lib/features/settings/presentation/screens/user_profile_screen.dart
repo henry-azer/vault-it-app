@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pass_vault_it/config/localization/app_localization.dart';
-import 'package:pass_vault_it/core/utils/app_colors.dart';
-import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
-import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/core/utils/app_colors.dart';
+import 'package:vault_it/core/utils/app_strings.dart';
+import 'package:vault_it/core/utils/snackbar_helper.dart';
+import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 class UserProfileScreen extends StatefulWidget {

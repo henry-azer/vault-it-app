@@ -1,6 +1,6 @@
-import '../entities/app.dart';
-import '../../core/managers/storage-manager/i_storage_manager.dart';
-import '../../core/utils/app_local_storage_strings.dart';
+import 'package:vault_it/core/managers/storage-manager/i_storage_manager.dart';
+import 'package:vault_it/core/utils/app_local_storage_strings.dart';
+import 'package:vault_it/data/entities/app.dart';
 
 abstract class AppLocalDataSource {
   Future<App?> getAppData();

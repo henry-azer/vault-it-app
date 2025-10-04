@@ -1,16 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pass_vault_it/config/localization/app_localization.dart';
-import 'package:pass_vault_it/config/routes/app_routes.dart';
-import 'package:pass_vault_it/core/constants/popular_websites.dart';
-import 'package:pass_vault_it/core/enums/vault_enums.dart';
-import 'package:pass_vault_it/core/utils/app_colors.dart';
-import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
-import 'package:pass_vault_it/data/entities/account.dart';
-import 'package:pass_vault_it/features/generator/presentation/providers/generator_provider.dart';
-import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/config/routes/app_routes.dart';
+import 'package:vault_it/core/constants/popular_websites.dart';
+import 'package:vault_it/core/enums/vault_enums.dart';
+import 'package:vault_it/core/utils/app_colors.dart';
+import 'package:vault_it/core/utils/app_strings.dart';
+import 'package:vault_it/core/utils/snackbar_helper.dart';
+import 'package:vault_it/data/entities/account.dart';
+import 'package:vault_it/features/generator/presentation/providers/generator_provider.dart';
+import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:provider/provider.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -759,7 +759,7 @@ class _AccountScreenState extends State<AccountScreen> {
             context,
             AppStrings.accountDeletedSuccess.tr,
           );
-          Navigator.pushReplacementNamed(context, Routes.vault);
+          Navigator.pop(context);
         } else {
           SnackBarHelper.showError(
             context,
@@ -1146,8 +1146,8 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
               _deleteAccountDialog();
+              Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[600],

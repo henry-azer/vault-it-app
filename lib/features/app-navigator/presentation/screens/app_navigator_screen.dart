@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:pass_vault_it/config/localization/app_localization.dart';
-import 'package:pass_vault_it/config/themes/theme_provider.dart';
-import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/features/app-navigator/presentation/providers/navigation_provider.dart';
-import 'package:pass_vault_it/features/generator/presentation/screens/generator_screen.dart';
-import 'package:pass_vault_it/features/settings/presentation/screens/settings_screen.dart';
-import 'package:pass_vault_it/features/vault/presentation/screens/vault_screen.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/config/themes/theme_provider.dart';
+import 'package:vault_it/core/utils/app_strings.dart';
+import 'package:vault_it/features/app-navigator/presentation/providers/navigation_provider.dart';
+import 'package:vault_it/features/generator/presentation/screens/generator_screen.dart';
+import 'package:vault_it/features/settings/presentation/screens/settings_screen.dart';
+import 'package:vault_it/features/vault/presentation/screens/vault_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_clipped_nav_bar/sliding_clipped_nav_bar.dart';
 

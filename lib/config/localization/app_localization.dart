@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pass_vault_it/data/entities/language_option.dart';
+import 'package:vault_it/data/entities/language_option.dart';
 
 class AppLocalization {
 

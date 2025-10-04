@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:pass_vault_it/data/datasources/account_local_datasource.dart';
-import 'package:pass_vault_it/data/entities/account.dart';
+import 'package:vault_it/data/datasources/account_local_datasource.dart';
+import 'package:vault_it/data/entities/account.dart';
 
 class AccountProvider with ChangeNotifier {
   late AccountLocalDataSource _accountLocalDataSource;

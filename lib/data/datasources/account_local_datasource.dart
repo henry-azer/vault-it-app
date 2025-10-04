@@ -1,6 +1,7 @@
-import '../entities/account.dart';
-import '../../core/managers/database-manager/i_database_manager.dart';
-import '../../core/utils/app_local_storage_strings.dart';
+
+import 'package:vault_it/core/managers/database-manager/i_database_manager.dart';
+import 'package:vault_it/core/utils/app_local_storage_strings.dart';
+import 'package:vault_it/data/entities/account.dart';
 
 abstract class AccountLocalDataSource {
   Future<List<Account>> getAccounts();

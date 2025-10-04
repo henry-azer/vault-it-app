@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:pass_vault_it/core/utils/app_constants.dart';
-import '../../data/datasources/app_local_datasource.dart';
+import 'package:vault_it/core/utils/app_constants.dart';
+import 'package:vault_it/data/datasources/app_local_datasource.dart';
 
 class ThemeProvider with ChangeNotifier {
 

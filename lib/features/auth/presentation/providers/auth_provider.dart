@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../data/datasources/user_local_datasource.dart';
-import '../../../../data/entities/user.dart';
+import 'package:vault_it/data/datasources/user_local_datasource.dart';
+import 'package:vault_it/data/entities/user.dart';
 
 class AuthProvider with ChangeNotifier {
   late UserLocalDataSource _userLocalDataSource;

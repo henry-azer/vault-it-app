@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:pass_vault_it/config/localization/app_localization.dart';
-import 'package:pass_vault_it/config/localization/language_provider.dart';
-import 'package:pass_vault_it/config/routes/app_routes.dart';
-import 'package:pass_vault_it/config/themes/app_theme.dart';
-import 'package:pass_vault_it/config/themes/theme_provider.dart';
-import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/features/app-navigator/presentation/providers/navigation_provider.dart';
-import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
-import 'package:pass_vault_it/features/generator/presentation/providers/generator_provider.dart';
-import 'package:pass_vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
-import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/config/localization/language_provider.dart';
+import 'package:vault_it/config/routes/app_routes.dart';
+import 'package:vault_it/config/themes/app_theme.dart';
+import 'package:vault_it/config/themes/theme_provider.dart';
+import 'package:vault_it/core/utils/app_strings.dart';
+import 'package:vault_it/features/app-navigator/presentation/providers/navigation_provider.dart';
+import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vault_it/features/generator/presentation/providers/generator_provider.dart';
+import 'package:vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:provider/provider.dart';
 
-class PassVaultItApp extends StatelessWidget {
-  const PassVaultItApp({super.key});
+class VaultItApp extends StatelessWidget {
+  const VaultItApp({super.key});
 
   @override
   Widget build(BuildContext context) {

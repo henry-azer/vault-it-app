@@ -1,5 +1,5 @@
-import 'package:pass_vault_it/core/managers/database-manager/i_database_manager.dart';
-import 'package:pass_vault_it/core/utils/app_local_storage_strings.dart';
+import 'package:vault_it/core/managers/database-manager/i_database_manager.dart';
+import 'package:vault_it/core/utils/app_local_storage_strings.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 

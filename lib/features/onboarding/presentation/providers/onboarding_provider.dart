@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../data/datasources/user_local_datasource.dart';
+import 'package:vault_it/data/datasources/user_local_datasource.dart';
 
 class OnboardingProvider with ChangeNotifier {
   late UserLocalDataSource _userLocalDataSource;

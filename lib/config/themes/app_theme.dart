@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
-import '../../core/utils/app_colors.dart';
+import 'package:vault_it/core/utils/app_assets_manager.dart';
+import 'package:vault_it/core/utils/app_colors.dart';
 
 ThemeData appTheme() {
   return ThemeData(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pass_vault_it/config/localization/app_localization.dart';
-import 'package:pass_vault_it/config/routes/app_routes.dart';
-import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
-import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/config/routes/app_routes.dart';
+import 'package:vault_it/core/utils/app_assets_manager.dart';
+import 'package:vault_it/core/utils/app_strings.dart';
+import 'package:vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingScreen extends StatefulWidget {

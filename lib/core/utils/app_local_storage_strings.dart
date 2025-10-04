@@ -1,5 +1,5 @@
 class AppLocalStorageKeys {
-  static const String databaseName = 'pass_vault_it.db';
+  static const String databaseName = 'vault_it.db';
   static const String accountsTable = 'accounts';
   static const String appData = 'app_data';
   static const String userData = 'user_data';

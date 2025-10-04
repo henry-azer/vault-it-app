@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pass_vault_it/core/utils/app_colors.dart';
+import 'package:vault_it/core/utils/app_colors.dart';
 
 class SnackBarHelper {
   static void showError(BuildContext context, String message, {Duration? duration}) {

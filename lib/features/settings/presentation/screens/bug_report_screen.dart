@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pass_vault_it/config/localization/app_localization.dart';
-import 'package:pass_vault_it/core/constants/personal_links.dart';
-import 'package:pass_vault_it/core/utils/app_colors.dart';
-import 'package:pass_vault_it/core/utils/app_strings.dart';
-import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/core/constants/personal_links.dart';
+import 'package:vault_it/core/utils/app_colors.dart';
+import 'package:vault_it/core/utils/app_strings.dart';
+import 'package:vault_it/core/utils/snackbar_helper.dart';
 
 class BugReportScreen extends StatefulWidget {
   const BugReportScreen({super.key});

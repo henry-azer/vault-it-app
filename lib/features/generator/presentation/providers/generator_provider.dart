@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:pass_vault_it/core/enums/vault_enums.dart';
+import 'package:vault_it/core/enums/vault_enums.dart';
 
 class GeneratorProvider with ChangeNotifier {
   int _passwordLength = 16;

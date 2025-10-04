@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/config/localization/language_provider.dart';
+import 'package:vault_it/config/routes/app_routes.dart';
+import 'package:vault_it/config/themes/theme_provider.dart';
+import 'package:vault_it/core/utils/app_colors.dart';
+import 'package:vault_it/core/utils/app_strings.dart';
+import 'package:vault_it/core/utils/snackbar_helper.dart';
+import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vault_it/features/settings/data/providers/local_backup_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../../../config/routes/app_routes.dart';
-import '../../../../core/utils/app_colors.dart';
-import '../../../../core/utils/app_strings.dart';
-import '../../../../core/utils/snackbar_helper.dart';
-import '../../../../config/themes/theme_provider.dart';
-import '../../../../config/localization/language_provider.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../vault/presentation/providers/account_provider.dart';
-import 'about_screen.dart';
+import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -21,13 +21,19 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   PackageInfo? _packageInfo;
-  bool _isLoading = false;
+  late LocalBackupProvider _backupProvider;
 
   @override
   void initState() {
     super.initState();
     _loadPackageInfo();
-    // _initializeGoogleSync();
+    _backupProvider = LocalBackupProvider();
+  }
+
+  @override
+  void dispose() {
+    _backupProvider.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPackageInfo() async {
@@ -38,15 +44,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       debugPrint('Error loading package info: $e');
     }
   }
-
-  // Future<void> _initializeGoogleSync() async {
-  //   try {
-  // final googleSyncProvider = Provider.of<GoogleSyncProvider>(context, listen: false);
-  // await googleSyncProvider.initialize();
-  // } catch (e) {
-  //   debugPrint('Error initializing Google Sync: $e');
-  // }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -61,83 +58,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  // User Profile Section
                   Consumer<AuthProvider>(
                     builder: (context, authProvider, child) {
-                      return Container(
-                        margin: const EdgeInsets.all(16),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Theme.of(context).primaryColor,
-                              Theme.of(context).primaryColor.withOpacity(0.8),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, Routes.userProfile);
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).primaryColor.withOpacity(0.8),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.white.withOpacity(0.3),
-                              child: Text(
-                                authProvider.currentUser?.username
-                                        .substring(0, 1)
-                                        .toUpperCase() ??
-                                    'U',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor:
+                                      Colors.white.withOpacity(0.3),
+                                  child: Icon(Icons.person_outline)),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      authProvider.currentUser?.username ??
+                                          AppStrings.user.tr,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      AppStrings.member.tr,
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    authProvider.currentUser?.username ??
-                                        'User',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Premium Member',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
+                              Icon(
+                                Icons.verified_user,
+                                color: Colors.white.withOpacity(0.8),
+                                size: 24,
                               ),
-                            ),
-                            Icon(
-                              Icons.verified_user,
-                              color: Colors.white.withOpacity(0.8),
-                              size: 24,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
-
-                  // Appearance Section
-                  _buildSectionHeader('appearance'.tr),
+                  _buildSectionHeader(AppStrings.appearance.tr),
                   Consumer<ThemeProvider>(
                     builder: (context, themeProvider, child) {
                       return _buildSettingsTile(
                         icon: Icons.brightness_6,
-                        title: 'theme'.tr,
+                        title: AppStrings.theme.tr,
                         subtitle: _getThemeText(themeProvider.themeMode),
                         onTap: () => _showThemeDialog(themeProvider),
                       );
@@ -147,126 +136,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     builder: (context, languageProvider, child) {
                       return _buildSettingsTile(
                         icon: Icons.language,
-                        title: 'language'.tr,
+                        title: AppStrings.language.tr,
                         subtitle: languageProvider.currentLanguageName,
                         onTap: () => _showLanguageDialog(languageProvider),
                       );
                     },
                   ),
-
-                  // Security Section
-                  // _buildSectionHeader('security'.tr),
-                  // _buildSettingsTile(
-                  //   icon: Icons.lock_outline,
-                  //   title: 'change_master_password'.tr,
-                  //   subtitle: 'Update your master password',
-                  //   onTap: () => Navigator.pushNamed(context, Routes.changeAccount),
-                  // ),
+                  _buildSectionHeader(AppStrings.dataManagement.tr),
                   _buildSettingsTile(
-                    icon: Icons.fingerprint,
-                    title: 'Biometric Authentication',
-                    subtitle: 'Enable fingerprint/face unlock',
-                    trailing: Switch(
-                      value: false, // TODO: Implement biometric setting
-                      onChanged: (value) {
-                        // TODO: Implement biometric toggle
-                      },
-                    ),
+                    icon: Icons.backup_outlined,
+                    title: AppStrings.exportData.tr,
+                    subtitle: AppStrings.exportDataSubtitle.tr,
+                    onTap: _exportData,
                   ),
                   _buildSettingsTile(
-                    icon: Icons.timer,
-                    title: 'Auto-Lock Timeout',
-                    subtitle: '5 minutes',
-                    onTap: () => _showAutoLockDialog(),
+                    icon: Icons.restore_outlined,
+                    title: AppStrings.importData.tr,
+                    subtitle: AppStrings.importDataSubtitle.tr,
+                    onTap: _importData,
                   ),
-
-                  // Data Management Section
-                  _buildSectionHeader('Data Management'),
-                  // Consumer<AccountProvider>(
-                  //   builder: (context, passwordProvider, child) {
-                  //     return _buildSettingsTile(
-                  //       icon: Icons.info_outline,
-                  //       title: 'Vault Statistics',
-                  //       subtitle: '${passwordProvider.passwordCount} passwords stored',
-                  //       onTap: () => _showVaultStatistics(passwordProvider),
-                  //     );
-                  //   },
-                  // ),
-                  // _buildSettingsTile(
-                  //   icon: Icons.backup,
-                  //   title: 'Export Data',
-                  //   subtitle: 'Backup your passwords to a file',
-                  //   onTap: _exportData,
-                  //   trailing: _isLoading
-                  //       ? const SizedBox(
-                  //           width: 20,
-                  //           height: 20,
-                  //           child: CircularProgressIndicator(strokeWidth: 2),
-                  //         )
-                  //       : null,
-                  // ),
-                  // _buildSettingsTile(
-                  //   icon: Icons.restore,
-                  //   title: 'Import Data',
-                  //   subtitle: 'Restore passwords from backup',
-                  //   onTap: _importData,
-                  // ),
-                  // Consumer<GoogleSyncProvider>(
-                  //   builder: (context, googleSyncProvider, child) {
-                  //     return _buildGoogleSyncSection(googleSyncProvider);
-                  //   },
-                  // ),
-
-                  // Support & Info Section
-                  _buildSectionHeader('Support & Information'),
+                  _buildSectionHeader(AppStrings.supportInformation.tr),
                   _buildSettingsTile(
                     icon: Icons.help_outline,
-                    title: 'Help & Support',
-                    subtitle: 'Get help and contact support',
-                    onTap: () => _showHelpDialog(),
+                    title: AppStrings.helpSupport.tr,
+                    subtitle: AppStrings.helpSupportDescription.tr,
+                    onTap: () =>
+                        Navigator.pushNamed(context, Routes.helpSupport),
                   ),
                   _buildSettingsTile(
                     icon: Icons.bug_report,
-                    title: 'Report a Bug',
-                    subtitle: 'Help us improve the app',
-                    onTap: () => _reportBug(),
+                    title: AppStrings.bugReport.tr,
+                    subtitle: AppStrings.bugReportDescription.tr,
+                    onTap: () => Navigator.pushNamed(context, Routes.bugReport),
                   ),
                   _buildSettingsTile(
                     icon: Icons.star_rate,
-                    title: 'Rate the App',
-                    subtitle: 'Leave a review on the app store',
-                    onTap: () => _rateApp(),
+                    title: AppStrings.rateApp.tr,
+                    subtitle: AppStrings.rateAppDescription.tr,
+                    onTap: () => Navigator.pushNamed(context, Routes.rateApp),
                   ),
                   _buildSettingsTile(
                     icon: Icons.info_outline,
-                    title: 'About ${AppStrings.appName}',
-                    subtitle: 'Version ${_packageInfo?.version ?? '1.0.0'}',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const AboutScreen()),
-                    ),
+                    title: AppStrings.about.tr,
+                    subtitle:
+                        '${AppStrings.aboutSubtitle.tr} ${_packageInfo?.version ?? '1.0.0'}',
+                    onTap: () => Navigator.pushNamed(context, Routes.about),
                   ),
-
-                  // Danger Zone
-                  _buildSectionHeader('Danger Zone', color: AppColors.error),
-                  _buildSettingsTile(
-                    icon: Icons.delete_forever,
-                    title: 'Delete All Data',
-                    subtitle: 'Permanently delete all passwords',
-                    titleColor: AppColors.error,
-                    iconColor: AppColors.error,
-                    onTap: _showDeleteAllDataDialog,
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.logout,
-                    title: 'Logout',
-                    subtitle: 'Sign out of your account',
-                    titleColor: AppColors.error,
-                    iconColor: AppColors.error,
-                    onTap: _showLogoutDialog,
-                  ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -332,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'settings'.tr,
+                  AppStrings.settings.tr,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: -0.5,
@@ -352,7 +268,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.add_shopping_cart_outlined,
       onPressed: () {},
       isDark: isDark,
-      // isActive: hasHistory,
     );
   }
 
@@ -360,7 +275,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required IconData icon,
     required VoidCallback onPressed,
     required bool isDark,
-    bool isActive = false,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -387,7 +301,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Helper Methods
   Widget _buildSectionHeader(String title, {Color? color}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
@@ -414,7 +327,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     VoidCallback? onTap,
     Widget? trailing,
     Color? titleColor,
-    Color? iconColor,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -432,13 +344,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color:
-                (iconColor ?? Theme.of(context).primaryColor).withOpacity(0.1),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            color: iconColor ?? Theme.of(context).primaryColor,
+            color: Theme.of(context).brightness == Brightness.light
+                ? Theme.of(context).primaryColor
+                : null,
             size: 20,
           ),
         ),
@@ -480,20 +395,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _getThemeText(ThemeMode themeMode) {
     switch (themeMode) {
       case ThemeMode.system:
-        return 'theme_system'.tr;
+        return AppStrings.themeSystem.tr;
       case ThemeMode.light:
-        return 'theme_light'.tr;
+        return AppStrings.themeLight.tr;
       case ThemeMode.dark:
-        return 'theme_dark'.tr;
+        return AppStrings.themeDark.tr;
     }
   }
 
-  // Dialog Methods
   void _showThemeDialog(ThemeProvider themeProvider) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Choose Theme'),
+        title: Text(AppStrings.themeDialogTitle.tr),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -501,22 +415,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildThemeOption(
               themeProvider,
               ThemeMode.system,
-              'System (Default)',
-              'Follow system setting',
+              AppStrings.themeSystemTitle.tr,
+              AppStrings.themeSystemDescription.tr,
               Icons.brightness_auto,
             ),
             _buildThemeOption(
               themeProvider,
               ThemeMode.light,
-              'Light',
-              'Always use light theme',
+              AppStrings.themeLightTitle.tr,
+              AppStrings.themeLightDescription.tr,
               Icons.brightness_7,
             ),
             _buildThemeOption(
               themeProvider,
               ThemeMode.dark,
-              'Dark',
-              'Always use dark theme',
+              AppStrings.themeDarkTitle.tr,
+              AppStrings.themeDarkDescription.tr,
               Icons.brightness_2,
             ),
           ],
@@ -569,7 +483,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('language'.tr),
+        title: Text(AppStrings.language.tr),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: SizedBox(
           width: double.maxFinite,
@@ -580,8 +494,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   itemCount: languageProvider.availableLanguages.length,
                   itemBuilder: (context, index) {
                     final language = languageProvider.availableLanguages[index];
-                    final isSelected =
-                        language.code == languageProvider.currentLanguageCode;
                     return RadioListTile<String>(
                       title: Text(language.name),
                       value: language.code,
@@ -592,7 +504,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Navigator.pop(context);
                         }
                       },
-                      selected: isSelected,
                     );
                   },
                 ),
@@ -601,361 +512,317 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Data Management Methods
-  // Future<void> _exportData() async {
-  //   if (!mounted) return;
-  //   setState(() => _isLoading = true);
-  //
-  //   try {
-  //     final passwordProvider =
-  //         Provider.of<AccountProvider>(context, listen: false);
-  //     final passwords = passwordProvider.passwords;
-  //
-  //     if (passwords.isEmpty) {
-  //       _showMessage('No passwords to export', isError: false);
-  //       return;
-  //     }
-  //
-  //     // Show export options dialog
-  //     final choice = await _showExportOptionsDialog();
-  //     if (choice == null) return;
-  //
-  //     bool success = false;
-  //
-  //     if (choice == 'file') {
-  //       success = await BackupService.exportToFile(passwords);
-  //       if (success) {
-  //         _showMessage(
-  //             'Successfully exported ${passwords.length} passwords to file');
-  //       } else {
-  //         _showMessage('Export cancelled or failed', isError: true);
-  //       }
-  //     } else if (choice == 'share') {
-  //       success = await BackupService.shareBackup(passwords);
-  //       if (success) {
-  //         _showMessage('Backup shared successfully');
-  //       } else {
-  //         _showMessage('Share cancelled or failed', isError: true);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     _showMessage('Export failed: $e', isError: true);
-  //   } finally {
-  //     if (mounted) {
-  //       setState(() => _isLoading = false);
-  //     }
-  //   }
-  // }
+  Future<void> _exportData() async {
+    if (!mounted) return;
 
-  // Future<void> _importData() async {
-  //   try {
-  //     // Show import options dialog
-  //     final choice = await _showImportOptionsDialog();
-  //     if (choice == null) return;
-  //
-  //     if (choice == 'validate') {
-  //       await _validateBackupFile();
-  //       return;
-  //     }
-  //
-  //     // Import from file
-  //     final result = await BackupService.importFromFile();
-  //
-  //     if (!result.success) {
-  //       _showMessage(result.error ?? 'Import failed', isError: true);
-  //       return;
-  //     }
-  //
-  //     if (result.passwords == null || result.passwords!.isEmpty) {
-  //       _showMessage('No passwords found in backup file', isError: true);
-  //       return;
-  //     }
-  //
-  //     // Show confirmation dialog
-  //     if (!mounted) return;
-  //     final confirmed = await _showImportConfirmationDialog(result);
-  //     if (!confirmed) return;
-  //
-  //     // Import passwords
-  //     final passwordProvider =
-  //         Provider.of<AccountProvider>(context, listen: false);
-  //     int imported = 0;
-  //     int skipped = 0;
-  //
-  //     for (final password in result.passwords!) {
-  //       final exists = await passwordProvider.passwordExists(password.id);
-  //       if (!exists) {
-  //         await passwordProvider.addAccount(password);
-  //         imported++;
-  //       } else {
-  //         skipped++;
-  //       }
-  //     }
-  //
-  //     _showMessage(
-  //       'Import complete! $imported imported, $skipped skipped',
-  //     );
-  //
-  //     // Refresh password list
-  //     await passwordProvider.loadAccounts();
-  //   } catch (e) {
-  //     _showMessage('Import failed: $e', isError: true);
-  //   }
-  // }
+    try {
+      final accountProvider =
+          Provider.of<AccountProvider>(context, listen: false);
+      final accounts = accountProvider.accounts;
 
-  // void _showVaultStatistics(AccountProvider provider) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Vault Statistics'),
-  //       content: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           _buildStatRow('Total Accounts', '${provider.passwordCount}'),
-  //           _buildStatRow('Strong Accounts',
-  //               '${(provider.passwordCount * 0.7).round()}'),
-  //           _buildStatRow(
-  //               'Weak Accounts', '${(provider.passwordCount * 0.2).round()}'),
-  //           _buildStatRow('Duplicate Accounts',
-  //               '${(provider.passwordCount * 0.1).round()}'),
-  //         ],
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: const Text('Close'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+      if (accounts.isEmpty) {
+        SnackBarHelper.showWarning(context, AppStrings.noAccountsToExport.tr);
+        return;
+      }
 
-  Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
+      final choice = await _showExportOptionsDialog();
+      if (choice == null) return;
+
+      BackupResult result;
+      if (choice == 'file') {
+        result = await _backupProvider.exportToFile(accounts);
+        if (result.success) {
+          if (mounted) {
+            SnackBarHelper.showSuccess(
+              context,
+              AppStrings.exportSuccessMessage.tr
+                  .replaceAll('{count}', '${accounts.length}'),
+            );
+          }
+        } else {
+          if (mounted) {
+            SnackBarHelper.showError(
+              context,
+              result.message ?? AppStrings.exportFailed.tr,
+            );
+          }
+        }
+      } else if (choice == 'share') {
+        result = await _backupProvider.shareBackup(accounts);
+        if (result.success) {
+          if (mounted) {
+            SnackBarHelper.showSuccess(
+                context, result.message ?? AppStrings.backupSharedSuccessfully.tr);
+          }
+        } else {
+          if (mounted) {
+            SnackBarHelper.showError(
+              context,
+              result.message ?? AppStrings.exportFailed.tr,
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarHelper.showError(context, '${AppStrings.exportFailed.tr}: $e');
+      }
+    }
   }
 
-  // Additional Dialog Methods
-  void _showAutoLockDialog() {
-    final timeouts = [
-      '1 minute',
-      '5 minutes',
-      '15 minutes',
-      '30 minutes',
-      'Never'
-    ];
+  Future<void> _importData() async {
+    try {
+      final choice = await _showImportOptionsDialog();
+      if (choice == null) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Auto-Lock Timeout'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: timeouts
-              .map((timeout) => RadioListTile<String>(
-                    title: Text(timeout),
-                    value: timeout,
-                    groupValue: '5 minutes',
-                    onChanged: (value) {
-                      // TODO: Implement timeout setting
-                      Navigator.pop(context);
-                    },
-                  ))
-              .toList(),
-        ),
-      ),
-    );
+      if (choice == 'validate') {
+        await _validateBackupFile();
+        return;
+      }
+
+      final result = await _backupProvider.importFromFile();
+
+      if (!result.success) {
+        if (mounted) {
+          SnackBarHelper.showError(
+            context,
+            result.error ?? AppStrings.importFailed.tr,
+          );
+        }
+        return;
+      }
+
+      if (result.accounts == null || result.accounts!.isEmpty) {
+        if (mounted) {
+          SnackBarHelper.showWarning(
+              context, 'No accounts found in backup file');
+        }
+        return;
+      }
+
+      if (!mounted) return;
+      final confirmed = await _showImportConfirmationDialog(result);
+      if (!confirmed) return;
+
+      final accountProvider =
+          Provider.of<AccountProvider>(context, listen: false);
+      int imported = 0;
+      int skipped = 0;
+
+      for (final account in result.accounts!) {
+        final existingAccounts =
+            accountProvider.accounts.where((a) => a.id == account.id);
+        if (existingAccounts.isEmpty) {
+          await accountProvider.addAccount(account);
+          imported++;
+        } else {
+          skipped++;
+        }
+      }
+
+      if (mounted) {
+        SnackBarHelper.showSuccess(
+          context,
+          AppStrings.importComplete.tr
+              .replaceAll('{imported}', '$imported')
+              .replaceAll('{skipped}', '$skipped'),
+        );
+      }
+
+      await accountProvider.loadAccounts();
+    } catch (e) {
+      if (mounted) {
+        SnackBarHelper.showError(context, '${AppStrings.importFailed.tr}: $e');
+      }
+    }
   }
 
-  void _showComingSoonDialog(String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('$feature Coming Soon!'),
-        content: Text(
-            'The $feature feature is coming in a future update. Stay tuned!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _validateBackupFile() async {
+    try {
+      final result = await _backupProvider.validateBackupFile();
+
+      if (mounted) {
+        if (result.success && result.backupInfo != null) {
+          _showValidationResultDialog(result);
+        } else {
+          SnackBarHelper.showError(
+            context,
+            result.error ?? AppStrings.invalidBackupFile.tr,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarHelper.showError(context, 'Validation failed: $e');
+      }
+    }
   }
 
-  void _showHelpDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Help & Support'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Need help? Here are some resources:'),
-            SizedBox(height: 16),
-            Text('• Check our FAQ section'),
-            Text('• Contact support: support@passvault.com'),
-            Text('• Visit our website for tutorials'),
-            Text('• Report bugs through the app'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _reportBug() {
-    // TODO: Implement bug reporting
-    _showMessage('Bug reporting feature coming soon!');
-  }
-
-  void _rateApp() {
-    // TODO: Launch app store
-    _showMessage('Thank you for your feedback!');
-  }
-
-  void _showDeleteAllDataDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Delete All Data',
-          style: TextStyle(color: Colors.red),
-        ),
-        content: const Text(
-          'This will permanently delete all your passwords and cannot be undone. Are you absolutely sure?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              // Show second confirmation
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Final Confirmation'),
-                  content: const Text('Type "DELETE" to confirm:'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: TextButton.styleFrom(
-                          foregroundColor: AppColors.error),
-                      child: const Text('DELETE'),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirmed == true && mounted) {
-                final passwordProvider =
-                    Provider.of<AccountProvider>(context, listen: false);
-                await passwordProvider.deleteAllAccounts();
-                _showMessage('All data has been deleted');
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Delete All'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final authProvider =
-                  Provider.of<AuthProvider>(context, listen: false);
-              await authProvider.logout();
-              if (mounted) {
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  Routes.login,
-                  (route) => false,
-                );
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Export/Import Dialog Methods
   Future<String?> _showExportOptionsDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.backup, color: AppColors.success),
-            const SizedBox(width: 8),
-            const Text('Export Options'),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.backup_outlined,
+                  color: AppColors.success, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              AppStrings.exportOptions.tr,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
           ],
         ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.save, color: AppColors.success),
-              title: const Text('Save to File'),
-              subtitle: const Text('Choose location to save backup file'),
+            InkWell(
               onTap: () => Navigator.pop(context, 'file'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.save_outlined,
+                          color: AppColors.success, size: 22),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppStrings.saveToFile.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppStrings.saveToFileDescription.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary,
+                                  fontSize: 13,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.share, color: AppColors.info),
-              title: const Text('Share Backup'),
-              subtitle: const Text('Share backup via email, cloud, etc.'),
+            const SizedBox(height: 12),
+            InkWell(
               onTap: () => Navigator.pop(context, 'share'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.share_outlined,
+                          color: AppColors.info, size: 22),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppStrings.shareBackup.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppStrings.shareViaEmail.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary,
+                                  fontSize: 13,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: Text(
+              AppStrings.cancel.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              ),
+            ),
           ),
         ],
       ),
@@ -963,445 +830,485 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<String?> _showImportOptionsDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.restore, color: AppColors.warning),
-            const SizedBox(width: 8),
-            const Text('Import Options'),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.info.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child:
+                  Icon(Icons.restore_outlined, color: AppColors.info, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              AppStrings.importOptions.tr,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
           ],
         ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.folder_open, color: AppColors.warning),
-              title: const Text('Import from File'),
-              subtitle: const Text('Select backup file to import'),
+            InkWell(
               onTap: () => Navigator.pop(context, 'import'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.folder_open_outlined,
+                          color: AppColors.info, size: 22),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppStrings.importFromFile.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppStrings.importFileDescription.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary,
+                                  fontSize: 13,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.verified, color: Colors.purple),
-              title: const Text('Validate File'),
-              subtitle: const Text('Check backup file without importing'),
+            const SizedBox(height: 12),
+            InkWell(
               onTap: () => Navigator.pop(context, 'validate'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.verified_outlined,
+                          color: Colors.purple, size: 22),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppStrings.validateFile.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppStrings.validateFileDesc.tr,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary,
+                                  fontSize: 13,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: Text(
+              AppStrings.cancel.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Future<bool> _showImportConfirmationDialog(BackupImportResult result) async {
-  //   return await showDialog<bool>(
-  //         context: context,
-  //         builder: (context) => AlertDialog(
-  //           shape:
-  //               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-  //           title: const Text('Confirm Import'),
-  //           content: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Text('Found ${result.passwords!.length} passwords in backup:'),
-  //               const SizedBox(height: 12),
-  //               if (result.backupInfo != null) ...[
-  //                 _buildInfoRow('App', result.backupInfo!.appName),
-  //                 _buildInfoRow('Version', result.backupInfo!.version),
-  //                 _buildInfoRow('Date', result.backupInfo!.formattedExportDate),
-  //                 const SizedBox(height: 12),
-  //               ],
-  //               Container(
-  //                 padding: const EdgeInsets.all(12),
-  //                 decoration: BoxDecoration(
-  //                   color: Colors.orange.withOpacity(0.1),
-  //                   borderRadius: BorderRadius.circular(8),
-  //                 ),
-  //                 child: const Text(
-  //                   'Duplicate passwords will be skipped. This operation cannot be undone.',
-  //                   style: TextStyle(fontSize: 13),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () => Navigator.pop(context, false),
-  //               child: const Text('Cancel'),
-  //             ),
-  //             ElevatedButton(
-  //               onPressed: () => Navigator.pop(context, true),
-  //               child: const Text('Import'),
-  //             ),
-  //           ],
-  //         ),
-  //       ) ??
-  //       false;
-  // }
+  Future<bool> _showImportConfirmationDialog(ImportResult result) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.info.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.cloud_download_outlined,
+                      color: AppColors.info, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    AppStrings.confirmImportTitle.tr,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.info.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.info.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.folder_outlined,
+                          color: AppColors.info, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          AppStrings.foundAccountsInBackup.tr.replaceAll(
+                            '{count}',
+                            '${result.accounts!.length}',
+                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.info,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (result.backupInfo != null) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    AppStrings.backupInformation.tr,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary,
+                        ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                      AppStrings.backupAppName.tr, result.backupInfo!.appName),
+                  const SizedBox(height: 8),
+                  _buildInfoRow(
+                      AppStrings.backupVersion.tr, result.backupInfo!.version),
+                  const SizedBox(height: 8),
+                  _buildInfoRow(AppStrings.backupDate.tr,
+                      result.backupInfo!.formattedExportDate),
+                ],
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.warning.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline,
+                          color: AppColors.warning, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          AppStrings.duplicateWarning.tr,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary,
+                                    height: 1.4,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actionsPadding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: Text(
+                  AppStrings.cancel.tr,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  backgroundColor: AppColors.info,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  AppStrings.importButton.tr,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
 
   Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 70,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 90,
+          child: Text(
+            '$label:',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showValidationResultDialog(ImportResult result) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.check_circle_outline,
+                  color: AppColors.success, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                AppStrings.validBackupFile.tr,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ),
-          ),
-          Expanded(
+          ],
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.verified_outlined,
+                      color: AppColors.success, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppStrings.backupValidationSuccess.tr,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (result.backupInfo != null) ...[
+              const SizedBox(height: 20),
+              Text(
+                AppStrings.backupDetails.tr,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              _buildInfoRow(
+                  AppStrings.backupAppName.tr, result.backupInfo!.appName),
+              const SizedBox(height: 8),
+              _buildInfoRow(
+                  AppStrings.backupVersion.tr, result.backupInfo!.version),
+              const SizedBox(height: 8),
+              _buildInfoRow(AppStrings.backupAccountCount.tr,
+                  '${result.backupInfo!.accountCount}'),
+              const SizedBox(height: 8),
+              _buildInfoRow(AppStrings.backupDate.tr,
+                  result.backupInfo!.formattedExportDate),
+              const SizedBox(height: 8),
+              _buildInfoRow(
+                  AppStrings.backupAge.tr, result.backupInfo!.timeSinceExport),
+            ],
+          ],
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              backgroundColor: AppColors.success,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: Text(
-              value,
-              style: TextStyle(
-                color: Colors.grey[800],
-                fontWeight: FontWeight.w400,
+              AppStrings.close.tr,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  // Future<void> _validateBackupFile() async {
-  //   try {
-  //     final result = await BackupService.validateBackupFile();
-  //
-  //     if (mounted) {
-  //       if (result.isValid) {
-  //         _showValidationResultDialog(result);
-  //       } else {
-  //         _showMessage(result.error ?? 'Invalid backup file', isError: true);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       _showMessage('Validation failed: $e', isError: true);
-  //     }
-  //   }
-  // }
-
-  // void _showValidationResultDialog(BackupValidationResult result) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-  //       title: Row(
-  //         children: [
-  //           Icon(Icons.check_circle, color: Colors.green[600]),
-  //           const SizedBox(width: 8),
-  //           const Text('Valid Backup File'),
-  //         ],
-  //       ),
-  //       content: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           const Text('This backup file is valid and contains:'),
-  //           const SizedBox(height: 12),
-  //           if (result.backupInfo != null) ...[
-  //             _buildInfoRow('App', result.backupInfo!.appName),
-  //             _buildInfoRow('Version', result.backupInfo!.version),
-  //             _buildInfoRow('Accounts', '${result.passwordCount}'),
-  //             _buildInfoRow('Created', result.backupInfo!.formattedExportDate),
-  //             _buildInfoRow('Age', result.backupInfo!.timeSinceExport),
-  //           ],
-  //         ],
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: const Text('Close'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // // Google Sync Methods
-  // Widget _buildGoogleSyncSection(GoogleSyncProvider googleSyncProvider) {
-  //   return Column(
-  //     children: [
-  //       _buildSettingsTile(
-  //         icon: googleSyncProvider.getSyncStatusIcon(),
-  //         iconColor: googleSyncProvider.getSyncStatusColor(),
-  //         title: 'Google Drive Sync',
-  //         subtitle: googleSyncProvider.getSyncStatusText(),
-  //         onTap: () => _showGoogleSyncDialog(googleSyncProvider),
-  //         trailing: googleSyncProvider.isSyncing
-  //             ? const SizedBox(
-  //                 width: 20,
-  //                 height: 20,
-  //                 child: CircularProgressIndicator(strokeWidth: 2),
-  //               )
-  //             : null,
-  //       ),
-  //       if (googleSyncProvider.isSignedIn) ...[
-  //         _buildSettingsTile(
-  //           icon: Icons.cloud_upload,
-  //           title: 'Sync Now',
-  //           subtitle: 'Upload current passwords to Google Drive',
-  //           onTap: () => _performSync(googleSyncProvider),
-  //           trailing: googleSyncProvider.isSyncing
-  //               ? const SizedBox(
-  //                   width: 20,
-  //                   height: 20,
-  //                   child: CircularProgressIndicator(strokeWidth: 2),
-  //                 )
-  //               : null,
-  //         ),
-  //       ],
-  //     ],
-  //   );
-  // }
-  //
-  // Future<void> _showGoogleSyncDialog(GoogleSyncProvider provider) async {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-  //       title: Row(
-  //         children: [
-  //           Icon(Icons.cloud, color: Colors.blue[600]),
-  //           const SizedBox(width: 8),
-  //           const Text('Google Drive Sync'),
-  //         ],
-  //       ),
-  //       content: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           if (provider.isSignedIn) ...[
-  //             Text('Signed in as: ${provider.userEmail}'),
-  //             const SizedBox(height: 8),
-  //             Text('Last sync: ${provider.formattedLastSync}'),
-  //             const SizedBox(height: 16),
-  //             const Text(
-  //               'Your passwords are automatically synced to your Google Drive. You can manually sync or manage your account below.',
-  //               style: TextStyle(color: Colors.grey),
-  //             ),
-  //           ] else ...[
-  //             const Text(
-  //               'Sign in with your Google account to sync your passwords securely to Google Drive.',
-  //               style: TextStyle(color: Colors.grey),
-  //             ),
-  //             const SizedBox(height: 16),
-  //             const Text(
-  //               '✓ End-to-end encryption\n✓ Private Google Drive folder\n✓ Automatic backup\n✓ Multi-device sync',
-  //               style: TextStyle(fontSize: 13),
-  //             ),
-  //           ],
-  //         ],
-  //       ),
-  //       actions: [
-  //         if (provider.isSignedIn) ...[
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.pop(context);
-  //               _signOutFromGoogle(provider);
-  //             },
-  //             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-  //             child: const Text('Sign Out'),
-  //           ),
-  //           ElevatedButton(
-  //             onPressed: () {
-  //               Navigator.pop(context);
-  //               _performSync(provider);
-  //             },
-  //             child: const Text('Sync Now'),
-  //           ),
-  //         ] else ...[
-  //           TextButton(
-  //             onPressed: () => Navigator.pop(context),
-  //             child: const Text('Cancel'),
-  //           ),
-  //           ElevatedButton(
-  //             onPressed: () {
-  //               Navigator.pop(context);
-  //               _signInToGoogle(provider);
-  //             },
-  //             child: const Text('Sign In'),
-  //           ),
-  //         ],
-  //       ],
-  //     ),
-  //   );
-  // }
-  //
-  // Future<void> _signInToGoogle(GoogleSyncProvider provider) async {
-  //   final success = await provider.signIn();
-  //
-  //   if (success) {
-  //     _showMessage('Successfully signed in to Google Drive');
-  //   } else {
-  //     _showMessage(provider.lastError ?? 'Sign-in failed', isError: true);
-  //   }
-  // }
-  //
-  // Future<void> _signOutFromGoogle(GoogleSyncProvider provider) async {
-  //   final confirmed = await showDialog<bool>(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Sign Out'),
-  //       content: const Text(
-  //         'Are you sure you want to sign out? You will no longer be able to sync your passwords to Google Drive.',
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, false),
-  //           child: const Text('Cancel'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, true),
-  //           style: TextButton.styleFrom(foregroundColor: Colors.red),
-  //           child: const Text('Sign Out'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //
-  //   if (confirmed == true) {
-  //     final success = await provider.signOut();
-  //
-  //     if (success) {
-  //       _showMessage('Successfully signed out from Google Drive');
-  //     } else {
-  //       _showMessage(provider.lastError ?? 'Sign-out failed', isError: true);
-  //     }
-  //   }
-  // }
-  //
-  // Future<void> _performSync(GoogleSyncProvider provider) async {
-  //   final passwordProvider = Provider.of<AccountProvider>(context, listen: false);
-  //   final passwords = passwordProvider.passwords;
-  //
-  //   if (passwords.isEmpty) {
-  //     _showMessage('No passwords to sync', isError: false);
-  //     return;
-  //   }
-  //
-  //   final result = await provider.uploadBackup(passwords);
-  //
-  //   if (result.success) {
-  //     _showMessage('Successfully synced ${passwords.length} passwords to Google Drive');
-  //   } else {
-  //     _showMessage(result.message, isError: true);
-  //   }
-  // }
-  //
-  // Future<void> _importFromGoogleDrive(GoogleSyncProvider provider) async {
-  //   if (!provider.hasCloudBackup) {
-  //     _showMessage('No backup found in Google Drive', isError: true);
-  //     return;
-  //   }
-  //
-  //   final result = await provider.downloadBackup();
-  //
-  //   if (!result.success) {
-  //     _showMessage(result.message, isError: true);
-  //     return;
-  //   }
-  //
-  //   if (result.passwords == null || result.passwords!.isEmpty) {
-  //     _showMessage('No passwords found in Google Drive backup', isError: true);
-  //     return;
-  //   }
-  //
-  //   // Show confirmation dialog
-  //   if (!mounted) return;
-  //   final confirmed = await _showGoogleImportConfirmationDialog(result);
-  //   if (!confirmed) return;
-  //
-  //   // Import passwords
-  //   final passwordProvider = Provider.of<AccountProvider>(context, listen: false);
-  //   int imported = 0;
-  //   int skipped = 0;
-  //
-  //   for (final password in result.passwords!) {
-  //     final exists = await passwordProvider.passwordExists(password.id);
-  //     if (!exists) {
-  //       await passwordProvider.addAccount(password);
-  //       imported++;
-  //     } else {
-  //       skipped++;
-  //     }
-  //   }
-  //
-  //   _showMessage(
-  //     'Import complete! $imported imported, $skipped skipped',
-  //   );
-  //
-  //   // Refresh password list
-  //   await passwordProvider.loadAccounts();
-  // }
-  //
-  // Future<bool> _showGoogleImportConfirmationDialog(GoogleSyncResult result) async {
-  //   return await showDialog<bool>(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-  //       title: const Text('Import from Google Drive'),
-  //       content: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           Text('Found ${result.passwords!.length} passwords in Google Drive:'),
-  //           const SizedBox(height: 12),
-  //           if (result.backupInfo != null) ...[
-  //             _buildInfoRow('Device', result.backupInfo!.deviceId ?? 'Unknown'),
-  //             _buildInfoRow('Synced', result.backupInfo!.formattedSyncDate),
-  //             _buildInfoRow('Version', result.backupInfo!.version),
-  //             const SizedBox(height: 12),
-  //           ],
-  //           Container(
-  //             padding: const EdgeInsets.all(12),
-  //             decoration: BoxDecoration(
-  //               color: Colors.blue.withOpacity(0.1),
-  //               borderRadius: BorderRadius.circular(8),
-  //             ),
-  //             child: const Text(
-  //               'Duplicate passwords will be skipped. This operation cannot be undone.',
-  //               style: TextStyle(fontSize: 13),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, false),
-  //           child: const Text('Cancel'),
-  //         ),
-  //         ElevatedButton(
-  //           onPressed: () => Navigator.pop(context, true),
-  //           child: const Text('Import'),
-  //         ),
-  //       ],
-  //     ),
-  //   ) ?? false;
-  // }
-
-  void _showMessage(String message, {bool isError = false}) {
-    if (mounted) {
-      if (isError) {
-        SnackBarHelper.showError(context, message);
-      } else {
-        SnackBarHelper.showSuccess(context, message);
-      }
-    }
   }
 }

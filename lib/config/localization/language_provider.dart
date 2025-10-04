@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pass_vault_it/config/localization/app_localization.dart';
-import 'package:pass_vault_it/core/utils/app_local_storage_strings.dart';
-import 'package:pass_vault_it/data/entities/language_option.dart';
+import 'package:vault_it/config/localization/app_localization.dart';
+import 'package:vault_it/core/utils/app_local_storage_strings.dart';
+import 'package:vault_it/data/entities/language_option.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageProvider extends ChangeNotifier {
