@@ -403,7 +403,6 @@ class GeneratorHistoryScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(AppStrings.passwordRemoved.tr),
-                  behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -462,7 +461,6 @@ class GeneratorHistoryScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(AppStrings.historyCleared.tr),
-                  behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 1),
                 ),
               );
