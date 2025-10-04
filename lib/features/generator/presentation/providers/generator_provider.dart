@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:pass_vault_it/core/enums/vault_enums.dart';
 
 class GeneratorProvider with ChangeNotifier {
-  // Password generation settings
   int _passwordLength = 16;
   bool _includeUppercase = true;
   bool _includeLowercase = true;
@@ -15,18 +15,15 @@ class GeneratorProvider with ChangeNotifier {
   String _generatedPassword = '';
   bool _isGenerating = false;
   
-  // Password history
   List<PasswordHistoryItem> _passwordHistory = [];
   static const int _maxHistorySize = 50;
   static const String _historyKey = 'password_history';
 
-  // Character sets
   static const String _uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   static const String _lowercase = 'abcdefghijklmnopqrstuvwxyz';
   static const String _numbers = '0123456789';
   static const String _symbols = '!@#\$%^&*()_+-=[]{}|;:,.<>?';
 
-  // Getters
   int get passwordLength => _passwordLength;
   bool get includeUppercase => _includeUppercase;
   bool get includeLowercase => _includeLowercase;
@@ -44,8 +41,9 @@ class GeneratorProvider with ChangeNotifier {
   }
 
   void setPasswordLength(int length) {
-    if (length >= 4 && length <= 128) {
+    if (length >= 4 && length <= 22) {
       _passwordLength = length;
+      notifyListeners();
       generatePassword();
     }
   }
@@ -80,9 +78,8 @@ class GeneratorProvider with ChangeNotifier {
   }
 
   void _validateSettings() {
-    // Ensure at least one character type is selected
     if (!_includeUppercase && !_includeLowercase && !_includeNumbers && !_includeSymbols) {
-      _includeLowercase = true; // Default to lowercase if nothing is selected
+      _includeLowercase = true;
     }
     notifyListeners();
   }
@@ -99,7 +96,6 @@ class GeneratorProvider with ChangeNotifier {
       if (_includeNumbers) characterSet += _numbers;
       if (_includeSymbols) characterSet += _symbols;
 
-      // Remove excluded characters
       if (_excludeCharacters.isNotEmpty) {
         for (String char in _excludeCharacters.split('')) {
           characterSet = characterSet.replaceAll(char, '');
@@ -114,7 +110,6 @@ class GeneratorProvider with ChangeNotifier {
       final random = Random.secure();
       final password = StringBuffer();
 
-      // Ensure at least one character from each selected type
       if (_includeUppercase && _uppercase.isNotEmpty) {
         final validUppercase = _uppercase.split('').where((c) => !_excludeCharacters.contains(c)).toList();
         if (validUppercase.isNotEmpty) {
@@ -143,19 +138,16 @@ class GeneratorProvider with ChangeNotifier {
         }
       }
 
-      // Fill the rest of the password length
       while (password.length < _passwordLength) {
         password.write(characterSet[random.nextInt(characterSet.length)]);
       }
 
-      // Shuffle the password to avoid predictable patterns
       final passwordList = password.toString().split('');
       passwordList.shuffle(random);
       
       _generatedPassword = passwordList.take(_passwordLength).join('');
       
-      // Add to history if it's a valid password and different from the last one
-      if (_generatedPassword.isNotEmpty && 
+      if (_generatedPassword.isNotEmpty &&
           _generatedPassword != 'Error generating password' &&
           (_passwordHistory.isEmpty || _passwordHistory.first.password != _generatedPassword)) {
         _addToHistory(_generatedPassword);
@@ -175,52 +167,60 @@ class GeneratorProvider with ChangeNotifier {
     }
   }
 
-  // Calculate password strength
-  int calculatePasswordStrength() {
+  double calculatePasswordStrength() {
     if (_generatedPassword.isEmpty || _generatedPassword.startsWith('Error')) {
-      return 0;
+      return 0.0;
     }
 
-    int score = 0;
-    
-    // Length score (0-40 points)
-    score += (_passwordLength * 2).clamp(0, 40);
-    
-    // Character variety score (0-40 points)
-    int varieties = 0;
-    if (_includeUppercase) varieties++;
-    if (_includeLowercase) varieties++;
-    if (_includeNumbers) varieties++;
-    if (_includeSymbols) varieties++;
-    
-    score += (varieties * 10);
-    
-    // Bonus for longer passwords
-    if (_passwordLength >= 12) score += 10;
-    if (_passwordLength >= 16) score += 10;
-    
-    return score.clamp(0, 100);
+    double strength = 0.0;
+
+    if (_generatedPassword.length >= 8) strength += 0.2;
+    if (_generatedPassword.length >= 12) strength += 0.2;
+
+    if (_generatedPassword.contains(RegExp(r'[a-z]'))) strength += 0.15;
+    if (_generatedPassword.contains(RegExp(r'[A-Z]'))) strength += 0.15;
+    if (_generatedPassword.contains(RegExp(r'[0-9]'))) strength += 0.15;
+    if (_generatedPassword.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) strength += 0.15;
+
+    return strength.clamp(0.0, 1.0);
   }
 
   String getPasswordStrengthLabel() {
-    final strength = calculatePasswordStrength();
-    if (strength >= 80) return 'Very Strong';
-    if (strength >= 60) return 'Strong';
-    if (strength >= 40) return 'Medium';
-    if (strength >= 20) return 'Weak';
-    return 'Very Weak';
+    final strengthValue = calculatePasswordStrength();
+    final strength = PasswordStrength.fromValue(strengthValue);
+    
+    switch (strength) {
+      case PasswordStrength.veryWeak:
+        return 'Very Weak';
+      case PasswordStrength.weak:
+        return 'Weak';
+      case PasswordStrength.fair:
+        return 'Fair';
+      case PasswordStrength.good:
+        return 'Good';
+      case PasswordStrength.strong:
+        return 'Strong';
+    }
   }
 
   Color getPasswordStrengthColor() {
-    final strength = calculatePasswordStrength();
-    if (strength >= 80) return Colors.green;
-    if (strength >= 60) return Colors.lightGreen;
-    if (strength >= 40) return Colors.orange;
-    if (strength >= 20) return Colors.deepOrange;
-    return Colors.red;
+    final strengthValue = calculatePasswordStrength();
+    final strength = PasswordStrength.fromValue(strengthValue);
+    
+    switch (strength) {
+      case PasswordStrength.veryWeak:
+        return Colors.red[700]!;
+      case PasswordStrength.weak:
+        return Colors.red;
+      case PasswordStrength.fair:
+        return Colors.orange;
+      case PasswordStrength.good:
+        return Colors.yellow[700]!;
+      case PasswordStrength.strong:
+        return Colors.green;
+    }
   }
 
-  // Reset to default settings
   void resetToDefaults() {
     _passwordLength = 16;
     _includeUppercase = true;
@@ -231,18 +231,16 @@ class GeneratorProvider with ChangeNotifier {
     generatePassword();
   }
 
-  // Get character set preview
   String getCharacterSetPreview() {
     String preview = '';
     if (_includeUppercase) preview += 'ABC...';
-    if (_includeLowercase) preview += (preview.isNotEmpty ? ', ' : '') + 'abc...';
-    if (_includeNumbers) preview += (preview.isNotEmpty ? ', ' : '') + '123...';
-    if (_includeSymbols) preview += (preview.isNotEmpty ? ', ' : '') + '!@#...';
+    if (_includeLowercase) preview += '${preview.isNotEmpty ? ', ' : ''}abc...';
+    if (_includeNumbers) preview += '${preview.isNotEmpty ? ', ' : ''}123...';
+    if (_includeSymbols) preview += '${preview.isNotEmpty ? ', ' : ''}!@#...';
     
     return preview.isEmpty ? 'No characters selected' : preview;
   }
 
-  // Generate multiple passwords
   List<String> generateMultiplePasswords(int count) {
     final passwords = <String>[];
     final originalPassword = _generatedPassword;
@@ -258,7 +256,6 @@ class GeneratorProvider with ChangeNotifier {
     return passwords;
   }
   
-  // Password History Methods
   void _addToHistory(String password) {
     final historyItem = PasswordHistoryItem(
       password: password,
@@ -271,13 +268,10 @@ class GeneratorProvider with ChangeNotifier {
       strength: getPasswordStrengthLabel(),
     );
     
-    // Remove duplicate if exists
     _passwordHistory.removeWhere((item) => item.password == password);
     
-    // Add to beginning
     _passwordHistory.insert(0, historyItem);
     
-    // Limit history size
     if (_passwordHistory.length > _maxHistorySize) {
       _passwordHistory = _passwordHistory.take(_maxHistorySize).toList();
     }

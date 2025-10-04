@@ -5,6 +5,7 @@ import 'package:pass_vault_it/features/app-navigator/presentation/screens/app_na
 import 'package:pass_vault_it/features/auth/presentation/screens/change_password_screen.dart';
 import 'package:pass_vault_it/features/auth/presentation/screens/login_screen.dart';
 import 'package:pass_vault_it/features/auth/presentation/screens/register_screen.dart';
+import 'package:pass_vault_it/features/generator/presentation/screens/generator_history_screen.dart';
 import 'package:pass_vault_it/features/generator/presentation/screens/generator_screen.dart';
 import 'package:pass_vault_it/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:pass_vault_it/features/settings/presentation/screens/settings_screen.dart';
@@ -16,15 +17,20 @@ import 'package:pass_vault_it/features/vault/presentation/screens/view_password_
 class Routes {
   static const String initial = '/';
   static const String onboarding = '/onboarding';
+
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String changePassword = '/auth/change-password';
-  
+
   static const String app = '/app';
+
   static const String vault = '/app/vault';
   static const String account = '/app/vault/account';
-  static const String viewAccount = '/app/vault/view';
+  static const String viewAccount = '/app/vault/account/view';
+
   static const String generator = '/app/generator';
+  static const String generatorHistory = '/app/generator/history';
+
   static const String settings = '/app/settings';
 }
 
@@ -100,6 +106,13 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (context) {
               return const GeneratorScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.generatorHistory:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const GeneratorHistoryScreen();
             },
             settings: routeSettings);
 

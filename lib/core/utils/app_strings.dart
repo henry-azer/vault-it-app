@@ -126,8 +126,10 @@ class AppStrings {
 
   // Generator
   static const String generator = "generator";
+  static const String passwordGenerator = "password_generator";
   static const String generatePassword = "generate_password";
   static const String generatedPassword = "generated_password";
+  static const String createStrongPasswords = "create_strong_passwords";
   static const String usePassword = "use_password";
   static const String passwordLength = "password_length";
   static const String includeUppercase = "include_uppercase";
@@ -136,6 +138,31 @@ class AppStrings {
   static const String includeSymbols = "include_symbols";
   static const String excludeCharacters = "exclude_characters";
   static const String copy = "copy";
+  static const String characterOptions = "character_options";
+  static const String uppercaseLetters = "uppercase_letters";
+  static const String lowercaseLetters = "lowercase_letters";
+  static const String numbers = "numbers";
+  static const String specialCharacters = "special_characters";
+  static const String characters = "characters";
+  static const String history = "history";
+  static const String noPasswordHistory = "no_password_history";
+  static const String generatedPasswordsWillAppear = "generated_passwords_will_appear";
+  static const String passwordsGenerated = "passwords_generated";
+  static const String clearHistory = "clear_history";
+  static const String clearAllHistory = "clear_all_history";
+  static const String clearAllHistoryMessage = "clear_all_history_message";
+  static const String removePassword = "remove_password";
+  static const String removePasswordMessage = "remove_password_message";
+  static const String passwordRemoved = "password_removed";
+  static const String historyCleared = "history_cleared";
+  static const String remove = "remove";
+  static const String clearAll = "clear_all";
+  static const String passwordCopied = "password_copied";
+  static const String clickGenerateToCreate = "click_generate_to_create";
+  static const String thisPasswordIsTooSimple = "this_password_too_simple";
+  static const String thisPasswordIsOkay = "this_password_okay";
+  static const String thisIsGoodPassword = "this_is_good_password";
+  static const String excellentPasswordSecure = "excellent_password_secure";
 
   // Settings
   static const String settings = "settings";

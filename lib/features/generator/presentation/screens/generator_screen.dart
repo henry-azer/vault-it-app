@@ -1,54 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/config/routes/app_routes.dart';
+import 'package:pass_vault_it/core/utils/app_colors.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/features/generator/presentation/providers/generator_provider.dart';
 import 'package:provider/provider.dart';
-import '../providers/generator_provider.dart';
-import 'password_history_screen.dart';
 
 class GeneratorScreen extends StatefulWidget {
-  const GeneratorScreen({Key? key}) : super(key: key);
+  const GeneratorScreen({super.key});
 
   @override
   State<GeneratorScreen> createState() => _GeneratorScreenState();
 }
 
-class _GeneratorScreenState extends State<GeneratorScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  
+class _GeneratorScreenState extends State<GeneratorScreen> {
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-    _animationController.forward();
-    
-    // Generate initial password
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GeneratorProvider>().generatePassword();
     });
   }
-  
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
       body: SafeArea(
         child: Column(
           children: [
-            _buildModernHeader(),
+            _buildHeader(isDark),
             Expanded(
-              child: _buildContent(),
+              child: _buildContent(isDark, screenWidth),
             ),
           ],
         ),
@@ -56,294 +43,256 @@ class _GeneratorScreenState extends State<GeneratorScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildModernHeader() {
+  Widget _buildHeader(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: isDark
+              ? [Colors.grey[850]!, Colors.grey[900]!]
+              : [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).primaryColor,
-                      Theme.of(context).primaryColor.withOpacity(0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.vpn_key,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
+          Expanded(
+            child: Consumer<GeneratorProvider>(
+              builder: (context, provider, child) {
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Password Generator',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
+                      AppStrings.passwordGenerator.tr,
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 1.2,
+                              ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      'Create strong, secure passwords',
+                      AppStrings.createStrongPasswords.tr,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                            color: Colors.grey[600],
+                          ),
                     ),
                   ],
-                ),
-              ),
-              _buildQuickActions(),
-            ],
+                );
+              },
+            ),
           ),
+          _buildHeaderActions(isDark),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildHeaderActions(bool isDark) {
     return Consumer<GeneratorProvider>(
       builder: (context, provider, child) {
-        return Row(
-          children: [
-            Stack(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.history, size: 20),
-                    onPressed: () => _showPasswordHistory(),
-                    tooltip: 'Password History',
-                  ),
-                ),
-                if (provider.hasHistory)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.refresh,
-                  size: 20,
-                  color: Theme.of(context).primaryColor,
-                ),
-                onPressed: () {
-                  provider.generatePassword();
-                  _animateGeneration();
-                },
-                tooltip: 'Generate New',
-              ),
-            ),
-          ],
+        final bool hasHistory = provider.hasHistory;
+
+        return _buildActionButton(
+          icon: Icons.history_outlined,
+          onPressed: _showPasswordHistory,
+          isDark: isDark,
+          isActive: hasHistory,
         );
       },
     );
   }
 
-  Widget _buildContent() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Consumer<GeneratorProvider>(
-        builder: (context, generatorProvider, child) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Generated Password Card
-                _buildPasswordCard(generatorProvider),
-                const SizedBox(height: 24),
-                
-                // Password Length Card
-                _buildLengthCard(generatorProvider),
-                const SizedBox(height: 20),
-                
-                // Character Options Card
-                _buildCharacterOptionsCard(generatorProvider),
-                const SizedBox(height: 20),
-                
-                // Password Strength Card
-                _buildStrengthCard(generatorProvider),
-                
-                const SizedBox(height: 32),
-                
-                // Action Buttons
-                _buildActionButtons(generatorProvider),
-              ],
-            ),
-          );
-        },
+  Widget _buildActionButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isDark,
+    bool isActive = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: (isDark ? Colors.grey[800] : Colors.grey[100]),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          size: 20,
+          color: (isDark ? Colors.grey[200] : Colors.grey[700]),
+        ),
+        onPressed: onPressed,
+        padding: const EdgeInsets.all(8),
+        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       ),
     );
   }
 
-  Widget _buildPasswordCard(GeneratorProvider provider) {
+  Widget _buildContent(bool isDark, double screenWidth) {
+    return Consumer<GeneratorProvider>(
+      builder: (context, provider, child) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.05, vertical: screenWidth * 0.03),
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              _buildPasswordCard(provider, isDark, screenWidth),
+              SizedBox(height: screenWidth * 0.03),
+              _buildLengthCard(provider, isDark, screenWidth),
+              SizedBox(height: screenWidth * 0.03),
+              _buildCharacterOptionsCard(provider, isDark, screenWidth),
+              SizedBox(height: screenWidth * 0.03),
+              _buildActionButtons(provider, isDark, screenWidth),
+              SizedBox(height: screenWidth * 0.03),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPasswordCard(
+      GeneratorProvider provider, bool isDark, double screenWidth) {
     return Container(
+      padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: isDark
+              ? [Colors.grey[850]!, Colors.grey[900]!]
+              : [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border:
+            Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.password,
-                  size: 20,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Generated Password',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const Spacer(),
               Row(
                 children: [
                   Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.password_rounded,
+                        size: 16, color: Theme.of(context).colorScheme.primary),
+                  ),
+                  SizedBox(width: screenWidth * 0.03),
+                  Text(
+                    AppStrings.password.tr,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
                       color: Colors.green.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
-                      icon: const Icon(
-                        Icons.copy,
-                        size: 18,
-                        color: Colors.green,
-                      ),
+                      icon: const Icon(Icons.copy_rounded,
+                          size: 16, color: Colors.green),
                       onPressed: () => _copyPassword(provider),
-                      tooltip: 'Copy Password',
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: screenWidth * 0.02),
                   Container(
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color: Colors.red.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
-                      icon: Icon(
-                        Icons.refresh,
-                        size: 18,
-                        color: Theme.of(context).primaryColor,
-                      ),
+                      icon: Icon(Icons.key_outlined,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.primary),
                       onPressed: () {
                         provider.generatePassword();
-                        _animateGeneration();
                       },
-                      tooltip: 'Generate New',
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenWidth * 0.025),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(screenWidth * 0.03),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.grey[50]!,
-                  Colors.grey[100]!,
-                ],
-              ),
+              color: isDark ? Colors.grey[800] : Colors.grey[100],
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
             ),
             child: SelectableText(
-              provider.generatedPassword.isNotEmpty 
-                  ? provider.generatedPassword 
-                  : 'Click generate to create password',
+              provider.generatedPassword.isNotEmpty
+                  ? provider.generatedPassword
+                  : AppStrings.clickGenerateToCreate.tr,
               style: TextStyle(
-                fontSize: 18,
-                fontFamily: 'monospace',
+                fontSize: screenWidth * 0.04,
                 fontWeight: FontWeight.w600,
-                color: provider.generatedPassword.isNotEmpty 
-                    ? Colors.grey[800] 
+                letterSpacing: 1.0,
+                color: provider.generatedPassword.isNotEmpty
+                    ? null
                     : Colors.grey[500],
-                letterSpacing: 1.2,
               ),
             ),
           ),
+          SizedBox(height: screenWidth * 0.02),
+          _buildStrengthIndicator(provider, isDark, screenWidth),
         ],
       ),
     );
   }
 
-  Widget _buildLengthCard(GeneratorProvider provider) {
+  Widget _buildLengthCard(
+      GeneratorProvider provider, bool isDark, double screenWidth) {
     return Container(
+      padding: EdgeInsets.all(screenWidth * 0.035),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        gradient: LinearGradient(
+          colors: isDark
+              ? [Colors.grey[850]!, Colors.grey[900]!]
+              : [Colors.white, Colors.grey[50]!],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border:
+            Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
       ),
-      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -355,86 +304,89 @@ class _GeneratorScreenState extends State<GeneratorScreen> with SingleTickerProv
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.straighten,
-                  size: 20,
-                  color: Colors.blue,
-                ),
+                child: const Icon(Icons.straighten_rounded,
+                    size: 16, color: Colors.blue),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: screenWidth * 0.03),
               Text(
-                'Password Length',
+                AppStrings.passwordLength.tr,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${provider.passwordLength} characters',
+                  '${provider.passwordLength} ${AppStrings.characters.tr}',
                   style: TextStyle(
-                    color: Theme.of(context).primaryColor,
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w600,
+                    fontSize: screenWidth * 0.030,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenWidth * 0.025),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Theme.of(context).primaryColor,
+              activeTrackColor: Theme.of(context).colorScheme.primary,
               inactiveTrackColor: Colors.grey[300],
-              trackHeight: 6,
-              thumbColor: Theme.of(context).primaryColor,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+              trackHeight: 4,
+              thumbColor: Theme.of(context).colorScheme.primary,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
             ),
             child: Slider(
               value: provider.passwordLength.toDouble(),
               min: 4,
-              max: 50,
-              divisions: 46,
+              max: 22,
+              divisions: 18,
               onChanged: (value) {
                 provider.setPasswordLength(value.toInt());
-                provider.generatePassword();
               },
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('4', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-              Text('25', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-              Text('50', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-            ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('4',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 11)),
+                Text('13',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 11)),
+                Text('22',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 11)),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCharacterOptionsCard(GeneratorProvider provider) {
+  Widget _buildCharacterOptionsCard(
+      GeneratorProvider provider, bool isDark, double screenWidth) {
     return Container(
+      padding: EdgeInsets.all(screenWidth * 0.035),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        gradient: LinearGradient(
+          colors: isDark
+              ? [Colors.grey[850]!, Colors.grey[900]!]
+              : [Colors.white, Colors.grey[50]!],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border:
+            Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
       ),
-      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -446,66 +398,62 @@ class _GeneratorScreenState extends State<GeneratorScreen> with SingleTickerProv
                   color: Colors.purple.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.tune,
-                  size: 20,
-                  color: Colors.purple,
-                ),
+                child: const Icon(Icons.tune_rounded,
+                    size: 16, color: Colors.purple),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: screenWidth * 0.03),
               Text(
-                'Character Options',
+                AppStrings.characterOptions.tr,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: screenWidth * 0.015),
           _buildCharacterOption(
-            'Uppercase Letters',
-            'A-Z',
+            AppStrings.uppercaseLetters.tr,
             provider.includeUppercase,
             (value) {
               provider.setIncludeUppercase(value);
-              provider.generatePassword();
             },
-            Icons.text_fields,
+            Icons.text_fields_rounded,
             Colors.red,
+            isDark,
+            screenWidth,
           ),
           _buildCharacterOption(
-            'Lowercase Letters',
-            'a-z',
+            AppStrings.lowercaseLetters.tr,
             provider.includeLowercase,
             (value) {
               provider.setIncludeLowercase(value);
-              provider.generatePassword();
             },
-            Icons.text_fields,
+            Icons.text_fields_rounded,
             Colors.orange,
+            isDark,
+            screenWidth,
           ),
           _buildCharacterOption(
-            'Numbers',
-            '0-9',
+            AppStrings.numbers.tr,
             provider.includeNumbers,
             (value) {
               provider.setIncludeNumbers(value);
-              provider.generatePassword();
             },
-            Icons.numbers,
+            Icons.numbers_rounded,
             Colors.green,
+            isDark,
+            screenWidth,
           ),
           _buildCharacterOption(
-            'Special Characters',
-            '!@#\$%^&*',
+            AppStrings.specialCharacters.tr,
             provider.includeSymbols,
             (value) {
               provider.setIncludeSymbols(value);
-              provider.generatePassword();
             },
-            Icons.tag,
+            Icons.tag_rounded,
             Colors.blue,
+            isDark,
+            screenWidth,
           ),
         ],
       ),
@@ -514,352 +462,127 @@ class _GeneratorScreenState extends State<GeneratorScreen> with SingleTickerProv
 
   Widget _buildCharacterOption(
     String title,
-    String example,
     bool value,
     Function(bool) onChanged,
     IconData icon,
     Color color,
+    bool isDark,
+    double screenWidth,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
+      margin: EdgeInsets.symmetric(vertical: screenWidth * 0.008),
       decoration: BoxDecoration(
-        color: value ? color.withOpacity(0.05) : Colors.grey[50],
+        color: value
+            ? color.withOpacity(0.1)
+            : (isDark ? Colors.grey[850] : Colors.grey[50]),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: value ? color.withOpacity(0.3) : Colors.grey[200]!,
+          color: value
+              ? color.withOpacity(0.3)
+              : (isDark ? Colors.grey[800]! : Colors.grey[200]!),
           width: 1.5,
         ),
       ),
       child: ListTile(
+        dense: true,
+        contentPadding:
+            EdgeInsets.symmetric(horizontal: screenWidth * 0.03, vertical: 0),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: value ? color.withOpacity(0.1) : Colors.grey[100],
+            color: value ? color.withOpacity(0.1) : Colors.grey[200],
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: value ? color : Colors.grey[500],
-          ),
+          child: Icon(icon, size: 14, color: value ? color : Colors.grey[500]),
         ),
         title: Text(
           title,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: value ? Colors.grey[800] : Colors.grey[600],
+            fontSize: screenWidth * 0.035,
           ),
         ),
-        subtitle: Text(
-          example,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[500],
-            fontFamily: 'monospace',
+        trailing: Transform.scale(
+          scale: 0.6,
+          child: Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: color,
           ),
-        ),
-        trailing: Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: color,
         ),
         onTap: () => onChanged(!value),
       ),
     );
   }
 
-  Widget _buildStrengthCard(GeneratorProvider provider) {
-    final strength = provider.getPasswordStrengthLabel();
+  Widget _buildStrengthIndicator(
+      GeneratorProvider provider, bool isDark, double screenWidth) {
     final color = provider.getPasswordStrengthColor();
-    final strengthValue = _getStrengthValue(strength);
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    final strengthValue = provider.calculatePasswordStrength();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: strengthValue,
+            backgroundColor:
+                isDark ? Colors.grey[800]!.withOpacity(0.5) : Colors.grey[300],
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 5,
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.security,
-                  size: 20,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Password Strength',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  strength,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: strengthValue,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 8,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _getStrengthDescription(strength),
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildActionButtons(GeneratorProvider provider) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.8),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton.icon(
-            onPressed: () {
-              provider.generatePassword();
-              _animateGeneration();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            icon: const Icon(
-              Icons.autorenew,
-              color: Colors.white,
-            ),
-            label: const Text(
-              'Generate New Password',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+  Widget _buildActionButtons(
+      GeneratorProvider provider, bool isDark, double screenWidth) {
+    return ElevatedButton.icon(
+      onPressed: () => _showPasswordHistory(),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+        foregroundColor: isDark ? Colors.white : Colors.grey[800],
+        elevation: 0,
+        padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
+        minimumSize: const Size(double.infinity, 0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
           ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.green[300]!),
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: () => _copyPassword(provider),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  icon: Icon(
-                    Icons.copy,
-                    color: Colors.green[600],
-                  ),
-                  label: Text(
-                    'Copy',
-                    style: TextStyle(
-                      color: Colors.green[600],
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.blue[300]!),
-                ),
-                child: Consumer<GeneratorProvider>(
-                  builder: (context, provider, child) {
-                    return ElevatedButton.icon(
-                      onPressed: () => _showPasswordHistory(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      icon: Stack(
-                        children: [
-                          Icon(
-                            Icons.history,
-                            color: Colors.blue[600],
-                          ),
-                          if (provider.hasHistory)
-                            Positioned(
-                              right: 0,
-                              top: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[600],
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 12,
-                                  minHeight: 12,
-                                ),
-                                child: Text(
-                                  '${provider.passwordHistory.length}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      label: Text(
-                        provider.hasHistory ? 'History (${provider.passwordHistory.length})' : 'History',
-                        style: TextStyle(
-                          color: Colors.blue[600],
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+      ),
+      icon: const Icon(Icons.history_rounded),
+      label: Text(
+        provider.hasHistory
+            ? '${AppStrings.history.tr} (${provider.passwordHistory.length})'
+            : AppStrings.history.tr,
+        style: TextStyle(
+          fontSize: screenWidth * 0.04,
+          fontWeight: FontWeight.w600,
         ),
-      ],
+      ),
     );
   }
 
   void _copyPassword(GeneratorProvider provider) {
     if (provider.generatedPassword.isNotEmpty) {
       provider.copyToClipboard();
+      HapticFeedback.lightImpact();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password copied to clipboard'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
+        SnackBar(
+          content: Text(AppStrings.passwordCopied.tr),
+          backgroundColor: AppColors.snackbarSuccess,
+          duration: const Duration(seconds: 1),
         ),
       );
     }
   }
 
-  void _animateGeneration() {
-    _animationController.reset();
-    _animationController.forward();
-  }
-
   void _showPasswordHistory() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PasswordHistoryScreen(),
-      ),
-    );
-  }
-
-  double _getStrengthValue(String strength) {
-    switch (strength) {
-      case 'Weak':
-        return 0.25;
-      case 'Fair':
-        return 0.5;
-      case 'Good':
-        return 0.75;
-      case 'Strong':
-        return 1.0;
-      default:
-        return 0.0;
-    }
-  }
-
-  String _getStrengthDescription(String strength) {
-    switch (strength) {
-      case 'Weak':
-        return 'This password is too simple and easily guessable.';
-      case 'Fair':
-        return 'This password is okay but could be stronger.';
-      case 'Good':
-        return 'This is a good password with decent security.';
-      case 'Strong':
-        return 'Excellent! This password is very secure.';
-      default:
-        return 'Generate a password to see strength analysis.';
-    }
+    HapticFeedback.mediumImpact();
+    Navigator.pushNamed(context, Routes.generatorHistory);
   }
 }
