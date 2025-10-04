@@ -150,7 +150,6 @@ class GeneratorProvider with ChangeNotifier {
       if (_generatedPassword.isNotEmpty &&
           _generatedPassword != 'Error generating password' &&
           (_passwordHistory.isEmpty || _passwordHistory.first.password != _generatedPassword)) {
-        _addToHistory(_generatedPassword);
       }
     } catch (e) {
       _generatedPassword = 'Error generating password';
@@ -164,6 +163,7 @@ class GeneratorProvider with ChangeNotifier {
   Future<void> copyToClipboard() async {
     if (_generatedPassword.isNotEmpty && _generatedPassword != 'Error generating password') {
       await Clipboard.setData(ClipboardData(text: _generatedPassword));
+      _addToHistory(_generatedPassword);
     }
   }
 

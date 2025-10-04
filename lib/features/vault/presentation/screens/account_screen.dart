@@ -367,6 +367,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 icon: Icons.person_outline,
                 isDark: isDark,
                 isRequired: true,
+                maxLength: 50,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return AppStrings.validationUsernameEmpty.tr;
@@ -904,7 +905,7 @@ class _AccountScreenState extends State<AccountScreen> {
             key: _passwordKey,
             controller: _passwordController,
             obscureText: _obscurePassword,
-            maxLength: 22,
+            maxLength: 50,
             onChanged: (value) {
               _passwordKey.currentState?.validate();
               setState(() {

@@ -445,7 +445,7 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -520,7 +520,7 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
