@@ -260,7 +260,7 @@ class _VaultScreenState extends State<VaultScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isSearchActive
               ? Theme.of(context).colorScheme.primary.withOpacity(0.3)

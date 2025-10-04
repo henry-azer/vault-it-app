@@ -102,8 +102,8 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              icon: Icon(Icons.edit_rounded,
-                  size: 20, color: Theme.of(context).colorScheme.primary),
+              icon: Icon(Icons.edit_outlined,
+                  size: 20, color: isDark ? Colors.white : Colors.grey[800]),
               onPressed: () async {
                 HapticFeedback.mediumImpact();
                 await Navigator.pushNamed(context, Routes.account,
@@ -230,7 +230,8 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                       Row(
                         children: [
                           Icon(Icons.language_rounded,
-                              size: 12, color: Colors.grey[500]),
+                              size: 12,
+                              color: Theme.of(context).colorScheme.primary),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -280,14 +281,16 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
           ),
           const SizedBox(height: 12),
           _buildPasswordField(isDark: isDark, account: account),
-          const SizedBox(height: 12),
-          _buildInfoField(
-            isDark: isDark,
-            icon: Icons.note_outlined,
-            label: AppStrings.notes.tr,
-            value: account.notes ?? '',
-            maxLines: 3,
-          ),
+          if (account.notes != null && account.notes!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildInfoField(
+              isDark: isDark,
+              icon: Icons.note_outlined,
+              label: AppStrings.notes.tr,
+              value: account.notes ?? '',
+              maxLines: 3,
+            ),
+          ],
           const SizedBox(height: 20),
           Divider(
               color: isDark ? Colors.grey[800] : Colors.grey[300], height: 1),
@@ -469,9 +472,13 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                     size: 16,
-                    color: Colors.grey[600],
+                    color: isDark
+                        ? Colors.white.withOpacity(0.8)
+                        : Colors.grey[800],
                   ),
                 ),
               ),
@@ -527,11 +534,12 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 14, color: Colors.grey[600]),
+              Icon(icon,
+                  size: 14, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 6),
               Text(
                 label,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
               ),
             ],
           ),
@@ -551,7 +559,6 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                 _formatTime(dateTime),
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.grey[600],
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -588,7 +595,7 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                 AppStrings.passwordHistory.tr,
+                  AppStrings.passwordHistory.tr,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: Colors.grey[600],

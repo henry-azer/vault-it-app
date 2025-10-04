@@ -19,7 +19,7 @@ class AppColors {
   static const Color darkOnPrimary = Color(0xFF000000);
   static const Color darkSecondary = Color(0xFFFF9800);
   static const Color darkOnSecondary = Color(0xFF000000);
-  static const Color darkBackground = Color(0xFF000000);
+  static const Color darkBackground = Color(0xFF212121);
   static const Color darkSurface = Color(0xFF1E1E1E);
   static const Color darkOnBackground = Color(0xFFFFFFFF);
   static const Color darkOnSurface = Color(0xFFFFFFFF);

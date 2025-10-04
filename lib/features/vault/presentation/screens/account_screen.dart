@@ -235,7 +235,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     size: 18,
                     color: _isFavorite
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.grey[600],
+                        : Colors.white,
                   ),
                   onPressed: () {
                     setState(() {
