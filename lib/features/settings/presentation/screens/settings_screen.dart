@@ -8,6 +8,7 @@ import 'package:vault_it/core/utils/app_strings.dart';
 import 'package:vault_it/core/utils/snackbar_helper.dart';
 import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart';
 import 'package:vault_it/features/settings/data/providers/local_backup_provider.dart';
+import 'package:vault_it/features/settings/data/providers/google_drive_sync_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
@@ -28,6 +29,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _loadPackageInfo();
     _backupProvider = LocalBackupProvider();
+    _initGoogleDriveSync();
+  }
+
+  Future<void> _initGoogleDriveSync() async {
+    final syncProvider = Provider.of<GoogleDriveSyncProvider>(context, listen: false);
+    await syncProvider.init();
   }
 
   @override
@@ -154,6 +161,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: AppStrings.importData.tr,
                     subtitle: AppStrings.importDataSubtitle.tr,
                     onTap: _importData,
+                  ),
+                  const SizedBox(height: 8),
+                  Consumer<GoogleDriveSyncProvider>(
+                    builder: (context, syncProvider, child) {
+                      return _buildGoogleDriveSyncSection(syncProvider);
+                    },
                   ),
                   _buildSectionHeader(AppStrings.supportInformation.tr),
                   _buildSettingsTile(
@@ -1310,5 +1323,290 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  // Google Drive Sync Section
+  Widget _buildGoogleDriveSyncSection(GoogleDriveSyncProvider syncProvider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    if (!syncProvider.isSignedIn) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor.withOpacity(0.1),
+              Theme.of(context).primaryColor.withOpacity(0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).primaryColor.withOpacity(0.3),
+          ),
+        ),
+        child: ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.cloud_outlined, 
+              color: Theme.of(context).primaryColor, 
+              size: 20
+            ),
+          ),
+          title: Text('Google Drive Sync', 
+            style: TextStyle(fontWeight: FontWeight.w500)
+          ),
+          subtitle: Text('Sign in to enable cloud backup',
+            style: TextStyle(fontSize: 13)
+          ),
+          trailing: syncProvider.isProcessing
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(Icons.arrow_forward, size: 20),
+          onTap: syncProvider.isProcessing ? null : () => _handleGoogleSignIn(syncProvider),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+        ),
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue, Colors.blue.shade700],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.cloud_done, color: Colors.white, size: 20),
+            ),
+            title: Text('Google Drive', 
+              style: TextStyle(fontWeight: FontWeight.w600)
+            ),
+            subtitle: Text(syncProvider.userEmail ?? '',
+              style: TextStyle(fontSize: 12)
+            ),
+            trailing: PopupMenuButton(
+              icon: Icon(Icons.more_vert, size: 20),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, size: 18),
+                      SizedBox(width: 12),
+                      Text('Sign Out'),
+                    ],
+                  ),
+                  onTap: () => _handleGoogleSignOut(syncProvider),
+                ),
+              ],
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: syncProvider.isProcessing 
+                        ? null 
+                        : () => _handleGoogleDriveUpload(syncProvider),
+                    icon: syncProvider.status == SyncStatus.uploading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(Icons.cloud_upload, size: 18),
+                    label: Text('Backup'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: syncProvider.isProcessing 
+                        ? null 
+                        : () => _handleGoogleDriveDownload(syncProvider),
+                    icon: syncProvider.status == SyncStatus.downloading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(Icons.cloud_download, size: 18),
+                    label: Text('Restore'),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (syncProvider.backupMetadata != null) ...[
+            Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, 
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Last backup: ${syncProvider.backupMetadata!['account_count']} accounts',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleGoogleSignIn(GoogleDriveSyncProvider syncProvider) async {
+    final success = await syncProvider.signIn();
+    if (!mounted) return;
+
+    if (success) {
+      SnackBarHelper.showSuccess(
+        context,
+        'Successfully signed in to Google Drive',
+      );
+    } else {
+      SnackBarHelper.showError(
+        context,
+        'Failed to sign in to Google Drive',
+      );
+    }
+  }
+
+  Future<void> _handleGoogleSignOut(GoogleDriveSyncProvider syncProvider) async {
+    await syncProvider.signOut();
+    if (!mounted) return;
+
+    SnackBarHelper.showSuccess(
+      context,
+      'Signed out from Google Drive',
+    );
+  }
+
+  Future<void> _handleGoogleDriveUpload(GoogleDriveSyncProvider syncProvider) async {
+    final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    final accounts = accountProvider.accounts;
+
+    if (accounts.isEmpty) {
+      SnackBarHelper.showError(context, 'No accounts to backup');
+      return;
+    }
+
+    final success = await syncProvider.uploadBackup(accounts);
+    if (!mounted) return;
+
+    if (success) {
+      SnackBarHelper.showSuccess(
+        context,
+        'Backup uploaded to Google Drive successfully',
+      );
+    } else {
+      SnackBarHelper.showError(
+        context,
+        syncProvider.errorMessage ?? 'Failed to upload backup',
+      );
+    }
+  }
+
+  Future<void> _handleGoogleDriveDownload(GoogleDriveSyncProvider syncProvider) async {
+    final hasBackup = await syncProvider.hasBackup();
+    
+    if (!hasBackup) {
+      if (!mounted) return;
+      SnackBarHelper.showError(context, 'No backup found on Google Drive');
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Restore from Google Drive'),
+        content: Text('This will replace all current accounts with the backup. Continue?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Restore'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final accounts = await syncProvider.downloadBackup();
+    
+    if (accounts != null && accounts.isNotEmpty) {
+      final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+      
+      // Clear existing accounts
+      await accountProvider.deleteAllAccounts();
+      
+      // Add downloaded accounts
+      for (final account in accounts) {
+        await accountProvider.addAccount(account);
+      }
+
+      if (!mounted) return;
+      SnackBarHelper.showSuccess(
+        context,
+        'Restored ${accounts.length} accounts from Google Drive',
+      );
+    } else {
+      if (!mounted) return;
+      SnackBarHelper.showError(
+        context,
+        syncProvider.errorMessage ?? 'Failed to download backup',
+      );
+    }
   }
 }

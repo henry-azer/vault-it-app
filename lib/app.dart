@@ -13,6 +13,8 @@ import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart
 import 'package:vault_it/features/generator/presentation/providers/generator_provider.dart';
 import 'package:vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
+import 'package:vault_it/features/settings/data/providers/google_drive_sync_provider.dart';
+import 'package:vault_it/injection_container.dart' as di;
 import 'package:provider/provider.dart';
 
 class VaultItApp extends StatelessWidget {
@@ -29,6 +31,7 @@ class VaultItApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => GeneratorProvider()),
+        ChangeNotifierProvider(create: (_) => GoogleDriveSyncProvider(di.sl())),
       ],
       builder: (context, child) {
         _removeSplash();

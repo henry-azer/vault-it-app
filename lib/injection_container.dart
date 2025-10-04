@@ -3,6 +3,7 @@ import 'package:vault_it/core/managers/database-manager/i_database_manager.dart'
 import 'package:vault_it/core/managers/database-manager/sqlite_database_manager.dart';
 import 'package:vault_it/core/managers/storage-manager/i_storage_manager.dart';
 import 'package:vault_it/core/managers/storage-manager/local_storage_manager.dart';
+import 'package:vault_it/core/services/google_drive_sync_service.dart';
 import 'package:vault_it/data/datasources/app_local_datasource.dart';
 import 'package:vault_it/data/datasources/account_local_datasource.dart';
 import 'package:vault_it/data/datasources/user_local_datasource.dart';
@@ -19,6 +20,9 @@ Future<void> init() async {
   final databaseManager = SqliteDatabaseManager();
   await databaseManager.init();
   sl.registerLazySingleton<IDatabaseManager>(() => databaseManager);
+
+  // !---- Services ----!
+  sl.registerLazySingleton<GoogleDriveSyncService>(() => GoogleDriveSyncService());
 
   // !---- Data Sources ----!
   sl.registerLazySingleton<AppLocalDataSource>(() => AppLocalDataSourceImpl(storageManager: sl()));
