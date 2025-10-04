@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/config/routes/app_routes.dart';
 import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
-import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
 import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -70,8 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: AppStrings.password.tr,
                         suffixIcon: IconButton(
                           icon: Icon(authProvider.obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off),
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined),
                           onPressed: authProvider.togglePasswordVisibility,
                         ),
                       ),
@@ -133,11 +133,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success) {
         Navigator.pushReplacementNamed(context, Routes.app);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.validationPasswordInvalid.tr),
-            backgroundColor: AppColors.snackbarError,
-          ),
+        SnackBarHelper.showError(
+          context,
+          AppStrings.validationPasswordInvalid.tr,
         );
       }
     }

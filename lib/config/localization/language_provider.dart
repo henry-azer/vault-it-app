@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/core/utils/app_local_storage_strings.dart';
-import 'package:pass_vault_it/data/entities/LanguageOption.dart';
+import 'package:pass_vault_it/data/entities/language_option.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   Locale _currentLocale = const Locale('en');
-  List<LanguageOption> _availableLanguages = [];
+  List<LanguageOption> _availableLanguages = [
+    LanguageOption(code: 'en', name: 'English', nativeName: 'English', textDirection: 'ltr'),
+  ];
 
   LanguageProvider() {
     _initialize();
@@ -21,14 +23,18 @@ class LanguageProvider extends ChangeNotifier {
   TextDirection get textDirection => AppLocalization.textDirection;
   bool get isRTL => AppLocalization.isRTL;
 
-  List<Locale> get availableLanguagesLocales =>
-      _availableLanguages.map((lang) => Locale(lang.code)).toList();
+  List<Locale> get availableLanguagesLocales {
+    if (_availableLanguages.isEmpty) {
+      return [const Locale('en')];
+    }
+    return _availableLanguages.map((lang) => Locale(lang.code)).toList();
+  }
 
   String get currentLanguageName {
     final currentLang = _availableLanguages.firstWhere(
       (lang) => lang.code == _currentLocale.languageCode,
       orElse: () =>
-          LanguageOption(code: 'en', name: 'English', nativeName: 'English'),
+          LanguageOption(code: 'en', name: 'English', nativeName: 'English', textDirection: 'ltr'),
     );
     return currentLang.name;
   }
@@ -38,16 +44,21 @@ class LanguageProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _availableLanguages = await AppLocalization.getAvailableLanguages();
+      final languages = await AppLocalization.getAvailableLanguages();
+      if (languages.isNotEmpty) {
+        _availableLanguages = languages;
+      }
       await _loadSavedLanguage();
       await AppLocalization.initialize(language: _currentLocale.languageCode);
     } catch (e) {
       debugPrint('Error initializing language provider: $e');
-      // Set defaults if initialization fails
-      _availableLanguages = [
-        LanguageOption(code: 'en', name: 'English', nativeName: 'English'),
-      ];
+      if (_availableLanguages.isEmpty) {
+        _availableLanguages = [
+          LanguageOption(code: 'en', name: 'English', nativeName: 'English', textDirection: 'ltr'),
+        ];
+      }
       _currentLocale = const Locale('en');
+      await AppLocalization.initialize(language: 'en');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -64,7 +75,6 @@ class LanguageProvider extends ChangeNotifier {
         if (isValid) {
           _currentLocale = Locale(savedLanguage);
         } else {
-          // Reset to default if saved language is no longer available
           _currentLocale = const Locale('en');
           await _clearSavedLanguage();
         }
@@ -81,7 +91,6 @@ class LanguageProvider extends ChangeNotifier {
     if (_currentLocale.languageCode == languageCode) return;
 
     try {
-      // Validate language code
       final isValid = _availableLanguages.any((lang) => lang.code == languageCode);
       if (!isValid) {
         debugPrint('Invalid language code: $languageCode');

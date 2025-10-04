@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/config/routes/app_routes.dart';
 import 'package:pass_vault_it/core/enums/vault_enums.dart';
+import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
 import 'package:pass_vault_it/data/entities/account.dart';
 import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
@@ -78,7 +79,7 @@ class _VaultScreenState extends State<VaultScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
@@ -96,90 +97,284 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildHeader(bool isDark) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [Colors.grey[850]!, Colors.grey[900]!]
-              : [Colors.white, Colors.grey[50]!],
+              ? [Color(0xFF1A1A2E), Color(0xFF16213E)]
+              : [Color(0xFFFAFAFA), Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderTitle(isDark),
+          const SizedBox(height: 20),
+          _buildStatsCards(isDark),
+          const SizedBox(height: 20),
+          _buildSearchBar(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderTitle(bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.shield_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.accountsVault.tr,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Color(0xFF1A1A2E),
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+        _buildHeaderActions(isDark),
+      ],
+    );
+  }
+
+  Widget _buildStatsCards(bool isDark) {
+    return Consumer<AccountProvider>(
+      builder: (context, provider, child) {
+        final accountCount = provider.accounts.length;
+        final filteredCount = provider.filteredAccounts.length;
+        final isSearching = provider.searchQuery.isNotEmpty;
+        final weakCount = _applyFilter(provider.accounts).where((a) {
+          final pwd = a.password;
+          return pwd.length < 8 || pwd == pwd.toLowerCase() || pwd == pwd.toUpperCase();
+        }).length;
+
+        return Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.vpn_key_rounded,
+                label: AppStrings.accounts.tr,
+                value: isSearching ? filteredCount.toString() : accountCount.toString(),
+                color: Theme.of(context).colorScheme.primary,
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.security_rounded,
+                label: AppStrings.strong.tr,
+                value: '${accountCount - weakCount}',
+                color: Colors.green,
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.warning_amber_rounded,
+                label: AppStrings.weak.tr,
+                value: weakCount.toString(),
+                color: weakCount > 0 ? AppColors.warning : (isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled),
+                isDark: isDark,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: isDark ? Color(0xFF1E2746) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
-            blurRadius: 2,
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.04),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Consumer<AccountProvider>(
-                  builder: (context, provider, child) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppStrings.accountsVault.tr,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 1.2),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(bool isDark) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: _isSearchActive
+            ? (isDark ? Color(0xFF1E2746) : Colors.white)
+            : (isDark ? Color(0xFF16213E).withOpacity(0.6) : AppColors.lightSurface),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _isSearchActive
+              ? Theme.of(context).colorScheme.primary
+              : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
+          width: _isSearchActive ? 2 : 1,
+        ),
+        boxShadow: _isSearchActive
+            ? [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withOpacity(0.2)
+                      : Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : Color(0xFF1A1A2E),
+              ),
+              decoration: InputDecoration(
+                hintText: _isSearchActive
+                    ? AppStrings.searchAccountsHintActive.tr
+                    : AppStrings.searchAccounts.tr,
+                hintStyle: TextStyle(
+                  color: isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14,
+                ),
+                prefixIcon: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    Icons.search_rounded,
+                    color: _isSearchActive
+                        ? Theme.of(context).colorScheme.primary
+                        : (isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled),
+                    size: _isSearchActive ? 24 : 22,
+                  ),
+                ),
+                suffixIcon: _isSearchActive
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.clear_rounded,
+                          size: 22,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.lock_rounded,
-                                    size: 14,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${provider.accountCount} ${AppStrings.accountsCount.tr}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
+                        onPressed: _clearSearch,
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
                 ),
               ),
-              _buildHeaderActions(isDark),
-            ],
+              onTap: () {
+                HapticFeedback.lightImpact();
+              },
+            ),
           ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-          _buildSearchBar(isDark),
         ],
       ),
     );
@@ -218,12 +413,12 @@ class _VaultScreenState extends State<VaultScreen>
       decoration: BoxDecoration(
         color: isActive
             ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-            : (isDark ? Colors.grey[800] : Colors.grey[100]),
+            : (isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isActive
               ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-              : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
+              : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
         ),
       ),
       child: IconButton(
@@ -239,105 +434,6 @@ class _VaultScreenState extends State<VaultScreen>
     );
   }
 
-  Widget _buildSearchBar(bool isDark) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient: _isSearchActive
-            ? LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary.withOpacity(0.08),
-                  Theme.of(context).colorScheme.primary.withOpacity(0.04),
-                ],
-              )
-            : LinearGradient(
-                colors: [
-                  isDark ? Colors.grey[800]! : Colors.grey[50]!,
-                  isDark ? Colors.grey[850]! : Colors.white,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _isSearchActive
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-              : (isDark ? Colors.grey[700]! : Colors.grey[200]!),
-          width: _isSearchActive ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _isSearchActive
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                : (isDark ? Colors.black26 : Colors.black.withOpacity(0.04)),
-            blurRadius: _isSearchActive ? 8 : 6,
-            offset: Offset(0, _isSearchActive ? 3 : 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: InputDecoration(
-                hintText: _isSearchActive
-                    ? AppStrings.searchAccountsHintActive.tr
-                    : AppStrings.searchAccounts.tr,
-                hintStyle: TextStyle(
-                  color: Colors.grey[500],
-                  fontWeight: FontWeight.normal,
-                  fontSize: 14,
-                ),
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: _isSearchActive
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey[400],
-                  size: _isSearchActive ? 22 : 20,
-                ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(
-                          Icons.clear_rounded,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        onPressed: _clearSearch,
-                      )
-                    : (_isSearchActive
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.close_rounded,
-                              size: 20,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            onPressed: () {
-                              _searchFocusNode.unfocus();
-                              HapticFeedback.lightImpact();
-                            },
-                            tooltip: AppStrings.close.tr,
-                          )
-                        : null),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildContent(bool isDark) {
     return RefreshIndicator(
@@ -431,7 +527,7 @@ class _VaultScreenState extends State<VaultScreen>
                 AppStrings.tryDifferentKeywords.tr,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[500],
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                       height: 1.5,
                     ),
               ),
@@ -518,7 +614,7 @@ class _VaultScreenState extends State<VaultScreen>
                 filterDescription,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[500],
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                       height: 1.5,
                     ),
               ),
@@ -601,7 +697,7 @@ class _VaultScreenState extends State<VaultScreen>
                 AppStrings.vaultEmptyDesc.tr,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[500],
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                       height: 1.6,
                     ),
               ),
@@ -719,6 +815,7 @@ class _VaultScreenState extends State<VaultScreen>
 
   void _showFilterSheet() {
     HapticFeedback.selectionClick();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -763,24 +860,28 @@ class _VaultScreenState extends State<VaultScreen>
               AppStrings.allAccounts.tr,
               AppStrings.showAllAccounts.tr,
               AccountFilterType.all,
+              isDark,
             ),
             _buildFilterOption(
               Icons.warning_rounded,
               AppStrings.weakPasswordsTitle.tr,
               AppStrings.weakPasswordsDesc.tr,
               AccountFilterType.weak,
+              isDark,
             ),
             _buildFilterOption(
               Icons.history_rounded,
               AppStrings.stalePasswordsTitle.tr,
               AppStrings.stalePasswordsDesc.tr,
               AccountFilterType.stale,
+              isDark,
             ),
             _buildFilterOption(
               Icons.star_rounded,
               AppStrings.favoritesTitle.tr,
               AppStrings.favoritesDesc.tr,
               AccountFilterType.favorites,
+              isDark,
             ),
             const SizedBox(height: 16),
           ],
@@ -790,7 +891,7 @@ class _VaultScreenState extends State<VaultScreen>
   }
 
   Widget _buildFilterOption(
-      IconData icon, String title, String subtitle, AccountFilterType value) {
+      IconData icon, String title, String subtitle, AccountFilterType value, bool isDark) {
     final isSelected = _filterBy == value;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -802,7 +903,7 @@ class _VaultScreenState extends State<VaultScreen>
         border: Border.all(
           color: isSelected
               ? Theme.of(context).colorScheme.primary
-              : Colors.grey[300]!,
+              : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -812,12 +913,12 @@ class _VaultScreenState extends State<VaultScreen>
           decoration: BoxDecoration(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
-                : Colors.grey[200],
+                : (isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            color: isSelected ? Colors.white : Colors.grey[700],
+            color: isSelected ? Colors.white : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
             size: 20,
           ),
         ),
@@ -832,7 +933,7 @@ class _VaultScreenState extends State<VaultScreen>
           subtitle,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[600],
+            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
           ),
         ),
         trailing: isSelected
@@ -854,6 +955,7 @@ class _VaultScreenState extends State<VaultScreen>
 
   void _showSortSheet() {
     HapticFeedback.selectionClick();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -898,18 +1000,21 @@ class _VaultScreenState extends State<VaultScreen>
               AppStrings.sortDateAdded.tr,
               AppStrings.sortNewestFirst.tr,
               AccountSortType.dateAdded,
+              isDark,
             ),
             _buildSortOption(
               Icons.sort_by_alpha_rounded,
               AppStrings.sortNameAZ.tr,
               AppStrings.sortAlphabeticalOrder.tr,
               AccountSortType.name,
+              isDark,
             ),
             _buildSortOption(
               Icons.update_rounded,
               AppStrings.sortLastModified.tr,
               AppStrings.sortRecentlyUpdated.tr,
               AccountSortType.lastModified,
+              isDark,
             ),
             const SizedBox(height: 16),
           ],
@@ -919,7 +1024,7 @@ class _VaultScreenState extends State<VaultScreen>
   }
 
   Widget _buildSortOption(
-      IconData icon, String title, String subtitle, AccountSortType value) {
+      IconData icon, String title, String subtitle, AccountSortType value, bool isDark) {
     final isSelected = _sortBy == value;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -931,7 +1036,7 @@ class _VaultScreenState extends State<VaultScreen>
         border: Border.all(
           color: isSelected
               ? Theme.of(context).colorScheme.primary
-              : Colors.grey[300]!,
+              : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -941,12 +1046,12 @@ class _VaultScreenState extends State<VaultScreen>
           decoration: BoxDecoration(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
-                : Colors.grey[200],
+                : (isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            color: isSelected ? Colors.white : Colors.grey[700],
+            color: isSelected ? Colors.white : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
             size: 20,
           ),
         ),
@@ -961,7 +1066,7 @@ class _VaultScreenState extends State<VaultScreen>
           subtitle,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[600],
+            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
           ),
         ),
         trailing: isSelected

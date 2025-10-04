@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
 import 'package:pass_vault_it/features/generator/presentation/providers/generator_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +16,7 @@ class GeneratorHistoryScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -31,61 +32,90 @@ class GeneratorHistoryScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, bool isDark, double screenWidth) {
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.05),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [Colors.grey[850]!, Colors.grey[900]!]
-              : [Colors.white, Colors.grey[50]!],
+              ? [AppColors.darkHeaderStart, AppColors.darkHeaderEnd]
+              : [AppColors.lightHeaderStart, AppColors.lightHeaderEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
-            blurRadius: 2,
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.04),
+            blurRadius: 20,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[800] : Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          SizedBox(width: screenWidth * 0.04),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.passwordHistory.tr,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+          Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                  ),
                 ),
-                Consumer<GeneratorProvider>(
-                  builder: (context, provider, child) {
-                    return Text(
-                      '${provider.passwordHistory.length} ${AppStrings.passwordsGenerated.tr}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: screenWidth * 0.035,
-                      ),
-                    );
-                  },
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                  onPressed: () => Navigator.pop(context),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8,),
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.warning,
+                          AppColors.warning.withOpacity(0.7),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.warning.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.history_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.passwordHistory.tr,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const Spacer(),
+              _buildHeaderActions(context, isDark, screenWidth),
+            ],
           ),
-          _buildHeaderActions(context, isDark, screenWidth),
         ],
       ),
     );
@@ -99,12 +129,12 @@ class GeneratorHistoryScreen extends StatelessWidget {
 
         return Container(
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
+            color: AppColors.error.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: IconButton(
             icon: Icon(Icons.delete_sweep_rounded,
-                size: 20, color: Theme.of(context).colorScheme.primary),
+                size: 20, color: AppColors.error),
             onPressed: () => _showClearHistoryDialog(context, provider),
           ),
         );
@@ -159,8 +189,8 @@ class GeneratorHistoryScreen extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.orange.withOpacity(0.1),
-                  Colors.deepOrange.withOpacity(0.05),
+                  AppColors.warning.withOpacity(0.1),
+                  AppColors.warning.withOpacity(0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(70),
@@ -168,7 +198,7 @@ class GeneratorHistoryScreen extends StatelessWidget {
             child: Icon(
               Icons.history_outlined,
               size: 70,
-              color: Colors.orange[400],
+              color: AppColors.warning,
             ),
           ),
           SizedBox(height: screenWidth * 0.06),
@@ -182,7 +212,7 @@ class GeneratorHistoryScreen extends StatelessWidget {
           Text(
             AppStrings.generatedPasswordsWillAppear.tr,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
               fontSize: screenWidth * 0.04,
             ),
             textAlign: TextAlign.center,
@@ -203,19 +233,13 @@ class GeneratorHistoryScreen extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: screenWidth * 0.02),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.grey[850]!, Colors.grey[900]!]
-              : [Colors.white, Colors.grey[50]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground,
         borderRadius: BorderRadius.circular(16),
         border:
-            Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+            Border.all(color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -251,7 +275,7 @@ class GeneratorHistoryScreen extends StatelessWidget {
                       Text(
                         '${historyItem.length} ${AppStrings.characters.tr} • ${historyItem.strength}',
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                           fontSize: screenWidth * 0.03,
                         ),
                       ),
@@ -262,12 +286,12 @@ class GeneratorHistoryScreen extends StatelessWidget {
                   width: 35,
                   height: 35,
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: AppColors.success.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.copy_rounded,
-                        size: 15, color: Colors.green),
+                        size: 15, color: AppColors.success),
                     onPressed: () =>
                         _copyPassword(context, historyItem.password, provider),
                   ),
@@ -277,12 +301,12 @@ class GeneratorHistoryScreen extends StatelessWidget {
                   width: 35,
                   height: 35,
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: AppColors.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: IconButton(
                     icon: Icon(Icons.delete_outline,
-                        size: 15, color: Theme.of(context).colorScheme.primary),
+                        size: 15, color: AppColors.error),
                     onPressed: () => _removeFromHistory(
                         context, historyItem.password, provider),
                   ),
@@ -294,7 +318,7 @@ class GeneratorHistoryScreen extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.all(screenWidth * 0.04),
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey[800] : Colors.grey[100],
+                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: SelectableText(
@@ -314,19 +338,19 @@ class GeneratorHistoryScreen extends StatelessWidget {
                 Color color;
                 switch (type) {
                   case 'A-Z':
-                    color = Colors.red;
+                    color = AppColors.error;
                     break;
                   case 'a-z':
-                    color = Colors.orange;
+                    color = AppColors.warning;
                     break;
                   case '0-9':
-                    color = Colors.green;
+                    color = AppColors.success;
                     break;
                   case '!@#':
-                    color = Colors.blue;
+                    color = AppColors.info;
                     break;
                   default:
-                    color = Colors.grey;
+                    color = Theme.of(context).colorScheme.secondary;
                 }
 
                 return Container(
@@ -358,12 +382,10 @@ class GeneratorHistoryScreen extends StatelessWidget {
       BuildContext context, String password, GeneratorProvider provider) {
     provider.copyFromHistory(password);
     HapticFeedback.lightImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppStrings.passwordCopied.tr),
-        backgroundColor: AppColors.snackbarSuccess,
-        duration: const Duration(seconds: 1),
-      ),
+    SnackBarHelper.showSuccess(
+      context,
+      AppStrings.passwordCopied.tr,
+      duration: const Duration(seconds: 1),
     );
   }
 
@@ -375,7 +397,7 @@ class GeneratorHistoryScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning_rounded, color: Colors.orange[600], size: 28),
+            Icon(Icons.warning_rounded, color: AppColors.warning, size: 28),
             SizedBox(width: MediaQuery.of(context).size.width * 0.03),
             Text(AppStrings.removePassword.tr),
           ],
@@ -400,11 +422,10 @@ class GeneratorHistoryScreen extends StatelessWidget {
               Navigator.pop(context);
               provider.removeFromHistory(password);
               HapticFeedback.mediumImpact();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppStrings.passwordRemoved.tr),
-                  duration: const Duration(seconds: 1),
-                ),
+              SnackBarHelper.showSuccess(
+                context,
+                AppStrings.passwordRemoved.tr,
+                duration: const Duration(seconds: 1),
               );
             },
             style: ElevatedButton.styleFrom(
@@ -458,11 +479,10 @@ class GeneratorHistoryScreen extends StatelessWidget {
               Navigator.pop(context);
               provider.clearHistory();
               HapticFeedback.mediumImpact();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppStrings.historyCleared.tr),
-                  duration: const Duration(seconds: 1),
-                ),
+              SnackBarHelper.showSuccess(
+                context,
+                AppStrings.historyCleared.tr,
+                duration: const Duration(seconds: 1),
               );
             },
             style: ElevatedButton.styleFrom(

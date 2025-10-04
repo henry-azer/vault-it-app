@@ -2,11 +2,13 @@ class LanguageOption {
   final String code;
   final String name;
   final String nativeName;
+  final String textDirection;
 
   LanguageOption({
     required this.code,
     required this.name,
     required this.nativeName,
+    this.textDirection = 'ltr',
   });
 
   @override

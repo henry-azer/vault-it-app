@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:pass_vault_it/config/routes/app_routes.dart';
 import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
-import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
 import 'package:pass_vault_it/features/auth/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -172,19 +172,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (mounted) {
       if (success) {
         await authProvider.login(_passwordController.text);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.accountCreationSuccess.tr),
-            backgroundColor: AppColors.snackbarSuccess,
-          ),
+        SnackBarHelper.showSuccess(
+          context,
+          AppStrings.accountCreationSuccess.tr,
         );
         Navigator.pushReplacementNamed(context, Routes.login);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.accountCreationError.tr),
-            backgroundColor: AppColors.snackbarError,
-          ),
+        SnackBarHelper.showError(
+          context,
+          AppStrings.accountCreationError.tr,
         );
       }
     }

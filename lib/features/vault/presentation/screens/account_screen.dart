@@ -7,6 +7,7 @@ import 'package:pass_vault_it/core/constants/popular_websites.dart';
 import 'package:pass_vault_it/core/enums/vault_enums.dart';
 import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
 import 'package:pass_vault_it/data/entities/account.dart';
 import 'package:pass_vault_it/features/generator/presentation/providers/generator_provider.dart';
 import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
@@ -138,12 +139,10 @@ class _AccountScreenState extends State<AccountScreen> {
   void _copyPassword() {
     if (_passwordController.text.isNotEmpty) {
       Clipboard.setData(ClipboardData(text: _passwordController.text));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.copiedToClipboard.tr),
-          backgroundColor: AppColors.snackbarSuccess,
-          duration: const Duration(seconds: 1),
-        ),
+      SnackBarHelper.showSuccess(
+        context,
+        AppStrings.copiedToClipboard.tr,
+        duration: const Duration(seconds: 1),
       );
       HapticFeedback.lightImpact();
     }
@@ -158,7 +157,7 @@ class _AccountScreenState extends State<AccountScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
@@ -175,90 +174,152 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Widget _buildHeader(bool isDark) {
     return Container(
-      padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [Colors.grey[850]!, Colors.grey[900]!]
-              : [Colors.white, Colors.grey[50]!],
+              ? [Color(0xFF1A1A2E), Color(0xFF16213E)]
+              : [Color(0xFFFAFAFA), Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[800] : Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          SizedBox(width: MediaQuery.of(context).size.width * 0.04),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isEditing
-                      ? AppStrings.editAccount.tr
-                      : AppStrings.addAccount.tr,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
-            ),
-          ),
           Row(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: _isFavorite
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
-                      : (isDark ? Colors.grey[800] : Colors.grey[100]),
+                  color: isDark ? Color(0xFF1E2746) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                  ),
                 ),
                 child: IconButton(
                   icon: Icon(
-                    _isFavorite ? Icons.star : Icons.star_border,
-                    size: 18,
-                    color: _isFavorite
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.white,
+                    Icons.arrow_back_rounded,
+                    size: 22,
+                    color: isDark ? Colors.white : Color(0xFF1A1A2E),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _isFavorite = !_isFavorite;
-                    });
-                    HapticFeedback.lightImpact();
-                  },
+                  onPressed: () => Navigator.pop(context),
                 ),
               ),
-              if (isEditing) ...[
-                SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[800] : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.delete_outline,
-                        size: 20, color: Theme.of(context).colorScheme.primary),
-                    onPressed: _showDeleteConfirmation,
-                  ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.7),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            isEditing
+                                ? Icons.edit_note_rounded
+                                : Icons.add_circle_outline_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isEditing
+                                ? AppStrings.editAccount.tr
+                                : AppStrings.addAccount.tr,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Color(0xFF1A1A2E),
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
+              const SizedBox(width: 8),
+              Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: _isFavorite
+                          ? Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.15)
+                          : (isDark ? Color(0xFF1E2746) : Colors.white),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _isFavorite
+                            ? Theme.of(context).colorScheme.primary
+                            : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        _isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                        size: 20,
+                        color: _isFavorite
+                            ? Theme.of(context).colorScheme.primary
+                            : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isFavorite = !_isFavorite;
+                        });
+                        HapticFeedback.lightImpact();
+                      },
+                    ),
+                  ),
+                  if (isEditing) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? Color(0xFF1E2746) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                        ),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.delete_outline_rounded,
+                          size: 20,
+                          color: Colors.red[400],
+                        ),
+                        onPressed: _showDeleteConfirmation,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
         ],
@@ -341,16 +402,10 @@ class _AccountScreenState extends State<AccountScreen> {
     return Container(
       padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.grey[850]!, Colors.grey[900]!]
-              : [Colors.white, Colors.grey[50]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
           width: 1,
         ),
         boxShadow: [
@@ -416,7 +471,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         )
                       : null,
                   filled: true,
-                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                  fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -453,7 +508,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       maxWidth: MediaQuery.of(context).size.width * 0.9,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[850] : Colors.white,
+                      color: isDark ? AppColors.darkCardBackground : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ListView.builder(
@@ -548,7 +603,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                               .textTheme
                                               .bodySmall
                                               ?.copyWith(
-                                                color: Colors.grey[600],
+                                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                                                 fontSize: 11,
                                               ),
                                         ),
@@ -580,14 +635,14 @@ class _AccountScreenState extends State<AccountScreen> {
         gradient: LinearGradient(
           colors: isDark
               ? [
-                  Colors.grey[800]!,
-                  Colors.grey[700]!,
-                  Colors.grey[800]!,
+                  AppColors.darkSurface,
+                  AppColors.darkCardBorder,
+                  AppColors.darkSurface,
                 ]
               : [
-                  Colors.grey[200]!,
-                  Colors.grey[100]!,
-                  Colors.grey[200]!,
+                  AppColors.lightCardBorder,
+                  AppColors.lightSurface,
+                  AppColors.lightCardBorder,
                 ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -598,7 +653,7 @@ class _AccountScreenState extends State<AccountScreen> {
         child: Icon(
           Icons.image_outlined,
           size: 24,
-          color: isDark ? Colors.grey[600] : Colors.grey[300],
+          color: isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
         ),
       ),
     );
@@ -659,45 +714,35 @@ class _AccountScreenState extends State<AccountScreen> {
 
       if (mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isEditing
-                    ? AppStrings.accountUpdatedSuccess.tr
-                    : AppStrings.accountSavedSuccess.tr,
-              ),
-              backgroundColor: AppColors.snackbarSuccess,
-            ),
+          SnackBarHelper.showSuccess(
+            context,
+            isEditing
+                ? AppStrings.accountUpdatedSuccess.tr
+                : AppStrings.accountSavedSuccess.tr,
           );
           Navigator.pop(context);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.failedSaveAccount.tr),
-              backgroundColor: AppColors.snackbarError,
-            ),
+          SnackBarHelper.showError(
+            context,
+            AppStrings.failedSaveAccount.tr,
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${AppStrings.error.tr}: $e'),
-            backgroundColor: AppColors.snackbarError,
-          ),
+        SnackBarHelper.showError(
+          context,
+          '${AppStrings.error.tr}: $e',
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  Future<void> _deleteAccount() async {
+  Future<void> _deleteAccountDialog() async {
     setState(() {
       _isLoading = true;
     });
@@ -709,29 +754,23 @@ class _AccountScreenState extends State<AccountScreen> {
 
       if (mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.accountDeletedSuccess.tr),
-              backgroundColor: AppColors.snackbarSuccess,
-            ),
+          SnackBarHelper.showSuccess(
+            context,
+            AppStrings.accountDeletedSuccess.tr,
           );
           Navigator.pushReplacementNamed(context, Routes.vault);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.failedDeleteAccount.tr),
-              backgroundColor: AppColors.snackbarError,
-            ),
+          SnackBarHelper.showError(
+            context,
+            AppStrings.failedDeleteAccount.tr,
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${AppStrings.error.tr}: $e'),
-            backgroundColor: AppColors.snackbarError,
-          ),
+        SnackBarHelper.showError(
+          context,
+          '${AppStrings.error.tr}: $e',
         );
       }
     } finally {
@@ -760,16 +799,10 @@ class _AccountScreenState extends State<AccountScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.grey[850]!, Colors.grey[900]!]
-              : [Colors.white, Colors.grey[50]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
           width: 1,
         ),
         boxShadow: [
@@ -840,7 +873,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 fontWeight: FontWeight.w500,
               ),
           hintStyle: TextStyle(
-            color: Colors.grey[500],
+            color: isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
             fontSize: 14,
           ),
         ),
@@ -851,16 +884,10 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget _buildPasswordField(bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.grey[850]!, Colors.grey[900]!]
-              : [Colors.white, Colors.grey[50]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
           width: 1,
         ),
         boxShadow: [
@@ -916,7 +943,10 @@ class _AccountScreenState extends State<AccountScreen> {
                       height: 32,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[800] : Colors.grey[100],
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: IconButton(
@@ -935,7 +965,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       height: 32,
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[800] : Colors.grey[100],
+                        color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: IconButton(
@@ -1020,7 +1050,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     fontWeight: FontWeight.w500,
                   ),
               hintStyle: TextStyle(
-                color: Colors.grey[500],
+                color: isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
                 fontSize: 14,
               ),
             ),
@@ -1042,7 +1072,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 child: LinearProgressIndicator(
                   value: _passwordStrength,
                   minHeight: 4,
-                  backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                  backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightCardBorder,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     _getPasswordStrengthColor(),
                   ),
@@ -1116,7 +1146,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _deleteAccount();
+              _deleteAccountDialog();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[600],

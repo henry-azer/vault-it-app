@@ -36,6 +36,7 @@ class AppStrings {
   // Vault
   static const String vault = "vault";
   static const String passwords = "passwords";
+  static const String account = "account";
   static const String accounts = "accounts";
   static const String accountsVault = "accounts_vault";
   static const String addPassword = "add_password";

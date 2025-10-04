@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_strings.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -52,7 +53,9 @@ class AboutScreen extends StatelessWidget {
             Text(
               'Version 1.0.0+1',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
+                color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -95,7 +98,11 @@ class AboutScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
+                ),
               ),
               child: Column(
                 children: [
@@ -170,7 +177,9 @@ class AboutScreen extends StatelessWidget {
             Text(
               '© 2024 PassVault Team. All rights reserved.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[500],
+                color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextDisabled
+                  : AppColors.lightTextDisabled,
               ),
               textAlign: TextAlign.center,
             ),
@@ -222,7 +231,9 @@ class AboutScreen extends StatelessWidget {
                 Text(
                   description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
                   ),
                 ),
               ],
@@ -244,7 +255,9 @@ class AboutScreen extends StatelessWidget {
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
-                color: Colors.grey[600],
+                color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
               ),
             ),
           ),

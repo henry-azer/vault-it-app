@@ -1,24 +1,22 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pass_vault_it/data/entities/LanguageOption.dart';
+import 'package:pass_vault_it/data/entities/language_option.dart';
 
 class AppLocalization {
 
   static Map<String, dynamic> _localizedStrings = {};
   static String _currentLanguage = 'en';
+  static TextDirection _textDirection = TextDirection.ltr;
 
   static String get currentLanguage => _currentLanguage;
 
   static bool get isRTL {
-    return textDirection == TextDirection.rtl;
+    return _textDirection == TextDirection.rtl;
   }
 
   static TextDirection get textDirection {
-    final rtlLanguages = ['ar', 'he', 'fa', 'ur'];
-    return rtlLanguages.contains(_currentLanguage)
-        ? TextDirection.rtl
-        : TextDirection.ltr;
+    return _textDirection;
   }
 
   static Future<void> initialize({String language = 'en'}) async {
@@ -30,10 +28,16 @@ class AppLocalization {
     try {
       String jsonString = await rootBundle.loadString('assets/lang/$language.json');
       _localizedStrings = json.decode(jsonString);
+      
+      Map<String, dynamic>? metadata = _localizedStrings['_metadata'];
+      String? direction = metadata?['text_direction'];
+      _textDirection = direction == 'rtl' ? TextDirection.rtl : TextDirection.ltr;
     } catch (e) {
       debugPrint('Error loading language $language: $e');
       if (language != 'en') {
         await _loadLanguage('en');
+      } else {
+        _textDirection = TextDirection.ltr;
       }
     }
   }
@@ -87,13 +91,19 @@ class AppLocalization {
           try {
             String jsonString = await rootBundle.loadString(key);
             Map<String, dynamic> langData = json.decode(jsonString);
-            String displayName = langData['languages']?[languageCode] ??
-                languageCode.toUpperCase();
+            
+            Map<String, dynamic>? metadata = langData['_metadata'];
+            
+            String code = metadata?['language_code'] ?? languageCode;
+            String name = metadata?['language_name'] ?? languageCode.toUpperCase();
+            String nativeName = metadata?['language_native_name'] ?? name;
+            String textDirection = metadata?['text_direction'] ?? 'ltr';
 
             languages.add(LanguageOption(
-              code: languageCode,
-              name: displayName,
-              nativeName: displayName,
+              code: code,
+              name: name,
+              nativeName: nativeName,
+              textDirection: textDirection,
             ));
           } catch (e) {
             debugPrint('Error loading language $languageCode: $e');
@@ -101,14 +111,13 @@ class AppLocalization {
         }
       }
 
-      languages.sort((a, b) => a.name.compareTo(b.name));
+      languages.sort((a, b) => a.nativeName.compareTo(b.nativeName));
 
       return languages;
     } catch (e) {
       debugPrint('Error getting available languages: $e');
       return [
-        LanguageOption(code: 'en', name: 'English', nativeName: 'English'),
-        LanguageOption(code: 'fr', name: 'Français', nativeName: 'Français'),
+        LanguageOption(code: 'en', name: 'English', nativeName: 'English', textDirection: 'ltr'),
       ];
     }
   }

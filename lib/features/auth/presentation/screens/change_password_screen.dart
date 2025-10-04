@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../data/datasources/user_local_datasource.dart';
-import '../../../../core/utils/app_strings.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
+import 'package:pass_vault_it/data/datasources/user_local_datasource.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
-
   @override
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
@@ -140,35 +140,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       
       if (storedPassword != _currentPasswordController.text) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Current password is incorrect'),
-              backgroundColor: Colors.red,
-            ),
+          SnackBarHelper.showError(
+            context,
+            'Current password is incorrect',
           );
         }
-        return;
       }
 
       await _userLocalDataSource.setUserPassword(_newPasswordController.text);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password changed successfully'),
-            backgroundColor: Colors.green,
-          ),
+        SnackBarHelper.showSuccess(
+          context,
+          'Password changed successfully',
         );
         Navigator.pop(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
     } finally {
       if (mounted) {

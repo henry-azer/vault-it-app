@@ -6,6 +6,7 @@ import 'package:pass_vault_it/config/routes/app_routes.dart';
 import 'package:pass_vault_it/core/constants/popular_websites.dart';
 import 'package:pass_vault_it/core/utils/app_colors.dart';
 import 'package:pass_vault_it/core/utils/app_strings.dart';
+import 'package:pass_vault_it/core/utils/snackbar_helper.dart';
 import 'package:pass_vault_it/data/entities/account.dart';
 import 'package:pass_vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:provider/provider.dart';
@@ -67,18 +68,12 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
       onTap: _handleTap,
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: widget.isDark
-                ? [Colors.grey[850]!, Colors.grey[900]!]
-                : [Colors.white, Colors.grey[50]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: widget.isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: _isPressed
                 ? Theme.of(context).colorScheme.primary
-                : (widget.isDark ? Colors.grey[800]! : Colors.grey[200]!),
+                : (widget.isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
             width: _isPressed ? 2 : 1,
           ),
           boxShadow: [
@@ -122,14 +117,14 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
                         Icon(
                           Icons.person_outline_rounded,
                           size: 14,
-                          color: Colors.grey[500],
+                          color: widget.isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             widget.account.username,
                             style: TextStyle(
-                              color: Colors.grey[600],
+                              color: widget.isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
@@ -166,12 +161,10 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
         final success = await provider.toggleFavorite(widget.account.id);
 
         if (!success && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.failedToFavorite.tr),
-              duration: const Duration(seconds: 1),
-              backgroundColor: AppColors.snackbarError,
-            ),
+          SnackBarHelper.showError(
+            context,
+            AppStrings.failedToFavorite.tr,
+            duration: const Duration(seconds: 1),
           );
         }
       },
@@ -180,7 +173,7 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
         decoration: BoxDecoration(
           color: widget.account.isFavorite
               ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
-              : (widget.isDark ? Colors.grey[800] : Colors.grey[100]),
+              : (widget.isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -188,9 +181,7 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
           size: 18,
           color: widget.account.isFavorite
               ? Theme.of(context).colorScheme.primary
-              : widget.isDark
-                  ? Colors.white
-                  : Colors.black,
+              : null,
         ),
       ),
     );
@@ -200,10 +191,10 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
     return Hero(
       tag: widget.account.id,
       child: Container(
-        width: 50,
-        height: 50,
+        width: 45,
+        height: 45,
         decoration: BoxDecoration(
-          color: widget.isDark ? Colors.grey[850] : Colors.white,
+          color: widget.isDark ? AppColors.darkCardBackground : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -232,8 +223,8 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
       return CachedNetworkImage(
         imageUrl: faviconUrl,
         fit: BoxFit.cover,
-        width: 56,
-        height: 56,
+        width: 45,
+        height: 45,
         placeholder: (context, url) => _buildSkeletonLoader(),
         errorWidget: (context, url, error) => _buildFallbackIcon(),
       );
@@ -244,20 +235,20 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
 
   Widget _buildSkeletonLoader() {
     return Container(
-      width: 56,
-      height: 56,
+      width: 45,
+      height: 45,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: widget.isDark
               ? [
-                  Colors.grey[800]!,
-                  Colors.grey[700]!,
-                  Colors.grey[800]!,
+                  AppColors.darkSurface,
+                  AppColors.darkCardBorder,
+                  AppColors.darkSurface,
                 ]
               : [
-                  Colors.grey[200]!,
-                  Colors.grey[100]!,
-                  Colors.grey[200]!,
+                  AppColors.lightCardBorder,
+                  AppColors.lightSurface,
+                  AppColors.lightCardBorder,
                 ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -268,7 +259,7 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
         child: Icon(
           Icons.image_outlined,
           size: 24,
-          color: widget.isDark ? Colors.grey[600] : Colors.grey[300],
+          color: widget.isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
         ),
       ),
     );
@@ -308,13 +299,12 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: widget.isDark ? Colors.grey[800] : Colors.grey[100],
+            color: widget.isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             Icons.edit_outlined,
             size: 16,
-            color: widget.isDark ? Colors.white : Colors.grey[700],
           ),
         ));
   }

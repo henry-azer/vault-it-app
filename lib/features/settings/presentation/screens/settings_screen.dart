@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:pass_vault_it/config/localization/app_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../config/routes/app_routes.dart';
+import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_strings.dart';
-import '../../../vault/data/services/backup_service.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../config/themes/theme_provider.dart';
 import '../../../../config/localization/language_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../vault/presentation/providers/password_provider.dart';
+import '../../../vault/presentation/providers/account_provider.dart';
 import 'about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -50,235 +50,357 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(
-        title: Text('settings'.tr),
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: [
-          // User Profile Section
-          Consumer<AuthProvider>(
-            builder: (context, authProvider, child) {
-              return Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).primaryColor,
-                      Theme.of(context).primaryColor.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.white.withOpacity(0.2),
-                      child: Text(
-                        authProvider.currentUser?.username
-                                .substring(0, 1)
-                                .toUpperCase() ??
-                            'U',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(isDark),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: [
+                  // User Profile Section
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return Container(
+                        margin: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).primaryColor,
+                              Theme.of(context).primaryColor.withOpacity(0.8),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            authProvider.currentUser?.username ?? 'User',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: Colors.white.withOpacity(0.3),
+                              child: Text(
+                                authProvider.currentUser?.username
+                                        .substring(0, 1)
+                                        .toUpperCase() ??
+                                    'U',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Premium Member',
-                            style: TextStyle(
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    authProvider.currentUser?.username ??
+                                        'User',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Premium Member',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.verified_user,
                               color: Colors.white.withOpacity(0.8),
-                              fontSize: 14,
+                              size: 24,
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Appearance Section
+                  _buildSectionHeader('appearance'.tr),
+                  Consumer<ThemeProvider>(
+                    builder: (context, themeProvider, child) {
+                      return _buildSettingsTile(
+                        icon: Icons.brightness_6,
+                        title: 'theme'.tr,
+                        subtitle: _getThemeText(themeProvider.themeMode),
+                        onTap: () => _showThemeDialog(themeProvider),
+                      );
+                    },
+                  ),
+                  Consumer<LanguageProvider>(
+                    builder: (context, languageProvider, child) {
+                      return _buildSettingsTile(
+                        icon: Icons.language,
+                        title: 'language'.tr,
+                        subtitle: languageProvider.currentLanguageName,
+                        onTap: () => _showLanguageDialog(languageProvider),
+                      );
+                    },
+                  ),
+
+                  // Security Section
+                  // _buildSectionHeader('security'.tr),
+                  // _buildSettingsTile(
+                  //   icon: Icons.lock_outline,
+                  //   title: 'change_master_password'.tr,
+                  //   subtitle: 'Update your master password',
+                  //   onTap: () => Navigator.pushNamed(context, Routes.changeAccount),
+                  // ),
+                  _buildSettingsTile(
+                    icon: Icons.fingerprint,
+                    title: 'Biometric Authentication',
+                    subtitle: 'Enable fingerprint/face unlock',
+                    trailing: Switch(
+                      value: false, // TODO: Implement biometric setting
+                      onChanged: (value) {
+                        // TODO: Implement biometric toggle
+                      },
                     ),
-                    Icon(
-                      Icons.verified_user,
-                      color: Colors.white.withOpacity(0.8),
-                      size: 24,
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.timer,
+                    title: 'Auto-Lock Timeout',
+                    subtitle: '5 minutes',
+                    onTap: () => _showAutoLockDialog(),
+                  ),
+
+                  // Data Management Section
+                  _buildSectionHeader('Data Management'),
+                  // Consumer<AccountProvider>(
+                  //   builder: (context, passwordProvider, child) {
+                  //     return _buildSettingsTile(
+                  //       icon: Icons.info_outline,
+                  //       title: 'Vault Statistics',
+                  //       subtitle: '${passwordProvider.passwordCount} passwords stored',
+                  //       onTap: () => _showVaultStatistics(passwordProvider),
+                  //     );
+                  //   },
+                  // ),
+                  // _buildSettingsTile(
+                  //   icon: Icons.backup,
+                  //   title: 'Export Data',
+                  //   subtitle: 'Backup your passwords to a file',
+                  //   onTap: _exportData,
+                  //   trailing: _isLoading
+                  //       ? const SizedBox(
+                  //           width: 20,
+                  //           height: 20,
+                  //           child: CircularProgressIndicator(strokeWidth: 2),
+                  //         )
+                  //       : null,
+                  // ),
+                  // _buildSettingsTile(
+                  //   icon: Icons.restore,
+                  //   title: 'Import Data',
+                  //   subtitle: 'Restore passwords from backup',
+                  //   onTap: _importData,
+                  // ),
+                  // Consumer<GoogleSyncProvider>(
+                  //   builder: (context, googleSyncProvider, child) {
+                  //     return _buildGoogleSyncSection(googleSyncProvider);
+                  //   },
+                  // ),
+
+                  // Support & Info Section
+                  _buildSectionHeader('Support & Information'),
+                  _buildSettingsTile(
+                    icon: Icons.help_outline,
+                    title: 'Help & Support',
+                    subtitle: 'Get help and contact support',
+                    onTap: () => _showHelpDialog(),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.bug_report,
+                    title: 'Report a Bug',
+                    subtitle: 'Help us improve the app',
+                    onTap: () => _reportBug(),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.star_rate,
+                    title: 'Rate the App',
+                    subtitle: 'Leave a review on the app store',
+                    onTap: () => _rateApp(),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.info_outline,
+                    title: 'About ${AppStrings.appName}',
+                    subtitle: 'Version ${_packageInfo?.version ?? '1.0.0'}',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AboutScreen()),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
 
-          // Appearance Section
-          _buildSectionHeader('appearance'.tr),
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return _buildSettingsTile(
-                icon: Icons.brightness_6,
-                title: 'theme'.tr,
-                subtitle: _getThemeText(themeProvider.themeMode),
-                onTap: () => _showThemeDialog(themeProvider),
-              );
-            },
-          ),
-          Consumer<LanguageProvider>(
-            builder: (context, languageProvider, child) {
-              return _buildSettingsTile(
-                icon: Icons.language,
-                title: 'language'.tr,
-                subtitle: languageProvider.currentLanguageName,
-                onTap: () => _showLanguageDialog(languageProvider),
-              );
-            },
-          ),
-
-          // Security Section
-          _buildSectionHeader('security'.tr),
-          _buildSettingsTile(
-            icon: Icons.lock_outline,
-            title: 'change_master_password'.tr,
-            subtitle: 'Update your master password',
-            onTap: () => Navigator.pushNamed(context, Routes.changePassword),
-          ),
-          _buildSettingsTile(
-            icon: Icons.fingerprint,
-            title: 'Biometric Authentication',
-            subtitle: 'Enable fingerprint/face unlock',
-            trailing: Switch(
-              value: false, // TODO: Implement biometric setting
-              onChanged: (value) {
-                // TODO: Implement biometric toggle
-              },
+                  // Danger Zone
+                  _buildSectionHeader('Danger Zone', color: AppColors.error),
+                  _buildSettingsTile(
+                    icon: Icons.delete_forever,
+                    title: 'Delete All Data',
+                    subtitle: 'Permanently delete all passwords',
+                    titleColor: AppColors.error,
+                    iconColor: AppColors.error,
+                    onTap: _showDeleteAllDataDialog,
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.logout,
+                    title: 'Logout',
+                    subtitle: 'Sign out of your account',
+                    titleColor: AppColors.error,
+                    iconColor: AppColors.error,
+                    onTap: _showLogoutDialog,
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
-          ),
-          _buildSettingsTile(
-            icon: Icons.timer,
-            title: 'Auto-Lock Timeout',
-            subtitle: '5 minutes',
-            onTap: () => _showAutoLockDialog(),
-          ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          // Data Management Section
-          _buildSectionHeader('Data Management'),
-          Consumer<PasswordProvider>(
-            builder: (context, passwordProvider, child) {
-              return _buildSettingsTile(
-                icon: Icons.info_outline,
-                title: 'Vault Statistics',
-                subtitle: '${passwordProvider.passwordCount} passwords stored',
-                onTap: () => _showVaultStatistics(passwordProvider),
-              );
-            },
+  Widget _buildHeader(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [AppColors.darkHeaderStart, AppColors.darkHeaderEnd]
+              : [AppColors.lightHeaderStart, AppColors.lightHeaderEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
-          _buildSettingsTile(
-            icon: Icons.backup,
-            title: 'Export Data',
-            subtitle: 'Backup your passwords to a file',
-            onTap: _exportData,
-            trailing: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : null,
-          ),
-          _buildSettingsTile(
-            icon: Icons.restore,
-            title: 'Import Data',
-            subtitle: 'Restore passwords from backup',
-            onTap: _importData,
-          ),
-          // Consumer<GoogleSyncProvider>(
-          //   builder: (context, googleSyncProvider, child) {
-          //     return _buildGoogleSyncSection(googleSyncProvider);
-          //   },
-          // ),
-
-          // Support & Info Section
-          _buildSectionHeader('Support & Information'),
-          _buildSettingsTile(
-            icon: Icons.help_outline,
-            title: 'Help & Support',
-            subtitle: 'Get help and contact support',
-            onTap: () => _showHelpDialog(),
-          ),
-          _buildSettingsTile(
-            icon: Icons.bug_report,
-            title: 'Report a Bug',
-            subtitle: 'Help us improve the app',
-            onTap: () => _reportBug(),
-          ),
-          _buildSettingsTile(
-            icon: Icons.star_rate,
-            title: 'Rate the App',
-            subtitle: 'Leave a review on the app store',
-            onTap: () => _rateApp(),
-          ),
-          _buildSettingsTile(
-            icon: Icons.info_outline,
-            title: 'About ${AppStrings.appName}',
-            subtitle: 'Version ${_packageInfo?.version ?? '1.0.0'}',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AboutScreen()),
-            ),
-          ),
-
-          // Danger Zone
-          _buildSectionHeader('Danger Zone', color: Colors.red),
-          _buildSettingsTile(
-            icon: Icons.delete_forever,
-            title: 'Delete All Data',
-            subtitle: 'Permanently delete all passwords',
-            titleColor: Colors.red,
-            iconColor: Colors.red,
-            onTap: _showDeleteAllDataDialog,
-          ),
-          _buildSettingsTile(
-            icon: Icons.logout,
-            title: 'Logout',
-            subtitle: 'Sign out of your account',
-            titleColor: Colors.red,
-            iconColor: Colors.red,
-            onTap: _showLogoutDialog,
-          ),
-          const SizedBox(height: 32),
         ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.settings_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'settings'.tr,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          _buildHeaderActions(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderActions(bool isDark) {
+    return _buildActionButton(
+      icon: Icons.add_shopping_cart_outlined,
+      onPressed: () {},
+      isDark: isDark,
+      // isActive: hasHistory,
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isDark,
+    bool isActive = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.darkCardBackground
+            : AppColors.lightCardBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          size: 20,
+          color: isDark
+              ? AppColors.darkTextSecondary
+              : AppColors.lightTextSecondary,
+        ),
+        onPressed: onPressed,
+        padding: const EdgeInsets.all(8),
+        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       ),
     );
   }
 
   // Helper Methods
   Widget _buildSectionHeader(String title, {Color? color}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
-        title,
+        title.toUpperCase(),
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: color ?? Colors.grey[600],
+          color: color ??
+              (isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary),
           letterSpacing: 0.5,
         ),
       ),
@@ -299,7 +421,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkCardBorder
+              : AppColors.lightCardBorder,
+        ),
       ),
       child: ListTile(
         leading: Container(
@@ -327,7 +453,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ? Text(
                 subtitle,
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
                   fontSize: 13,
                 ),
               )
@@ -335,7 +463,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         trailing: trailing ??
             Icon(
               Icons.chevron_right,
-              color: Colors.grey[400],
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextDisabled
+                  : AppColors.lightTextDisabled,
               size: 20,
             ),
         onTap: onTap,
@@ -415,7 +545,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
                 ),
               ),
             ],
@@ -470,134 +602,134 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // Data Management Methods
-  Future<void> _exportData() async {
-    if (!mounted) return;
-    setState(() => _isLoading = true);
+  // Future<void> _exportData() async {
+  //   if (!mounted) return;
+  //   setState(() => _isLoading = true);
+  //
+  //   try {
+  //     final passwordProvider =
+  //         Provider.of<AccountProvider>(context, listen: false);
+  //     final passwords = passwordProvider.passwords;
+  //
+  //     if (passwords.isEmpty) {
+  //       _showMessage('No passwords to export', isError: false);
+  //       return;
+  //     }
+  //
+  //     // Show export options dialog
+  //     final choice = await _showExportOptionsDialog();
+  //     if (choice == null) return;
+  //
+  //     bool success = false;
+  //
+  //     if (choice == 'file') {
+  //       success = await BackupService.exportToFile(passwords);
+  //       if (success) {
+  //         _showMessage(
+  //             'Successfully exported ${passwords.length} passwords to file');
+  //       } else {
+  //         _showMessage('Export cancelled or failed', isError: true);
+  //       }
+  //     } else if (choice == 'share') {
+  //       success = await BackupService.shareBackup(passwords);
+  //       if (success) {
+  //         _showMessage('Backup shared successfully');
+  //       } else {
+  //         _showMessage('Share cancelled or failed', isError: true);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     _showMessage('Export failed: $e', isError: true);
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() => _isLoading = false);
+  //     }
+  //   }
+  // }
 
-    try {
-      final passwordProvider =
-          Provider.of<PasswordProvider>(context, listen: false);
-      final passwords = passwordProvider.passwords;
+  // Future<void> _importData() async {
+  //   try {
+  //     // Show import options dialog
+  //     final choice = await _showImportOptionsDialog();
+  //     if (choice == null) return;
+  //
+  //     if (choice == 'validate') {
+  //       await _validateBackupFile();
+  //       return;
+  //     }
+  //
+  //     // Import from file
+  //     final result = await BackupService.importFromFile();
+  //
+  //     if (!result.success) {
+  //       _showMessage(result.error ?? 'Import failed', isError: true);
+  //       return;
+  //     }
+  //
+  //     if (result.passwords == null || result.passwords!.isEmpty) {
+  //       _showMessage('No passwords found in backup file', isError: true);
+  //       return;
+  //     }
+  //
+  //     // Show confirmation dialog
+  //     if (!mounted) return;
+  //     final confirmed = await _showImportConfirmationDialog(result);
+  //     if (!confirmed) return;
+  //
+  //     // Import passwords
+  //     final passwordProvider =
+  //         Provider.of<AccountProvider>(context, listen: false);
+  //     int imported = 0;
+  //     int skipped = 0;
+  //
+  //     for (final password in result.passwords!) {
+  //       final exists = await passwordProvider.passwordExists(password.id);
+  //       if (!exists) {
+  //         await passwordProvider.addAccount(password);
+  //         imported++;
+  //       } else {
+  //         skipped++;
+  //       }
+  //     }
+  //
+  //     _showMessage(
+  //       'Import complete! $imported imported, $skipped skipped',
+  //     );
+  //
+  //     // Refresh password list
+  //     await passwordProvider.loadAccounts();
+  //   } catch (e) {
+  //     _showMessage('Import failed: $e', isError: true);
+  //   }
+  // }
 
-      if (passwords.isEmpty) {
-        _showMessage('No passwords to export', isError: false);
-        return;
-      }
-
-      // Show export options dialog
-      final choice = await _showExportOptionsDialog();
-      if (choice == null) return;
-
-      bool success = false;
-
-      if (choice == 'file') {
-        success = await BackupService.exportToFile(passwords);
-        if (success) {
-          _showMessage(
-              'Successfully exported ${passwords.length} passwords to file');
-        } else {
-          _showMessage('Export cancelled or failed', isError: true);
-        }
-      } else if (choice == 'share') {
-        success = await BackupService.shareBackup(passwords);
-        if (success) {
-          _showMessage('Backup shared successfully');
-        } else {
-          _showMessage('Share cancelled or failed', isError: true);
-        }
-      }
-    } catch (e) {
-      _showMessage('Export failed: $e', isError: true);
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  Future<void> _importData() async {
-    try {
-      // Show import options dialog
-      final choice = await _showImportOptionsDialog();
-      if (choice == null) return;
-
-      if (choice == 'validate') {
-        await _validateBackupFile();
-        return;
-      }
-
-      // Import from file
-      final result = await BackupService.importFromFile();
-
-      if (!result.success) {
-        _showMessage(result.error ?? 'Import failed', isError: true);
-        return;
-      }
-
-      if (result.passwords == null || result.passwords!.isEmpty) {
-        _showMessage('No passwords found in backup file', isError: true);
-        return;
-      }
-
-      // Show confirmation dialog
-      if (!mounted) return;
-      final confirmed = await _showImportConfirmationDialog(result);
-      if (!confirmed) return;
-
-      // Import passwords
-      final passwordProvider =
-          Provider.of<PasswordProvider>(context, listen: false);
-      int imported = 0;
-      int skipped = 0;
-
-      for (final password in result.passwords!) {
-        final exists = await passwordProvider.passwordExists(password.id);
-        if (!exists) {
-          await passwordProvider.addPassword(password);
-          imported++;
-        } else {
-          skipped++;
-        }
-      }
-
-      _showMessage(
-        'Import complete! $imported imported, $skipped skipped',
-      );
-
-      // Refresh password list
-      await passwordProvider.loadPasswords();
-    } catch (e) {
-      _showMessage('Import failed: $e', isError: true);
-    }
-  }
-
-  void _showVaultStatistics(PasswordProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Vault Statistics'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatRow('Total Passwords', '${provider.passwordCount}'),
-            _buildStatRow('Strong Passwords',
-                '${(provider.passwordCount * 0.7).round()}'),
-            _buildStatRow(
-                'Weak Passwords', '${(provider.passwordCount * 0.2).round()}'),
-            _buildStatRow('Duplicate Passwords',
-                '${(provider.passwordCount * 0.1).round()}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
+  // void _showVaultStatistics(AccountProvider provider) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Vault Statistics'),
+  //       content: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           _buildStatRow('Total Accounts', '${provider.passwordCount}'),
+  //           _buildStatRow('Strong Accounts',
+  //               '${(provider.passwordCount * 0.7).round()}'),
+  //           _buildStatRow(
+  //               'Weak Accounts', '${(provider.passwordCount * 0.2).round()}'),
+  //           _buildStatRow('Duplicate Accounts',
+  //               '${(provider.passwordCount * 0.1).round()}'),
+  //         ],
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text('Close'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildStatRow(String label, String value) {
     return Padding(
@@ -733,7 +865,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
-                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      style: TextButton.styleFrom(
+                          foregroundColor: AppColors.error),
                       child: const Text('DELETE'),
                     ),
                   ],
@@ -742,12 +875,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               if (confirmed == true && mounted) {
                 final passwordProvider =
-                    Provider.of<PasswordProvider>(context, listen: false);
-                await passwordProvider.deleteAllPasswords();
+                    Provider.of<AccountProvider>(context, listen: false);
+                await passwordProvider.deleteAllAccounts();
                 _showMessage('All data has been deleted');
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Delete All'),
           ),
         ],
@@ -780,7 +913,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Logout'),
           ),
         ],
@@ -796,7 +929,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.backup, color: Colors.green[600]),
+            Icon(Icons.backup, color: AppColors.success),
             const SizedBox(width: 8),
             const Text('Export Options'),
           ],
@@ -805,14 +938,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.save, color: Colors.green),
+              leading: const Icon(Icons.save, color: AppColors.success),
               title: const Text('Save to File'),
               subtitle: const Text('Choose location to save backup file'),
               onTap: () => Navigator.pop(context, 'file'),
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.share, color: Colors.blue),
+              leading: const Icon(Icons.share, color: AppColors.info),
               title: const Text('Share Backup'),
               subtitle: const Text('Share backup via email, cloud, etc.'),
               onTap: () => Navigator.pop(context, 'share'),
@@ -836,7 +969,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.restore, color: Colors.orange[600]),
+            Icon(Icons.restore, color: AppColors.warning),
             const SizedBox(width: 8),
             const Text('Import Options'),
           ],
@@ -845,7 +978,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.folder_open, color: Colors.orange),
+              leading: const Icon(Icons.folder_open, color: AppColors.warning),
               title: const Text('Import from File'),
               subtitle: const Text('Select backup file to import'),
               onTap: () => Navigator.pop(context, 'import'),
@@ -869,52 +1002,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<bool> _showImportConfirmationDialog(BackupImportResult result) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('Confirm Import'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Found ${result.passwords!.length} passwords in backup:'),
-                const SizedBox(height: 12),
-                if (result.backupInfo != null) ...[
-                  _buildInfoRow('App', result.backupInfo!.appName),
-                  _buildInfoRow('Version', result.backupInfo!.version),
-                  _buildInfoRow('Date', result.backupInfo!.formattedExportDate),
-                  const SizedBox(height: 12),
-                ],
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Duplicate passwords will be skipped. This operation cannot be undone.',
-                    style: TextStyle(fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Import'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
+  // Future<bool> _showImportConfirmationDialog(BackupImportResult result) async {
+  //   return await showDialog<bool>(
+  //         context: context,
+  //         builder: (context) => AlertDialog(
+  //           shape:
+  //               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //           title: const Text('Confirm Import'),
+  //           content: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text('Found ${result.passwords!.length} passwords in backup:'),
+  //               const SizedBox(height: 12),
+  //               if (result.backupInfo != null) ...[
+  //                 _buildInfoRow('App', result.backupInfo!.appName),
+  //                 _buildInfoRow('Version', result.backupInfo!.version),
+  //                 _buildInfoRow('Date', result.backupInfo!.formattedExportDate),
+  //                 const SizedBox(height: 12),
+  //               ],
+  //               Container(
+  //                 padding: const EdgeInsets.all(12),
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.orange.withOpacity(0.1),
+  //                   borderRadius: BorderRadius.circular(8),
+  //                 ),
+  //                 child: const Text(
+  //                   'Duplicate passwords will be skipped. This operation cannot be undone.',
+  //                   style: TextStyle(fontSize: 13),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () => Navigator.pop(context, false),
+  //               child: const Text('Cancel'),
+  //             ),
+  //             ElevatedButton(
+  //               onPressed: () => Navigator.pop(context, true),
+  //               child: const Text('Import'),
+  //             ),
+  //           ],
+  //         ),
+  //       ) ??
+  //       false;
+  // }
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
@@ -945,60 +1078,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _validateBackupFile() async {
-    try {
-      final result = await BackupService.validateBackupFile();
+  // Future<void> _validateBackupFile() async {
+  //   try {
+  //     final result = await BackupService.validateBackupFile();
+  //
+  //     if (mounted) {
+  //       if (result.isValid) {
+  //         _showValidationResultDialog(result);
+  //       } else {
+  //         _showMessage(result.error ?? 'Invalid backup file', isError: true);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       _showMessage('Validation failed: $e', isError: true);
+  //     }
+  //   }
+  // }
 
-      if (mounted) {
-        if (result.isValid) {
-          _showValidationResultDialog(result);
-        } else {
-          _showMessage(result.error ?? 'Invalid backup file', isError: true);
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        _showMessage('Validation failed: $e', isError: true);
-      }
-    }
-  }
-
-  void _showValidationResultDialog(BackupValidationResult result) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green[600]),
-            const SizedBox(width: 8),
-            const Text('Valid Backup File'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('This backup file is valid and contains:'),
-            const SizedBox(height: 12),
-            if (result.backupInfo != null) ...[
-              _buildInfoRow('App', result.backupInfo!.appName),
-              _buildInfoRow('Version', result.backupInfo!.version),
-              _buildInfoRow('Passwords', '${result.passwordCount}'),
-              _buildInfoRow('Created', result.backupInfo!.formattedExportDate),
-              _buildInfoRow('Age', result.backupInfo!.timeSinceExport),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
+  // void _showValidationResultDialog(BackupValidationResult result) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //       title: Row(
+  //         children: [
+  //           Icon(Icons.check_circle, color: Colors.green[600]),
+  //           const SizedBox(width: 8),
+  //           const Text('Valid Backup File'),
+  //         ],
+  //       ),
+  //       content: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           const Text('This backup file is valid and contains:'),
+  //           const SizedBox(height: 12),
+  //           if (result.backupInfo != null) ...[
+  //             _buildInfoRow('App', result.backupInfo!.appName),
+  //             _buildInfoRow('Version', result.backupInfo!.version),
+  //             _buildInfoRow('Accounts', '${result.passwordCount}'),
+  //             _buildInfoRow('Created', result.backupInfo!.formattedExportDate),
+  //             _buildInfoRow('Age', result.backupInfo!.timeSinceExport),
+  //           ],
+  //         ],
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text('Close'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // // Google Sync Methods
   // Widget _buildGoogleSyncSection(GoogleSyncProvider googleSyncProvider) {
@@ -1082,7 +1215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   //               Navigator.pop(context);
   //               _signOutFromGoogle(provider);
   //             },
-  //             style: TextButton.styleFrom(foregroundColor: Colors.red),
+  //             style: TextButton.styleFrom(foregroundColor: AppColors.error),
   //             child: const Text('Sign Out'),
   //           ),
   //           ElevatedButton(
@@ -1154,7 +1287,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // }
   //
   // Future<void> _performSync(GoogleSyncProvider provider) async {
-  //   final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+  //   final passwordProvider = Provider.of<AccountProvider>(context, listen: false);
   //   final passwords = passwordProvider.passwords;
   //
   //   if (passwords.isEmpty) {
@@ -1195,14 +1328,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   //   if (!confirmed) return;
   //
   //   // Import passwords
-  //   final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+  //   final passwordProvider = Provider.of<AccountProvider>(context, listen: false);
   //   int imported = 0;
   //   int skipped = 0;
   //
   //   for (final password in result.passwords!) {
   //     final exists = await passwordProvider.passwordExists(password.id);
   //     if (!exists) {
-  //       await passwordProvider.addPassword(password);
+  //       await passwordProvider.addAccount(password);
   //       imported++;
   //     } else {
   //       skipped++;
@@ -1214,7 +1347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   //   );
   //
   //   // Refresh password list
-  //   await passwordProvider.loadPasswords();
+  //   await passwordProvider.loadAccounts();
   // }
   //
   // Future<bool> _showGoogleImportConfirmationDialog(GoogleSyncResult result) async {
@@ -1264,13 +1397,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: isError ? Colors.red : Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (isError) {
+        SnackBarHelper.showError(context, message);
+      } else {
+        SnackBarHelper.showSuccess(context, message);
+      }
     }
   }
 }

@@ -12,7 +12,7 @@ import 'package:pass_vault_it/features/settings/presentation/screens/settings_sc
 import 'package:pass_vault_it/features/splash/presentation/screens/splash_screen.dart';
 import 'package:pass_vault_it/features/vault/presentation/screens/account_screen.dart';
 import 'package:pass_vault_it/features/vault/presentation/screens/vault_screen.dart';
-import 'package:pass_vault_it/features/vault/presentation/screens/view_password_screen.dart';
+import 'package:pass_vault_it/features/vault/presentation/screens/view_account_screen.dart';
 
 class Routes {
   static const String initial = '/';
