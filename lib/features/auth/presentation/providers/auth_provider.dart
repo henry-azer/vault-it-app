@@ -114,6 +114,69 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updateUsername(String newUsername) async {
+    _setLoading(true);
+    try {
+      if (_currentUser != null) {
+        final updatedUser = _currentUser!.copyWith(username: newUsername);
+        await _userLocalDataSource.setUser(updatedUser);
+        _currentUser = updatedUser;
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Update username error: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> updateUserProfile({
+    String? newUsername,
+    String? currentPassword,
+    String? newPassword,
+  }) async {
+    _setLoading(true);
+    try {
+      if (_currentUser == null) {
+        return false;
+      }
+
+      User updatedUser = _currentUser!;
+
+      // Update username if provided
+      if (newUsername != null && newUsername.isNotEmpty) {
+        updatedUser = updatedUser.copyWith(username: newUsername);
+      }
+
+      // Update password if provided
+      if (currentPassword != null && newPassword != null && newPassword.isNotEmpty) {
+        final storedPassword = await _userLocalDataSource.getUserPassword();
+        
+        if (storedPassword != currentPassword) {
+          return false;
+        }
+        
+        updatedUser = updatedUser.copyWith(password: newPassword);
+        await _userLocalDataSource.setUserPassword(newPassword);
+        _userPassword = newPassword;
+      }
+
+      // Save updated user
+      await _userLocalDataSource.setUser(updatedUser);
+      _currentUser = updatedUser;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Update user profile error: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> logout() async {
     try {
       await _userLocalDataSource.setAuthenticated(false);

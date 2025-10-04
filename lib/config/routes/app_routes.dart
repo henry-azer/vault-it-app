@@ -8,7 +8,11 @@ import 'package:pass_vault_it/features/auth/presentation/screens/register_screen
 import 'package:pass_vault_it/features/generator/presentation/screens/generator_history_screen.dart';
 import 'package:pass_vault_it/features/generator/presentation/screens/generator_screen.dart';
 import 'package:pass_vault_it/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:pass_vault_it/features/settings/presentation/screens/bug_report_screen.dart';
+import 'package:pass_vault_it/features/settings/presentation/screens/help_support_screen.dart';
+import 'package:pass_vault_it/features/settings/presentation/screens/rate_app_screen.dart';
 import 'package:pass_vault_it/features/settings/presentation/screens/settings_screen.dart';
+import 'package:pass_vault_it/features/settings/presentation/screens/user_profile_screen.dart';
 import 'package:pass_vault_it/features/splash/presentation/screens/splash_screen.dart';
 import 'package:pass_vault_it/features/vault/presentation/screens/account_screen.dart';
 import 'package:pass_vault_it/features/vault/presentation/screens/vault_screen.dart';
@@ -32,6 +36,10 @@ class Routes {
   static const String generatorHistory = '/app/generator/history';
 
   static const String settings = '/app/settings';
+  static const String userProfile = '/app/settings/profile';
+  static const String bugReport = '/app/settings/bug-report';
+  static const String helpSupport = '/app/settings/help';
+  static const String rateApp = '/app/settings/rate';
 }
 
 class AppRoutes {
@@ -120,6 +128,34 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (context) {
               return const SettingsScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.userProfile:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const UserProfileScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.helpSupport:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const HelpSupportScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.bugReport:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const BugReportScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.rateApp:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const RateAppScreen();
             },
             settings: routeSettings);
 

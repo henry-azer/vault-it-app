@@ -32,6 +32,14 @@ class AppStrings {
   static const String currentPassword = "current_password";
   static const String confirmPassword = "confirm_password";
   static const String newPassword = "new_password";
+  
+  // User Profile
+  static const String editProfile = "edit_profile";
+  static const String saveChanges = "save_changes";
+  static const String profileUpdatedSuccess = "profile_updated_success";
+  static const String failedUpdateProfile = "failed_update_profile";
+  static const String currentPasswordIncorrect = "current_password_incorrect";
+  static const String validationPasswordsNotMatch = "validation_passwords_not_match";
 
   // Vault
   static const String vault = "vault";
@@ -112,6 +120,7 @@ class AppStrings {
   static const String google = "google";
   static const String microsoft = "microsoft";
   static const String amazon = "amazon";
+  static const String whatsapp = "whatsapp";
   static const String netflix = "netflix";
   static const String spotify = "spotify";
   static const String dropbox = "dropbox";
@@ -201,6 +210,29 @@ class AppStrings {
   static const String bugReport = "bug_report";
   static const String rateApp = "rate_app";
   static const String shareApp = "share_app";
+  static const String helpSupportTitle = "help_support_title";
+  static const String helpSupportSubtitle = "help_support_subtitle";
+  static const String bugReportTitle = "bug_report_title";
+  static const String bugReportSubtitle = "bug_report_subtitle";
+  static const String rateAppTitle = "rate_app_title";
+  static const String rateAppSubtitle = "rate_app_subtitle";
+  static const String yourName = "your_name";
+  static const String enterYourName = "enter_your_name";
+  static const String subject = "subject";
+  static const String enterSubject = "enter_subject";
+  static const String description = "description";
+  static const String enterDescription = "enter_description";
+  static const String submit = "submit";
+  static const String submitting = "submitting";
+  static const String submitSuccess = "submit_success";
+  static const String submitError = "submit_error";
+  static const String nameRequired = "name_required";
+  static const String subjectRequired = "subject_required";
+  static const String descriptionRequired = "description_required";
+  static const String thankYouFeedback = "thank_you_feedback";
+  static const String ratingLabel = "rating_label";
+  static const String howWouldYouRate = "how_would_you_rate";
+  static const String selectRating = "select_rating";
 
   // Danger Zone
   static const String dangerZone = "danger_zone";
@@ -209,18 +241,32 @@ class AppStrings {
 
   // About
   static const String about = "about";
+  static const String version = "version";
   static const String aboutAppDescription = "about_app_description";
+  static const String keyFeatures = "key_features";
   static const String aboutSecurityTitle = "about_security_title";
   static const String aboutSecurityDescription = "about_security_description";
   static const String aboutGeneratorTitle = "about_generator_title";
   static const String aboutGeneratorDescription = "about_generator_description";
   static const String aboutBackupTitle = "about_backup_title";
   static const String aboutBackupDescription = "about_backup_description";
+  static const String developerInfo = "developer_info";
+  static const String developedBy = "developed_by";
   static const String aboutDeveloper = "about_developer";
   static const String aboutContact = "about_contact";
+  static const String followUs = "follow_us";
+  static const String followMe = "follow_me";
+  static const String socialLinks = "social_links";
+  static const String contactUs = "contact_us";
+  static const String email = "email";
+  static const String legal = "legal";
   static const String aboutPrivacyPolicy = "about_privacy_policy";
   static const String aboutTermsOfService = "about_terms_of_service";
-  static const String aboutVersion = "about_version";
+  static const String privacyPolicyTitle = "privacy_policy_title";
+  static const String privacyPolicyContent = "privacy_policy_content";
+  static const String termsOfServiceTitle = "terms_of_service_title";
+  static const String termsOfServiceContent = "terms_of_service_content";
+  static const String copyright = "copyright";
 
   // Onboarding
   static const String welcome = "welcome";

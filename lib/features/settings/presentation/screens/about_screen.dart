@@ -1,187 +1,317 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:pass_vault_it/config/localization/app_localization.dart';
+import 'package:pass_vault_it/core/constants/personal_links.dart';
+import 'package:pass_vault_it/core/constants/popular_websites.dart';
+import 'package:pass_vault_it/core/utils/app_assets_manager.dart';
+import 'package:pass_vault_it/core/utils/app_colors.dart';
+import 'package:pass_vault_it/core/utils/app_strings.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/utils/app_colors.dart';
-import '../../../../core/utils/app_strings.dart';
 
-class AboutScreen extends StatelessWidget {
-  const AboutScreen({Key? key}) : super(key: key);
+class AboutScreen extends StatefulWidget {
+  const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  String _version = '...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = packageInfo.version;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('About'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
         child: Column(
           children: [
-            // App Logo and Name
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.lock,
-                size: 60,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            Text(
-              AppStrings.appName,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            Text(
-              'Version 1.0.0+1',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Text(
-              'Your secure password manager that keeps your credentials safe and organized.',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-            
-            // Feature Cards
-            _buildFeatureCard(
-              context,
-              icon: Icons.security,
-              title: 'Secure & Local',
-              description: 'All your passwords are encrypted and stored locally on your device.',
-            ),
-            const SizedBox(height: 16),
-            
-            _buildFeatureCard(
-              context,
-              icon: Icons.vpn_key,
-              title: 'Password Generator',
-              description: 'Generate strong, unique passwords for all your accounts.',
-            ),
-            const SizedBox(height: 16),
-            
-            _buildFeatureCard(
-              context,
-              icon: Icons.backup,
-              title: 'Backup & Restore',
-              description: 'Export and import your passwords safely.',
-            ),
-            const SizedBox(height: 40),
-            
-            // Developer Info
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkCardBorder
-                    : AppColors.lightCardBorder,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'Developer Information',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+            _buildHeader(isDark),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black,
+                            Colors.black.withOpacity(0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(AppImageAssets.darkLogo,
+                        height: 220,
+                        width: 350,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  _buildInfoRow(context, 'Developer', 'PassVault Team'),
-                  _buildInfoRow(context, 'Email', 'support@passvault.com'),
-                  _buildInfoRow(context, 'Website', 'www.passvault.com'),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Action Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildActionButton(
-                        context,
-                        icon: Icons.email,
-                        label: 'Contact',
-                        onTap: () => _launchEmail(),
+                    const SizedBox(height: 24),
+                    Text(
+                      AppStrings.appName.tr,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                        letterSpacing: -0.5,
                       ),
-                      _buildActionButton(
-                        context,
-                        icon: Icons.star,
-                        label: 'Rate App',
-                        onTap: () => _showRatingDialog(context),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${AppStrings.version.tr} $_version',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary,
                       ),
-                      _buildActionButton(
-                        context,
-                        icon: Icons.share,
-                        label: 'Share',
-                        onTap: () => _shareApp(),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      AppStrings.aboutAppDescription.tr,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary,
+                        height: 1.5,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            
-            // Legal Section
-            Text(
-              'Legal',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: () => _showPrivacyPolicy(context),
-                  child: const Text('Privacy Policy'),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      AppStrings.keyFeatures.tr,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.security_rounded,
+                      title: AppStrings.aboutSecurityTitle.tr,
+                      description: AppStrings.aboutSecurityDescription.tr,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.vpn_key_rounded,
+                      title: AppStrings.aboutGeneratorTitle.tr,
+                      description: AppStrings.aboutGeneratorDescription.tr,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildFeatureCard(
+                      context,
+                      icon: Icons.backup_rounded,
+                      title: AppStrings.aboutBackupTitle.tr,
+                      description: AppStrings.aboutBackupDescription.tr,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      AppStrings.developerInfo.tr,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.darkCardBackground
+                            : AppColors.lightCardBackground,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark
+                              ? AppColors.darkCardBorder
+                              : AppColors.lightCardBorder,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            AppStrings.developedBy.tr,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Henry Azer',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            AppStrings.followMe.tr,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              _buildSocialButton(
+                                context,
+                                faviconUrl: PopularWebsites.getFaviconUrl(
+                                    'linkedin.com'),
+                                label: AppStrings.linkedin.tr,
+                                onTap: () => _launchUrl(
+                                    PersonalLinks.getByName('linkedin')!),
+                                isDark: isDark,
+                              ),
+                              _buildSocialButton(
+                                context,
+                                faviconUrl:
+                                    PopularWebsites.getFaviconUrl('github.com'),
+                                label: AppStrings.github.tr,
+                                onTap: () => _launchUrl(
+                                    PersonalLinks.getByName('github')!),
+                                isDark: isDark,
+                              ),
+                              _buildSocialButton(
+                                context,
+                                faviconUrl: PopularWebsites.getFaviconUrl(
+                                    'outlook.com'),
+                                label: AppStrings.email.tr,
+                                onTap: () => _launchUrl(
+                                    PersonalLinks.getByName('mail')!),
+                                isDark: isDark,
+                              ),
+                              _buildSocialButton(
+                                context,
+                                faviconUrl: PopularWebsites.getFaviconUrl(
+                                    'instagram.com'),
+                                label: AppStrings.instagram.tr,
+                                onTap: () => _launchUrl(
+                                    PersonalLinks.getByName('instagram')!),
+                                isDark: isDark,
+                              ),
+                              _buildSocialButton(
+                                context,
+                                faviconUrl: PopularWebsites.getFaviconUrl(
+                                    'whatsapp.com'),
+                                label: AppStrings.whatsapp.tr,
+                                onTap: () => _launchUrl(
+                                    PersonalLinks.getByName('whatsapp')!),
+                                isDark: isDark,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      AppStrings.legal.tr,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => _showPrivacyPolicy(context, isDark),
+                          style: TextButton.styleFrom(
+                            foregroundColor:
+                                Theme.of(context).colorScheme.primary,
+                          ),
+                          child: Text(AppStrings.aboutPrivacyPolicy.tr),
+                        ),
+                        Text(
+                          ' • ',
+                          style: TextStyle(
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => _showTermsOfService(context, isDark),
+                          style: TextButton.styleFrom(
+                            foregroundColor:
+                                Theme.of(context).colorScheme.primary,
+                          ),
+                          child: Text(AppStrings.aboutTermsOfService.tr),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      AppStrings.copyright.tr,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.darkTextDisabled
+                            : AppColors.lightTextDisabled,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => _showTermsOfService(context),
-                  child: const Text('Terms of Service'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            
-            // Copyright
-            Text(
-              '© 2024 PassVault Team. All rights reserved.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.darkTextDisabled
-                  : AppColors.lightTextDisabled,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -189,17 +319,111 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureCard(BuildContext context, {
+  Widget _buildHeader(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [AppColors.darkHeaderStart, AppColors.darkHeaderEnd]
+              : [AppColors.lightHeaderStart, AppColors.lightHeaderEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppColors.darkCardBackground
+                  : AppColors.lightCardBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
+              ),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.info_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.about.tr,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String description,
+    required bool isDark,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark
+            ? AppColors.darkCardBackground
+            : AppColors.lightCardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+        ),
       ),
       child: Row(
         children: [
@@ -207,12 +431,12 @@ class AboutScreen extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).colorScheme.primary,
               size: 24,
             ),
           ),
@@ -223,17 +447,23 @@ class AboutScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: TextStyle(
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -244,58 +474,54 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton(BuildContext context, {
-    required IconData icon,
+  Widget _buildSocialButton(
+    BuildContext context, {
+    required String faviconUrl,
     required String label,
     required VoidCallback onTap,
+    required bool isDark,
   }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: Theme.of(context).primaryColor,
-              size: 24,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: CachedNetworkImage(
+                imageUrl: faviconUrl,
+                width: 18,
+                height: 18,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  width: 18,
+                  height: 18,
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                ),
+                errorWidget: (context, url, error) => Icon(
+                  Icons.public_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 18,
+                ),
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(width: 6),
             Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.w500,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ],
@@ -304,101 +530,100 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  void _launchEmail() async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: 'support@passvault.com',
-      queryParameters: {
-        'subject': 'PassVault It - Feedback',
-        'body': 'Hello PassVault Team,\n\n',
-      },
-    );
-    
+  Future<void> _launchUrl(String url) async {
     try {
-      if (await canLaunchUrl(emailUri)) {
-        await launchUrl(emailUri);
-      }
+      final Uri uri = Uri.parse(url);
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
     } catch (e) {
-      // Handle error
+      debugPrint('Error launching URL: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open link: $url'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  void _shareApp() {
-    const String appUrl = 'https://play.google.com/store/apps/details?id=com.passvault.it';
-    const String shareText = 'Check out PassVault It - A secure password manager! $appUrl';
-    
-    Clipboard.setData(const ClipboardData(text: shareText));
-  }
-
-  void _showRatingDialog(BuildContext context) {
+  void _showPrivacyPolicy(BuildContext context, bool isDark) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Rate PassVault It'),
-        content: const Text('If you enjoy using PassVault It, please take a moment to rate it in the app store!'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: isDark
+            ? AppColors.darkCardBackground
+            : AppColors.lightCardBackground,
+        title: Text(
+          AppStrings.privacyPolicyTitle.tr,
+          style: TextStyle(
+            color:
+                isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            AppStrings.privacyPolicyContent.tr,
+            style: TextStyle(
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+              height: 1.5,
+            ),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Maybe Later'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Launch app store
-            },
-            child: const Text('Rate Now'),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: Text(AppStrings.close.tr),
           ),
         ],
       ),
     );
   }
 
-  void _showPrivacyPolicy(BuildContext context) {
+  void _showTermsOfService(BuildContext context, bool isDark) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Privacy Policy'),
-        content: const SingleChildScrollView(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: isDark
+            ? AppColors.darkCardBackground
+            : AppColors.lightCardBackground,
+        title: Text(
+          AppStrings.termsOfServiceTitle.tr,
+          style: TextStyle(
+            color:
+                isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SingleChildScrollView(
           child: Text(
-            'PassVault It Privacy Policy\n\n'
-            '1. Data Collection: We do not collect any personal data.\n\n'
-            '2. Local Storage: All your passwords are stored locally on your device.\n\n'
-            '3. Encryption: Your data is encrypted using industry-standard encryption.\n\n'
-            '4. No Tracking: We do not track your usage or behavior.\n\n'
-            '5. Third Parties: We do not share data with third parties.\n\n'
-            'For more information, visit our website.',
+            AppStrings.termsOfServiceContent.tr,
+            style: TextStyle(
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+              height: 1.5,
+            ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showTermsOfService(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Terms of Service'),
-        content: const SingleChildScrollView(
-          child: Text(
-            'PassVault It Terms of Service\n\n'
-            '1. Acceptance: By using this app, you agree to these terms.\n\n'
-            '2. Use: Use this app responsibly and legally.\n\n'
-            '3. Data: You are responsible for backing up your data.\n\n'
-            '4. Security: Keep your master password secure.\n\n'
-            '5. Updates: We may update these terms periodically.\n\n'
-            'For complete terms, visit our website.',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: Text(AppStrings.close.tr),
           ),
         ],
       ),
