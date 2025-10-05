@@ -197,4 +197,32 @@ class AccountProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> reorderAccounts(int oldIndex, int newIndex, List<Account> currentList) async {
+    try {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+
+      final item = currentList.removeAt(oldIndex);
+      currentList.insert(newIndex, item);
+
+      for (int i = 0; i < currentList.length; i++) {
+        final updatedAccount = currentList[i].copyWith(sortOrder: i);
+        currentList[i] = updatedAccount;
+        await _accountLocalDataSource.updateAccount(updatedAccount);
+        
+        final mainIndex = _accounts.indexWhere((a) => a.id == updatedAccount.id);
+        if (mainIndex != -1) {
+          _accounts[mainIndex] = updatedAccount;
+        }
+      }
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Error reordering accounts: $e');
+      return false;
+    }
+  }
 }

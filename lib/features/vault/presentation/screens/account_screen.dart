@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vault_it/config/localization/app_localization.dart';
-import 'package:vault_it/config/routes/app_routes.dart';
 import 'package:vault_it/core/constants/popular_websites.dart';
 import 'package:vault_it/core/enums/vault_enums.dart';
 import 'package:vault_it/core/utils/app_colors.dart';
@@ -348,6 +347,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 icon: Icons.label_outline,
                 isDark: isDark,
                 isRequired: true,
+                maxLength: 24,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return AppStrings.validationTitleEmpty.tr;
@@ -367,7 +367,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 icon: Icons.person_outline,
                 isDark: isDark,
                 isRequired: true,
-                maxLength: 50,
+                maxLength: 64,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return AppStrings.validationUsernameEmpty.tr;
@@ -905,7 +905,7 @@ class _AccountScreenState extends State<AccountScreen> {
             key: _passwordKey,
             controller: _passwordController,
             obscureText: _obscurePassword,
-            maxLength: 50,
+            maxLength: 64,
             onChanged: (value) {
               _passwordKey.currentState?.validate();
               setState(() {
@@ -944,10 +944,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       height: 32,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.1),
+                        color: AppColors.success.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: IconButton(
@@ -956,7 +953,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         icon: Icon(
                           Icons.copy_rounded,
                           size: 16,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: AppColors.success
                         ),
                         onPressed: _copyPassword,
                       ),

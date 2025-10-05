@@ -16,6 +16,7 @@ enum AccountFilterType {
 }
 
 enum AccountSortType {
+  manual('manual'),
   dateAdded('date'),
   name('name'),
   lastModified('modified');

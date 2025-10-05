@@ -370,6 +370,15 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
               label: AppStrings.notes.tr,
               value: account.notes ?? '',
               maxLines: 3,
+              onCopy: () {
+                Clipboard.setData(ClipboardData(text: account.notes!));
+                HapticFeedback.lightImpact();
+                SnackBarHelper.showSuccess(
+                  context,
+                  AppStrings.copiedToClipboard.tr,
+                  duration: const Duration(seconds: 1),
+                );
+              },
             ),
           ],
           const SizedBox(height: 20),
@@ -473,16 +482,13 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.1),
+                      color: AppColors.success.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
                       Icons.copy_rounded,
                       size: 16,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: AppColors.success,
                     ),
                   ),
                 ),
@@ -552,9 +558,7 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.darkCardBorder
-                        : AppColors.lightSurface,
+                    color: isDark ? AppColors.darkSurface.withOpacity(0.4) : AppColors.lightSurface.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
@@ -562,9 +566,6 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
                     size: 16,
-                    color: isDark
-                        ? Colors.white.withOpacity(0.8)
-                        : Colors.grey[800],
                   ),
                 ),
               ),
@@ -583,14 +584,13 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: AppColors.success.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
                     Icons.copy_rounded,
                     size: 16,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: AppColors.success,
                   ),
                 ),
               ),
@@ -828,16 +828,13 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(5),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.1),
+                                  color: AppColors.success.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Icon(
                                   Icons.copy_rounded,
                                   size: 14,
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: AppColors.success,
                                 ),
                               ),
                             ),

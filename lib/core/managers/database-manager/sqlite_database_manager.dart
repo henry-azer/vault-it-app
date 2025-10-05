@@ -16,15 +16,25 @@ class SqliteDatabaseManager extends IDatabaseManager {
     _database = await openDatabase(
       path,
       onCreate: _onCreate,
-      version: 1,
+      onUpgrade: _onUpgrade,
+      version: 2,
       onConfigure: (db) async => await db.execute('PRAGMA foreign_keys = ON'),
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute(
-      'CREATE TABLE ${AppLocalStorageKeys.accountsTable}(id TEXT PRIMARY KEY, title TEXT, url TEXT, username TEXT, password TEXT, notes TEXT, addedDate TEXT, lastModified TEXT, isFavorite INTEGER DEFAULT 0, passwordHistory TEXT)',
+      'CREATE TABLE ${AppLocalStorageKeys.accountsTable}(id TEXT PRIMARY KEY, title TEXT, url TEXT, username TEXT, password TEXT, notes TEXT, addedDate TEXT, lastModified TEXT, isFavorite INTEGER DEFAULT 0, passwordHistory TEXT, sortOrder INTEGER DEFAULT 0)',
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add sortOrder column if it doesn't exist
+      await db.execute(
+        'ALTER TABLE ${AppLocalStorageKeys.accountsTable} ADD COLUMN sortOrder INTEGER DEFAULT 0',
+      );
+    }
   }
 
   @override

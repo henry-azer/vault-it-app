@@ -23,7 +23,7 @@ class _VaultScreenState extends State<VaultScreen>
   final FocusNode _searchFocusNode = FocusNode();
   late AnimationController _animationController;
   bool _isSearchActive = false;
-  AccountSortType _sortBy = AccountSortType.dateAdded;
+  AccountSortType _sortBy = AccountSortType.manual;
   AccountFilterType _filterBy = AccountFilterType.all;
 
   @override
@@ -382,7 +382,7 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildHeaderActions(bool isDark) {
     final bool isFilterActive = _filterBy != AccountFilterType.all;
-    final bool isSortActive = _sortBy != AccountSortType.dateAdded;
+    final bool isSortActive = _sortBy != AccountSortType.manual;
 
     return Row(
       children: [
@@ -709,6 +709,73 @@ class _VaultScreenState extends State<VaultScreen>
   }
 
   Widget _buildAccountList(List<Account> accounts, bool isDark) {
+    final bool isManualSort = _sortBy == AccountSortType.manual;
+    
+    if (isManualSort) {
+      return ReorderableListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        itemCount: accounts.length,
+        physics: const BouncingScrollPhysics(),
+        onReorder: (oldIndex, newIndex) async {
+          HapticFeedback.mediumImpact();
+          final provider = context.read<AccountProvider>();
+          await provider.reorderAccounts(oldIndex, newIndex, accounts);
+        },
+        proxyDecorator: (child, index, animation) {
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, child) {
+              final animValue = Curves.easeInOut.transform(animation.value);
+              final scale = 1.0 + (animValue * 0.05);
+              return Transform.scale(
+                scale: scale,
+                child: Material(
+                  elevation: 8 * animValue,
+                  borderRadius: BorderRadius.circular(16),
+                  shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  child: child,
+                ),
+              );
+            },
+            child: child,
+          );
+        },
+        itemBuilder: (context, index) {
+          return TweenAnimationBuilder<double>(
+            key: ValueKey(accounts[index].id),
+            duration: Duration(milliseconds: 300 + (index * 50)),
+            tween: Tween(begin: 0.0, end: 1.0),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: Opacity(
+                  opacity: value,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: VaultAccountCard(
+                      account: accounts[index],
+                      isDark: isDark,
+                      onTap: () async {
+                        await Navigator.pushNamed(
+                          context,
+                          Routes.viewAccount,
+                          arguments: accounts[index],
+                        );
+                        if (mounted && _searchController.text.isNotEmpty) {
+                          _clearSearch();
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    }
+    
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       itemCount: accounts.length,
@@ -795,6 +862,10 @@ class _VaultScreenState extends State<VaultScreen>
     final sortedList = List<Account>.from(accounts);
 
     switch (_sortBy) {
+      case AccountSortType.manual:
+        sortedList.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        break;
+
       case AccountSortType.name:
         sortedList.sort(
             (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
@@ -995,6 +1066,13 @@ class _VaultScreenState extends State<VaultScreen>
               ],
             ),
             const SizedBox(height: 24),
+            _buildSortOption(
+              Icons.drag_handle_rounded,
+              'Manual Order',
+              'Drag and drop to reorder',
+              AccountSortType.manual,
+              isDark,
+            ),
             _buildSortOption(
               Icons.access_time_rounded,
               AppStrings.sortDateAdded.tr,

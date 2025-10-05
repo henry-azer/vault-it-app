@@ -36,6 +36,7 @@ class Account {
   final DateTime lastModified;
   final bool isFavorite;
   final List<PasswordHistoryItem> passwordHistory;
+  final int sortOrder;
 
   const Account({
     required this.id,
@@ -48,6 +49,7 @@ class Account {
     this.notes,
     this.isFavorite = false,
     this.passwordHistory = const [],
+    this.sortOrder = 0,
   }) : lastModified = lastModified ?? addedDate;
 
   Map<String, dynamic> toMap() {
@@ -62,6 +64,7 @@ class Account {
       'lastModified': lastModified.toIso8601String(),
       'isFavorite': isFavorite ? 1 : 0,
       'passwordHistory': jsonEncode(passwordHistory.map((e) => e.toMap()).toList()),
+      'sortOrder': sortOrder,
     };
   }
 
@@ -103,6 +106,7 @@ class Account {
           : addedDate,
       isFavorite: (map['isFavorite'] ?? 0) == 1,
       passwordHistory: history,
+      sortOrder: map['sortOrder'] ?? 0,
     );
   }
 
@@ -117,6 +121,7 @@ class Account {
     DateTime? lastModified,
     bool? isFavorite,
     List<PasswordHistoryItem>? passwordHistory,
+    int? sortOrder,
   }) {
     return Account(
       id: id ?? this.id,
@@ -129,6 +134,7 @@ class Account {
       lastModified: lastModified ?? this.lastModified,
       isFavorite: isFavorite ?? this.isFavorite,
       passwordHistory: passwordHistory ?? this.passwordHistory,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 }
