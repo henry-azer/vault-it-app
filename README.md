@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Vault-It Logo](assets/images/dark_logo.png)
+<img src="assets/images/light_logo.png" width="200" height="100" alt="Vault-It Logo">
 
 **A modern, secure, and feature-rich password manager built with Flutter**
 
@@ -60,14 +60,19 @@
 
 ### 🎨 Customization
 - **Light/Dark themes** with system detection
-- **7+ language support**:
+- **11 language support**:
   - 🇬🇧 English
   - 🇪🇸 Español
   - 🇫🇷 Français
+  - 🇮🇹 Italiano
   - 🇩🇪 Deutsch
+  - 🇵🇹 Português
   - 🇸🇦 العربية
-  - 🇨🇳 中文
   - 🇹🇷 Türkçe
+  - 🇷🇺 Русский (Russkiy)
+  - 🇨🇳 中文 (Zhōngwén)
+  - 🇯🇵 日本語 (Nihongo)
+
 - **Custom color schemes**
 - **Responsive design** for all screen sizes
 
