@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Vault-It Logo](assets/logo-android.png)
+![Vault-It Logo](assets/images/dark_logo.png)
 
 **A modern, secure, and feature-rich password manager built with Flutter**
 
@@ -55,15 +55,12 @@
 
 ### ☁️ Backup & Sync
 - **Local backup/restore** to JSON files
-- **Google Drive integration** for cloud sync
-- **Automatic backup** with version tracking
-- **Cross-device sync** support
 - **Import/Export** functionality
 - **Backup validation** before import
 
 ### 🎨 Customization
 - **Light/Dark themes** with system detection
-- **7 language support**:
+- **7+ language support**:
   - 🇬🇧 English
   - 🇪🇸 Español
   - 🇫🇷 Français
@@ -78,10 +75,7 @@
 - **Master password** protection
 - **Local-only storage** (no external servers)
 - **SQLite encryption** for database
-- **Biometric authentication** ready
-- **Auto-lock timeout** support
 - **Secure clipboard** handling
-- **App data folder isolation** for cloud backups
 
 ---
 
@@ -122,8 +116,6 @@ lib/
 | **Dependency Injection** | GetIt |
 | **Local Database** | SQLite (sqflite) |
 | **Local Storage** | SharedPreferences |
-| **Cloud Sync** | Google Drive API |
-| **Authentication** | Google Sign-In |
 | **UI Components** | Material Design 3 |
 | **Navigation** | Sliding Clipped Nav Bar |
 | **Internationalization** | Flutter i18n |
@@ -178,7 +170,7 @@ dependencies:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/pass-vault-it.git
+   git clone https://github.com/henry-azer/vault-it-app.git
    cd pass-vault-it
    ```
 
@@ -225,34 +217,6 @@ flutter build ios --release
 
 ## ⚙️ Configuration
 
-### Google Drive Sync Setup
-
-To enable Google Drive cloud backup feature:
-
-1. **Create Google Cloud Project**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create new project
-   - Enable Google Drive API
-
-2. **Configure OAuth Credentials**
-   - Create Android OAuth client with your SHA-1
-   - Create iOS OAuth client with your Bundle ID
-   - Copy iOS Client ID
-
-3. **Update iOS Configuration**
-   - Edit `ios/Runner/Info.plist`
-   - Replace `YOUR_IOS_CLIENT_ID` with actual Client ID:
-   ```xml
-   <string>com.googleusercontent.apps.YOUR_ACTUAL_CLIENT_ID</string>
-   ```
-
-4. **Test the feature**
-   - Run the app
-   - Go to Settings → Google Drive Sync
-   - Sign in and test backup/restore
-
-📖 **Detailed guide**: See [`GOOGLE_DRIVE_SYNC_SETUP.md`](GOOGLE_DRIVE_SYNC_SETUP.md)
-
 ### Customization
 
 #### App Name & Package
@@ -292,26 +256,13 @@ To enable Google Drive cloud backup feature:
 - ✅ **SQLite encryption** - Database-level encryption
 - ✅ **Master password** - Single point of authentication
 - ✅ **Secure storage** - SharedPreferences for sensitive data
-- ✅ **App data folder** - Isolated cloud storage
 - ✅ **No analytics** - No tracking or telemetry
 
 ### Best Practices
 
 - 🔐 All passwords stored in encrypted SQLite database
 - 🔑 Master password never leaves the device
-- 📱 Biometric authentication support (ready)
-- ☁️ Cloud backups use Google Drive's encryption
 - 🚫 No third-party services or APIs for core functionality
-- 🔒 Auto-lock timeout support
-
-### Security Considerations
-
-⚠️ **Important Notes:**
-- Master password is stored locally (consider adding encryption)
-- SQLite database should use additional encryption layer
-- Implement biometric authentication for production
-- Add session timeout for enhanced security
-- Consider implementing password strength requirements
 
 ---
 
@@ -320,20 +271,9 @@ To enable Google Drive cloud backup feature:
 ### Version 2.0 (Planned)
 - [ ] Biometric authentication (fingerprint/face ID)
 - [ ] Auto-fill integration
-- [ ] Browser extension
 - [ ] Two-factor authentication support
-- [ ] Password breach monitoring
-- [ ] Secure notes and documents
-- [ ] Family sharing
-- [ ] Password strength analysis
-
-### Version 1.5 (In Progress)
-- [x] Google Drive sync integration
-- [x] Multi-language support
-- [x] Password history tracking
+- [ ] Google Drive sync integration
 - [ ] Auto-backup scheduling
-- [ ] Dark theme improvements
-- [ ] Performance optimizations
 
 ---
 
@@ -352,9 +292,9 @@ Contributions are welcome! Here's how you can help:
 ### Development Setup
 
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing-feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ### Code Style
@@ -373,7 +313,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ```
 MIT License
 
-Copyright (c) 2024 Vault-It
+Copyright (c) 2025 Vault-It
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -394,7 +334,6 @@ copies or substantial portions of the Software.
 - [Flutter](https://flutter.dev) - UI framework
 - [Dart](https://dart.dev) - Programming language
 - [Material Design](https://material.io) - Design system
-- [Google Drive API](https://developers.google.com/drive) - Cloud sync
 
 ### Special Thanks
 - Flutter community for amazing packages
@@ -407,10 +346,8 @@ copies or substantial portions of the Software.
 
 ### Get Help
 
-- 📖 **Documentation**: Check the [wiki](https://github.com/yourusername/pass-vault-it/wiki)
-- 🐛 **Bug Reports**: [Open an issue](https://github.com/yourusername/pass-vault-it/issues)
-- 💬 **Discussions**: [Join the conversation](https://github.com/yourusername/pass-vault-it/discussions)
-- 📧 **Email**: support@Vault-it.com
+- 🐛 **Bug Reports**: [Open an issue](https://github.com/henry-azer/vault-it-app/issues)
+- 📧 **Email**: henryazer@outlook.com
 
 ### Community
 
@@ -440,13 +377,14 @@ copies or substantial portions of the Software.
 
 ## 📈 Project Status
 
-![Status](https://img.shields.io/badge/Status-Active-success)
-![Maintenance](https://img.shields.io/badge/Maintained-Yes-green.svg)
+![Status]([https://img.shields.io/badge/Status-Active-success](https://img.shields.io/badge/Inactive%20-%20red?label=Status&labelColor=grey&color=red
+))
+![Maintenance](https://img.shields.io/badge/Maintained-No-red.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)
 
-**Current Version**: 1.0.0  
-**Last Updated**: October 2024  
-**Status**: Active Development
+**Current Version**: 1.0.0
+**Last Updated**: October 2025  
+**Status**: Released
 
 ---
 
