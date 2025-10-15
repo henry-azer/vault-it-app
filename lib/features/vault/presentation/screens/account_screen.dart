@@ -686,6 +686,7 @@ class _AccountScreenState extends State<AccountScreen> {
         lastModified: DateTime.now(),
         isFavorite: _isFavorite,
         passwordHistory: isEditing ? widget.accountToEdit!.passwordHistory : [],
+        sortOrder: isEditing ? widget.accountToEdit!.sortOrder : 0,
       );
 
       bool success;
