@@ -31,13 +31,17 @@ class _AccountScreenState extends State<AccountScreen> {
   final _passwordController = TextEditingController();
   final _urlController = TextEditingController();
   final _notesController = TextEditingController();
+  final _urlFocusNode = FocusNode();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _isFavorite = false;
-  PopularWebsite? _selectedWebsite;
   String? _faviconUrl;
   double _passwordStrength = 0.0;
+
+  void _onUrlFocusChanged() {
+    setState(() {});
+  }
 
   bool get isEditing => widget.accountToEdit != null;
 
@@ -79,33 +83,28 @@ class _AccountScreenState extends State<AccountScreen> {
     if (isEditing) {
       _populateFields();
     }
-    _urlController.addListener(_onUrlChanged);
+    _urlFocusNode.addListener(_onUrlFocusChanged);
   }
 
-  void _onUrlChanged() {
-    final url = _urlController.text.trim();
-    setState(() {
-      if (url.isNotEmpty) {
-        _faviconUrl = PopularWebsites.getFaviconUrl(url);
+  String _processCustomUrl(String input) {
+    String url = input.trim();
+    if (url.isEmpty) return url;
+    
+    if (!url.contains('://')) {
+      if (!url.toLowerCase().startsWith('www.')) {
+        url = 'https://www.$url';
       } else {
-        _faviconUrl = null;
+        url = 'https://$url';
       }
-    });
+    } else if (!url.toLowerCase().startsWith('http://') && !url.toLowerCase().startsWith('https://')) {
+      url = 'https://$url';
+    }
+    return url;
   }
 
   void _populateFields() {
     final account = widget.accountToEdit!;
 
-    _selectedWebsite = PopularWebsites.getByName(account.title);
-    if (_selectedWebsite == null && account.url != null) {
-      _selectedWebsite =
-          PopularWebsites.websites.cast<PopularWebsite?>().firstWhere(
-                (w) => w?.url == account.url,
-                orElse: () => null,
-              );
-    }
-
-    _selectedWebsite ??= PopularWebsites.createCustom(account.title);
     _titleController.text = account.title;
     _usernameController.text = account.username;
     _passwordController.text = account.password;
@@ -119,21 +118,6 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
-  void _selectPopularWebsite(String websiteName) {
-    setState(() {
-      _selectedWebsite = PopularWebsites.getByName(websiteName);
-
-      if (_selectedWebsite != null) {
-        _urlController.text = _selectedWebsite!.url;
-        _faviconUrl = _selectedWebsite!.faviconUrl;
-      } else {
-        _selectedWebsite = PopularWebsites.createCustom(websiteName);
-        _urlController.text = _selectedWebsite!.url;
-        _faviconUrl = PopularWebsites.getFaviconUrl(websiteName);
-      }
-    });
-    HapticFeedback.lightImpact();
-  }
 
   void _copyPassword() {
     if (_passwordController.text.isNotEmpty) {
@@ -417,212 +401,202 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Autocomplete<String>(
-            initialValue: TextEditingValue(
-              text: _selectedWebsite != null ? _selectedWebsite!.name : "",
-            ),
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              if (textEditingValue.text.isEmpty) {
-                return PopularWebsites.websites.map((w) => w.name);
-              }
-              final results = PopularWebsites.search(textEditingValue.text);
-              return results.map((w) => w.name);
-            },
-            onSelected: _selectPopularWebsite,
-            fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-              return TextFormField(
-                controller: controller,
-                focusNode: focusNode,
-                decoration: InputDecoration(
-                  hintText: AppStrings.searchWebsitesHint.tr,
-                  prefixIcon: _faviconUrl == null
-                      ? Icon(
-                          Icons.language_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 24,
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: CachedNetworkImage(
-                                imageUrl: _faviconUrl!,
-                                fit: BoxFit.cover,
-                                width: 10,
-                                height: 10,
-                                placeholder: (context, url) =>
-                                    _buildSkeletonLoader(),
-                                errorWidget: (context, url, error) =>
-                                    _buildFallbackIcon(),
-                              )),
-                        ),
-                  suffixIcon: controller.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 20),
-                          onPressed: () {
-                            setState(() {
-                              _faviconUrl = null;
-                            });
-                            controller.clear();
-                            focusNode.unfocus();
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
+      child: RawAutocomplete<PopularWebsite>(
+        textEditingController: _urlController,
+        focusNode: _urlFocusNode,
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          return PopularWebsites.search(textEditingValue.text);
+        },
+        onSelected: (PopularWebsite selection) {
+          setState(() {
+            _urlController.text = selection.url;
+            _faviconUrl = selection.faviconUrl;
+          });
+          HapticFeedback.lightImpact();
+        },
+        fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+          return TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            keyboardType: TextInputType.url,
+            decoration: InputDecoration(
+              labelText: AppStrings.websiteOptional.tr,
+              hintText: AppStrings.searchWebsitesHint.tr,
+              prefixIcon: _faviconUrl == null
+                  ? Icon(
+                      Icons.language_rounded,
                       color: Theme.of(context).colorScheme.primary,
-                      width: 2,
+                      size: 24,
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: CachedNetworkImage(
+                            imageUrl: _faviconUrl!,
+                            fit: BoxFit.cover,
+                            width: 10,
+                            height: 10,
+                            placeholder: (context, url) =>
+                                _buildSkeletonLoader(),
+                            errorWidget: (context, url, error) =>
+                                _buildFallbackIcon(),
+                          )),
                     ),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width * 0.04,
-                    vertical: MediaQuery.of(context).size.height * 0.018,
-                  ),
+              suffixIcon: controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 20),
+                      onPressed: () {
+                        setState(() {
+                          controller.clear();
+                          _faviconUrl = null;
+                        });
+                        focusNode.unfocus();
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                  width: 2,
                 ),
-                onFieldSubmitted: (value) {
-                  if (value.isNotEmpty) {
-                    _selectPopularWebsite(value);
-                    onSubmitted();
-                  }
-                },
-              );
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.04,
+                vertical: MediaQuery.of(context).size.height * 0.018,
+              ),
+              labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+              hintStyle: TextStyle(
+                color: isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
+                fontSize: 14,
+              ),
+            ),
+            onChanged: (value) {
+              setState(() {
+                if (value.isNotEmpty) {
+                  final processedUrl = _processCustomUrl(value);
+                  _faviconUrl = PopularWebsites.getFaviconUrl(processedUrl);
+                } else {
+                  _faviconUrl = null;
+                }
+              });
             },
-            optionsViewBuilder: (context, onSelected, options) {
-              return Align(
-                alignment: Alignment.topLeft,
-                child: Material(
-                  elevation: 8,
+          );
+        },
+        optionsViewBuilder: (context, onSelected, options) {
+          return Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.3,
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkCardBackground : Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.3,
-                      maxWidth: MediaQuery.of(context).size.width * 0.9,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkCardBackground : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(8),
-                      shrinkWrap: true,
-                      itemCount: options.length,
-                      itemBuilder: (context, index) {
-                        final option = options.elementAt(index);
-                        final website = PopularWebsites.getByName(option);
+                ),
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final website = options.elementAt(index);
 
-                        return InkWell(
-                          onTap: () => onSelected(option),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  MediaQuery.of(context).size.width * 0.04,
-                              vertical:
-                                  MediaQuery.of(context).size.height * 0.012,
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
+                    return InkWell(
+                      onTap: () => onSelected(website),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * 0.04,
+                          vertical: MediaQuery.of(context).size.height * 0.012,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  website.faviconUrl,
                                   width: 32,
                                   height: 32,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: website != null
-                                        ? Image.network(
-                                            website.faviconUrl,
-                                            width: 32,
-                                            height: 32,
-                                            fit: BoxFit.contain,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                              return Center(
-                                                child: Text(
-                                                  option[0].toUpperCase(),
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          )
-                                        : Center(
-                                            child: Text(
-                                              option[0].toUpperCase(),
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                              ),
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                                SizedBox(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.03),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        option,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      if (website != null)
-                                        Text(
-                                          website.domain,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                                                fontSize: 11,
-                                              ),
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Text(
+                                        website.name[0].toUpperCase(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
-                                    ],
-                                  ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                            SizedBox(width: MediaQuery.of(context).size.width * 0.03),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    website.name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                  Text(
+                                    website.domain,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: isDark
+                                              ? AppColors.darkTextSecondary
+                                              : AppColors.lightTextSecondary,
+                                          fontSize: 11,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -687,14 +661,22 @@ class _AccountScreenState extends State<AccountScreen> {
     try {
       final accountProvider = context.read<AccountProvider>();
 
+      String? finalUrl;
+      if (_urlController.text.trim().isNotEmpty) {
+        final urlText = _urlController.text.trim();
+        if (urlText.startsWith('http://') || urlText.startsWith('https://')) {
+          finalUrl = urlText;
+        } else {
+          finalUrl = _processCustomUrl(urlText);
+        }
+      }
+
       final account = Account(
         id: isEditing
             ? widget.accountToEdit!.id
             : accountProvider.generateAccountId(),
         title: _titleController.text.trim(),
-        url: _urlController.text.trim().isEmpty
-            ? null
-            : _urlController.text.trim(),
+        url: finalUrl,
         username: _usernameController.text.trim(),
         password: _passwordController.text.trim(),
         notes: _notesController.text.trim().isEmpty
@@ -1166,12 +1148,13 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   void dispose() {
-    _urlController.removeListener(_onUrlChanged);
+    _urlFocusNode.removeListener(_onUrlFocusChanged);
     _titleController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     _urlController.dispose();
     _notesController.dispose();
+    _urlFocusNode.dispose();
     super.dispose();
   }
 }

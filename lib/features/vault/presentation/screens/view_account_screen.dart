@@ -243,56 +243,84 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
-                child: CachedNetworkImage(
-                  imageUrl: account.url != null && account.url!.isNotEmpty
-                      ? PopularWebsites.getFaviconUrl(account.url!)
-                      : PopularWebsites.getFaviconUrl(account.title),
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context)
+                child: account.url != null && account.url!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: PopularWebsites.getFaviconUrl(account.url!),
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isDark
+                                  ? [
+                                      AppColors.darkSurface,
+                                      AppColors.darkCardBorder,
+                                      AppColors.darkSurface,
+                                    ]
+                                  : [
+                                      AppColors.lightCardBorder,
+                                      AppColors.lightSurface,
+                                      AppColors.lightCardBorder,
+                                    ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              stops: const [0.0, 0.5, 1.0],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.image_outlined,
+                              size: 24,
+                              color: isDark
+                                  ? AppColors.darkTextDisabled
+                                  : AppColors.lightTextDisabled,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.lock_rounded,
+                              size: 24,
+                              color: Colors.white.withOpacity(0.85),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.8),
-                          Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.6),
-                        ],
+                              .withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.language_rounded,
+                            size: 24,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(Icons.lock_rounded,
-                        size: 24, color: Colors.white.withOpacity(0.9)),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.8),
-                          Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.6),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(Icons.lock_rounded,
-                        size: 24, color: Colors.white.withOpacity(0.9)),
-                  ),
-                ),
               ),
               const SizedBox(width: 14),
               Expanded(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:vault_it/config/localization/app_localization.dart';
 import 'package:vault_it/config/routes/app_routes.dart';
 import 'package:vault_it/core/enums/vault_enums.dart';
@@ -25,6 +27,7 @@ class _VaultScreenState extends State<VaultScreen>
   bool _isSearchActive = false;
   AccountSortType _sortBy = AccountSortType.manual;
   AccountFilterType _filterBy = AccountFilterType.all;
+  int _refreshCounter = 0;
 
   @override
   void initState() {
@@ -65,6 +68,29 @@ class _VaultScreenState extends State<VaultScreen>
       _animationController.forward();
     } else {
       _animationController.reverse();
+    }
+  }
+
+  Future<void> _handleRefresh() async {
+    try {
+      imageCache.clear();
+      imageCache.clearLiveImages();
+      
+      await CachedNetworkImage.evictFromCache('');
+      await DefaultCacheManager().emptyCache();
+      
+      await context.read<AccountProvider>().loadAccounts();
+      
+      if (mounted) {
+        setState(() {
+          _refreshCounter++;
+        });
+      }
+      
+      HapticFeedback.mediumImpact();
+    } catch (e) {
+      debugPrint('Error refreshing: $e');
+      HapticFeedback.lightImpact();
     }
   }
 
@@ -437,7 +463,7 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildContent(bool isDark) {
     return RefreshIndicator(
-      onRefresh: () => context.read<AccountProvider>().loadAccounts(),
+      onRefresh: _handleRefresh,
       color: Theme.of(context).colorScheme.primary,
       child: Consumer<AccountProvider>(
         builder: (context, accountProvider, child) {
@@ -754,6 +780,7 @@ class _VaultScreenState extends State<VaultScreen>
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: VaultAccountCard(
+                      key: ValueKey('${accounts[index].id}_$_refreshCounter'),
                       account: accounts[index],
                       isDark: isDark,
                       onTap: () async {
@@ -793,6 +820,7 @@ class _VaultScreenState extends State<VaultScreen>
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: VaultAccountCard(
+                    key: ValueKey('${accounts[index].id}_$_refreshCounter'),
                     account: accounts[index],
                     isDark: isDark,
                     onTap: () async {

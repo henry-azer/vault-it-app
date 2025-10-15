@@ -267,8 +267,8 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
 
   Widget _buildFallbackIcon() {
     return Container(
-      width: 56,
-      height: 56,
+      width: 45,
+      height: 45,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -282,8 +282,8 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
       child: Center(
         child: Icon(
           Icons.lock_rounded,
-          size: 28,
-          color: Colors.white.withOpacity(0.9),
+          size: 24,
+          color: Colors.white.withOpacity(0.85),
         ),
       ),
     );
