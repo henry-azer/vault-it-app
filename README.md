@@ -6,7 +6,7 @@
 
 **A modern, secure, and feature-rich password manager built with Flutter**
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.5.3+-02569B?logo=flutter)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.27.0-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.5.3+-0175C2?logo=dart)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-lightgrey)](https://github.com/yourusername/pass-vault-it)
@@ -106,7 +106,7 @@ lib/
 
 | Category | Technology |
 |----------|-----------|
-| **Framework** | Flutter 3.5.3+ |
+| **Framework** | Flutter 3.27.0 |
 | **Language** | Dart 3.5.3+ |
 | **State Management** | Provider Pattern |
 | **Dependency Injection** | GetIt |
@@ -157,7 +157,7 @@ dependencies:
 
 ### Prerequisites
 
-- Flutter SDK (>=3.5.3)
+- Flutter SDK 3.27.0 (or use `.flutter-version` file)
 - Dart SDK (>=3.5.3)
 - Android Studio / Xcode
 - Git
