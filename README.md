@@ -19,18 +19,65 @@
 
 ## 📱 About
 
-**Vault-It** is a cross-platform password manager designed with security and user experience in mind. Store, manage, and sync your passwords securely across devices with end-to-end encryption and cloud backup support.
+**Vault-It** is a cross-platform password manager designed with security and user experience in mind. Store, manage, and backup your passwords securely.
 
 ### Why Vault-It?
 
 - 🔒 **Military-grade encryption** - Your data is always encrypted
-- ☁️ **Cloud sync** - Backup and restore with Google Drive
 - 🎨 **Beautiful UI** - Modern Material Design 3 interface
 - 🌍 **Multi-language** - Support multi languages localization
 - 🔑 **Password generator** - Create strong, unique passwords
 - 📱 **Cross-platform** - Works on Android and iOS
 - 🎯 **Offline-first** - Works without internet connection
 - 🆓 **Free & Open Source** - No subscriptions, no tracking
+
+---
+
+## 📸 Screenshots
+
+### Light Theme
+<div align="start">
+  <img src="screenshots/light/1.png" width="200" />
+  <img src="screenshots/light/2.png" width="200" />
+  <img src="screenshots/light/3.png" width="200" />
+  <img src="screenshots/light/4.png" width="200" />
+  <img src="screenshots/light/5.png" width="200" />
+  <img src="screenshots/light/6.png" width="200" />
+  <img src="screenshots/light/7.png" width="200" />
+  <img src="screenshots/light/8.png" width="200" />
+  <img src="screenshots/light/9.png" width="200" />
+  <img src="screenshots/light/10.png" width="200" />
+  <img src="screenshots/light/11.png" width="200" />
+  <img src="screenshots/light/12.png" width="200" />
+  <img src="screenshots/light/13.png" width="200" />
+  <img src="screenshots/light/14.png" width="200" />
+  <img src="screenshots/light/15.png" width="200" />
+  <img src="screenshots/light/16.png" width="200" />
+  <img src="screenshots/light/17.png" width="200" />
+  <img src="screenshots/light/18.png" width="200" />
+</div>
+
+### Dark Theme
+<div align="start">
+  <img src="screenshots/dark/1.png" width="200" />
+  <img src="screenshots/dark/2.png" width="200" />
+  <img src="screenshots/dark/3.png" width="200" />
+  <img src="screenshots/dark/4.png" width="200" />
+  <img src="screenshots/dark/5.png" width="200" />
+  <img src="screenshots/dark/6.png" width="200" />
+  <img src="screenshots/dark/7.png" width="200" />
+  <img src="screenshots/dark/8.png" width="200" />
+  <img src="screenshots/dark/9.png" width="200" />
+  <img src="screenshots/dark/10.png" width="200" />
+  <img src="screenshots/dark/11.png" width="200" />
+  <img src="screenshots/dark/12.png" width="200" />
+  <img src="screenshots/dark/13.png" width="200" />
+  <img src="screenshots/dark/14.png" width="200" />
+  <img src="screenshots/dark/15.png" width="200" />
+  <img src="screenshots/dark/16.png" width="200" />
+  <img src="screenshots/dark/17.png" width="200" />
+  <img src="screenshots/dark/18.png" width="200" />
+</div>
 
 ---
 
@@ -353,24 +400,6 @@ copies or substantial portions of the Software.
 
 ---
 
-## 📸 Screenshots
-
-### Light Theme
-<div align="center">
-  <img src="screenshots/vault_light.png" width="200" />
-  <img src="screenshots/generator_light.png" width="200" />
-  <img src="screenshots/settings_light.png" width="200" />
-</div>
-
-### Dark Theme
-<div align="center">
-  <img src="screenshots/vault_dark.png" width="200" />
-  <img src="screenshots/generator_dark.png" width="200" />
-  <img src="screenshots/settings_dark.png" width="200" />
-</div>
-
----
-
 ## 📈 Project Status
 
 ![Status](https://img.shields.io/badge/Status-Inactive-red.svg)
@@ -379,14 +408,12 @@ copies or substantial portions of the Software.
 
 **Current Version**: 1.0.0
 **Last Updated**: October 2025  
-**Status**: Released
 
 ---
-
 <div align="center">
 
-**Made with ❤️ using Flutter**
+**Made with ❤️ By Henry Azer**
 
-[⬆ Back to Top](#-Vault-it)
+[⬆ Back to Top ⬆](#-Vault-it)
 
 </div>
