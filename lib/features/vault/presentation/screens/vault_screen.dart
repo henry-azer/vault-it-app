@@ -73,13 +73,15 @@ class _VaultScreenState extends State<VaultScreen>
 
   Future<void> _handleRefresh() async {
     try {
+      final accountProvider = context.read<AccountProvider>();
+      
       imageCache.clear();
       imageCache.clearLiveImages();
       
       await CachedNetworkImage.evictFromCache('');
       await DefaultCacheManager().emptyCache();
       
-      await context.read<AccountProvider>().loadAccounts();
+      await accountProvider.loadAccounts();
       
       if (mounted) {
         setState(() {

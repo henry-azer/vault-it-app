@@ -169,27 +169,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _passwordController.text,
     );
 
-    if (mounted) {
-      if (success) {
-        await authProvider.login(_passwordController.text);
-        SnackBarHelper.showSuccess(
-          context,
-          AppStrings.accountCreationSuccess.tr,
-        );
-        Navigator.pushReplacementNamed(context, Routes.login);
-      } else {
-        SnackBarHelper.showError(
-          context,
-          AppStrings.accountCreationError.tr,
-        );
-      }
+    if (!mounted) return;
+
+    if (success) {
+      await authProvider.login(_passwordController.text);
+      if (!mounted) return;
+      
+      SnackBarHelper.showSuccess(
+        context,
+        AppStrings.accountCreationSuccess.tr,
+      );
+      Navigator.pushReplacementNamed(context, Routes.login);
+    } else {
+      SnackBarHelper.showError(
+        context,
+        AppStrings.accountCreationError.tr,
+      );
     }
 
-    if (mounted) {
-      setState(() {
-        _isRegistering = false;
-      });
-    }
+    setState(() {
+      _isRegistering = false;
+    });
   }
 
   @override

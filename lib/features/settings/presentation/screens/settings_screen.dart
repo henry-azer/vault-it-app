@@ -602,7 +602,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (!mounted) return;
       final confirmed = await _showImportConfirmationDialog(result);
-      if (!confirmed) return;
+      if (!confirmed || !mounted) return;
 
       final accountProvider =
           Provider.of<AccountProvider>(context, listen: false);

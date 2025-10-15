@@ -160,7 +160,7 @@ class _VaultAccountCardState extends State<VaultAccountCard> {
         final provider = context.read<AccountProvider>();
         final success = await provider.toggleFavorite(widget.account.id);
 
-        if (!success && context.mounted) {
+        if (!success && mounted) {
           SnackBarHelper.showError(
             context,
             AppStrings.failedToFavorite.tr,
