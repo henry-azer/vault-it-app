@@ -4,7 +4,7 @@ This directory contains automated CI/CD workflows for the Vault-It Flutter app.
 
 ## 📋 Available Workflows
 
-### 1. Build Release APK (`build-release-apk.yml`)
+### 1. Build Release APK & IPA (`build-release.yml`)
 
 **Trigger:** Automatically runs when you create or push to a release branch
 
@@ -18,7 +18,9 @@ This directory contains automated CI/CD workflows for the Vault-It Flutter app.
 - Otherwise, version is read from `pubspec.yaml`
 
 **What it does:**
-- ✅ Sets up Flutter environment
+
+**Android Build (Ubuntu Runner):**
+- ✅ Sets up Flutter environment with Java 17
 - ✅ Gets dependencies
 - ✅ Runs Flutter analyzer (non-blocking)
 - ✅ Builds split APKs for different architectures:
@@ -26,7 +28,15 @@ This directory contains automated CI/CD workflows for the Vault-It Flutter app.
   - `app-arm64-v8a-release.apk` (ARM 64-bit)
   - `app-x86_64-release.apk` (x86 64-bit)
 - ✅ Uploads APKs as artifacts (available for 30 days)
-- ✅ Creates build summary
+
+**iOS Build (macOS Runner):**
+- ✅ Sets up Flutter environment
+- ✅ Gets dependencies
+- ✅ Runs Flutter analyzer (non-blocking)
+- ✅ Builds iOS IPA (no code sign for testing)
+- ✅ Creates IPA file from Runner.app
+- ✅ Uploads IPA as artifact (available for 30 days)
+- ⚠️ IPA is built without code signing (suitable for testing, requires signing for device installation)
 
 **Usage:**
 ```bash
@@ -41,11 +51,13 @@ git push origin release-1.0.0
 # git checkout -b release-hotfix
 ```
 
-**Download APKs:**
+**Download Artifacts:**
 1. Go to the Actions tab in your GitHub repository
 2. Click on the workflow run
 3. Scroll down to "Artifacts" section
-4. Download the APK zip file
+4. Download artifacts:
+   - **vault-it-apk-X.X.X.zip** - Contains all Android APKs
+   - **vault-it-ipa-X.X.X.zip** - Contains iOS IPA
 
 ---
 
@@ -56,12 +68,27 @@ git push origin release-1.0.0
 **Tag format:** `v*.*.*` (e.g., `v1.0.0`, `v2.3.1-beta`)
 
 **What it does:**
-- ✅ Builds both split and universal APKs
-- ✅ Renames APKs with version numbers
+
+**Build Phase:**
+- 🤖 **Android Job** (Ubuntu Runner):
+  - Builds split APKs (armeabi-v7a, arm64-v8a, x86_64)
+  - Builds universal APK
+  - Renames APKs with version numbers
+  - Uploads to artifacts
+  
+- 🍎 **iOS Job** (macOS Runner):
+  - Builds iOS app without code signing
+  - Creates IPA file
+  - Renames IPA with version number
+  - Uploads to artifacts
+
+**Release Phase:**
+- ✅ Downloads all build artifacts
 - ✅ Creates a GitHub Release with:
-  - Release notes template
+  - Release notes template (Android & iOS sections)
   - All APK variants attached
-  - Installation instructions
+  - iOS IPA attached
+  - Installation instructions for both platforms
 - ✅ Makes release publicly available
 
 **Usage:**
@@ -171,7 +198,9 @@ retention-days: 30  # Change to 7, 60, 90, etc.
 
 ---
 
-## 📱 APK Architecture Guide
+## 📱 Platform Build Guide
+
+### Android APK Architecture
 
 | Architecture | Description | Devices |
 |-------------|-------------|---------|
@@ -179,6 +208,24 @@ retention-days: 30  # Change to 7, 60, 90, etc.
 | **armeabi-v7a** | 32-bit ARM | Older Android devices (2015-2019) |
 | **x86_64** | 64-bit Intel/AMD | Android emulators, rare x86 devices |
 | **universal** | All architectures | Works everywhere but larger file size |
+
+### iOS IPA Signing
+
+The workflow builds unsigned IPA files for flexibility. Here's what you can do:
+
+**For Testing/Development:**
+- Use **AltStore**, **Sideloadly**, or **Apple Configurator**
+- Valid for 7 days with free Apple ID
+- No jailbreak required
+
+**For Distribution:**
+- Use **Xcode** with proper provisioning profiles
+- Sign with Apple Developer account
+- Submit to App Store or use TestFlight
+
+**For Jailbroken Devices:**
+- Install **AppSync Unified**
+- Install IPA directly without signing
 
 ---
 
@@ -206,7 +253,20 @@ This error occurs when Gradle properties are incompatible with Java 17:
 - Use proper JVM args: `-Xmx4096M -XX:MaxMetaspaceSize=1024m`
 - Ensure `org.gradle.jvmargs` only contains valid JVM flags (not javac flags)
 
-### APK not found?
+### iOS build failing?
+Common iOS build issues:
+- **Xcode version**: Ensure macOS runner has compatible Xcode
+- **CocoaPods**: Run `cd ios && pod install` if dependencies fail
+- **Code signing**: The workflow uses `--no-codesign` which is intentional
+- **Simulator vs Device**: Workflow builds for device (iphoneos), not simulator
+
+### IPA installation issues?
+- **"Unable to install"**: IPA needs to be signed for your device
+- **Use signing tools**: AltStore, Sideloadly, or Xcode for signing
+- **Free Apple ID**: Limited to 3 apps, 7-day validity
+- **Paid Developer**: Use Xcode and provisioning profiles
+
+### APK/IPA not found?
 - Wait for workflow to complete (green checkmark)
 - Scroll to "Artifacts" section at bottom of workflow run
 - Artifacts expire after retention period (default 30 days)
@@ -215,8 +275,19 @@ This error occurs when Gradle properties are incompatible with Java 17:
 
 ## 📝 Notes
 
-- **Build time:** ~5-10 minutes depending on project size
-- **Artifact size:** Split APKs ~20-40MB each, Universal ~60-80MB
+### Build Times
+- **Android build:** ~5-10 minutes (Ubuntu runner)
+- **iOS build:** ~10-15 minutes (macOS runner)
+- **Both platforms:** ~15-20 minutes total (parallel execution)
+
+### Artifact Sizes
+- **Android APK:** Split APKs ~20-40MB each, Universal ~60-80MB
+- **iOS IPA:** ~50-100MB (uncompressed)
+
+### Runner Costs (GitHub Actions)
+- **Ubuntu runner:** Included in free tier (2,000 minutes/month)
+- **macOS runner:** 10x cost multiplier (consumes more free minutes)
+- **Tip:** Consider building iOS only when needed to conserve minutes
 - **Signing:** APKs are release builds but not signed (add keystore for production)
 - **Permissions:** Release creation requires `contents: write` permission
 
