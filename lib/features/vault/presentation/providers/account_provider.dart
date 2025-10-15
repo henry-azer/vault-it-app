@@ -35,6 +35,11 @@ class AccountProvider with ChangeNotifier {
     _setLoading(true);
     try {
       _accounts = await _accountLocalDataSource.getAccounts();
+      final accountsWithDefaultOrder = _accounts.where((a) => a.sortOrder == 0).toList();
+      if (accountsWithDefaultOrder.isNotEmpty) {
+        await _initializeSortOrder();
+      }
+
       _applySearch();
     } catch (e) {
       debugPrint('Error loading accounts: $e');
@@ -43,10 +48,29 @@ class AccountProvider with ChangeNotifier {
     }
   }
 
+  Future<void> _initializeSortOrder() async {
+    try {
+      _accounts.sort((a, b) => a.addedDate.compareTo(b.addedDate));
+      for (int i = 0; i < _accounts.length; i++) {
+        if (_accounts[i].sortOrder == 0) {
+          final updatedAccount = _accounts[i].copyWith(sortOrder: i + 1);
+          _accounts[i] = updatedAccount;
+          await _accountLocalDataSource.updateAccount(updatedAccount);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error initializing sort order: $e');
+    }
+  }
+
   Future<bool> addAccount(Account account) async {
     try {
-      await _accountLocalDataSource.addAccount(account);
-      _accounts.add(account);
+      final maxSortOrder = _accounts.isEmpty
+          ? 0
+          : _accounts.map((a) => a.sortOrder).reduce((a, b) => a > b ? a : b);
+      final accountWithOrder = account.copyWith(sortOrder: maxSortOrder + 1);
+      await _accountLocalDataSource.addAccount(accountWithOrder);
+      _accounts.add(accountWithOrder);
       _applySearch();
       return true;
     } catch (e) {
@@ -59,7 +83,7 @@ class AccountProvider with ChangeNotifier {
     try {
       final oldAccount = await _accountLocalDataSource.getAccountById(account.id);
       List<PasswordHistoryItem> updatedHistory = List.from(account.passwordHistory);
-      
+
       if (oldAccount != null && oldAccount.password != account.password) {
         updatedHistory.insert(
           0,
@@ -69,7 +93,7 @@ class AccountProvider with ChangeNotifier {
           ),
         );
       }
-      
+
       final updatedAccount = account.copyWith(
         lastModified: DateTime.now(),
         passwordHistory: updatedHistory,
@@ -208,10 +232,11 @@ class AccountProvider with ChangeNotifier {
       currentList.insert(newIndex, item);
 
       for (int i = 0; i < currentList.length; i++) {
-        final updatedAccount = currentList[i].copyWith(sortOrder: i);
+        final sortOrderValue = currentList.length - i;
+        final updatedAccount = currentList[i].copyWith(sortOrder: sortOrderValue);
         currentList[i] = updatedAccount;
         await _accountLocalDataSource.updateAccount(updatedAccount);
-        
+
         final mainIndex = _accounts.indexWhere((a) => a.id == updatedAccount.id);
         if (mainIndex != -1) {
           _accounts[mainIndex] = updatedAccount;
