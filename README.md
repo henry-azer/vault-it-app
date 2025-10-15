@@ -6,7 +6,7 @@
 
 **A modern, secure, and feature-rich password manager built with Flutter**
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.27.0-02569B?logo=flutter)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.24.3-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.5.3+-0175C2?logo=dart)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-lightgrey)](https://github.com/yourusername/pass-vault-it)
@@ -26,7 +26,7 @@
 - 🔒 **Military-grade encryption** - Your data is always encrypted
 - ☁️ **Cloud sync** - Backup and restore with Google Drive
 - 🎨 **Beautiful UI** - Modern Material Design 3 interface
-- 🌍 **Multi-language** - Support for 7 languages
+- 🌍 **Multi-language** - Support multi languages localization
 - 🔑 **Password generator** - Create strong, unique passwords
 - 📱 **Cross-platform** - Works on Android and iOS
 - 🎯 **Offline-first** - Works without internet connection
