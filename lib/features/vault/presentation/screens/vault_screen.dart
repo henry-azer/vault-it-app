@@ -158,7 +158,7 @@ class _VaultScreenState extends State<VaultScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppStrings.accountsVault.tr,
+                      AppStrings.accounts.tr,
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -863,7 +863,7 @@ class _VaultScreenState extends State<VaultScreen>
 
     switch (_sortBy) {
       case AccountSortType.manual:
-        sortedList.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        sortedList.sort((a, b) => b.sortOrder.compareTo(a.sortOrder));
         break;
 
       case AccountSortType.name:

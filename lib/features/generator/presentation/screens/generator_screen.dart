@@ -100,7 +100,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppStrings.passwordGenerator.tr,
+                      AppStrings.generator.tr,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.5,
