@@ -8,6 +8,7 @@ import 'package:vault_it/core/utils/app_colors.dart';
 import 'package:vault_it/core/utils/app_strings.dart';
 import 'package:vault_it/core/utils/snackbar_helper.dart';
 import 'package:vault_it/data/entities/account.dart';
+import 'package:vault_it/data/entities/category.dart';
 import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -24,6 +25,30 @@ class ViewAccountScreen extends StatefulWidget {
 class _ViewAccountScreenState extends State<ViewAccountScreen> {
   bool _obscurePassword = true;
   bool _showPasswordHistory = false;
+  List<Category> _categories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final accountProvider = context.read<AccountProvider>();
+    final categories =
+        accountProvider.getCategoriesForAccount(widget.account.id);
+    if (mounted) {
+      setState(() {
+        _categories = categories;
+      });
+    }
+  }
 
   String _formatDate(DateTime date) => DateFormat('MMM dd, yyyy').format(date);
 
@@ -287,8 +312,14 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                                Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.8),
+                                Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.6),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -409,6 +440,10 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
               },
             ),
           ],
+          if (_categories.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildCategoriesSection(isDark),
+          ],
           const SizedBox(height: 20),
           Divider(
               color: isDark ? Colors.grey[800] : Colors.grey[300], height: 1),
@@ -486,7 +521,8 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color:
+                isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -558,7 +594,8 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color:
+                isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -586,7 +623,9 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface.withOpacity(0.4) : AppColors.lightSurface.withOpacity(0.4),
+                    color: isDark
+                        ? AppColors.darkSurface.withOpacity(0.4)
+                        : AppColors.lightSurface.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
@@ -670,9 +709,9 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
               Text(
                 _formatTime(dateTime),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                ),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                    ),
               ),
             ],
           ),
@@ -887,7 +926,8 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning_rounded, color: Colors.red[600], size: 28),
+            Icon(Icons.warning_rounded,
+                color: Theme.of(context).colorScheme.primary, size: 28),
             SizedBox(width: MediaQuery.of(context).size.width * 0.03),
             Text(AppStrings.deleteAccountConfirmation.tr),
           ],
@@ -913,8 +953,6 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
               _deleteAccount();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.06,
                 vertical: MediaQuery.of(context).size.height * 0.015,
@@ -958,5 +996,71 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
         );
       }
     }
+  }
+
+  Widget _buildCategoriesSection(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.label_outline_rounded,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              AppStrings.categories.tr,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _categories.map((category) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.label_outline_rounded,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    category.name,
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
   }
 }

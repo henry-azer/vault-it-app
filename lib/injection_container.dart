@@ -5,6 +5,7 @@ import 'package:vault_it/core/managers/storage-manager/i_storage_manager.dart';
 import 'package:vault_it/core/managers/storage-manager/local_storage_manager.dart';
 import 'package:vault_it/data/datasources/app_local_datasource.dart';
 import 'package:vault_it/data/datasources/account_local_datasource.dart';
+import 'package:vault_it/data/datasources/category_local_datasource.dart';
 import 'package:vault_it/data/datasources/user_local_datasource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,6 +25,7 @@ Future<void> init() async {
   sl.registerLazySingleton<AppLocalDataSource>(() => AppLocalDataSourceImpl(storageManager: sl()));
   sl.registerLazySingleton<UserLocalDataSource>(() => UserLocalDataSourceImpl(storageManager: sl()));
   sl.registerLazySingleton<AccountLocalDataSource>(() => AccountLocalDataSourceImpl(databaseManager: sl()));
+  sl.registerLazySingleton<CategoryLocalDataSource>(() => CategoryLocalDataSourceImpl(databaseManager: sl()));
 
   // !---- External ----!
   final sharedPreferences = await SharedPreferences.getInstance();

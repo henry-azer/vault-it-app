@@ -9,6 +9,7 @@ class AppStrings {
   static const String back = "back";
   static const String delete = "delete";
   static const String edit = "edit";
+  static const String update = "update";
   static const String add = "add";
   static const String search = "search";
   static const String loading = "loading";
@@ -111,7 +112,28 @@ class AppStrings {
   static const String weeksAgo = "weeks_ago";
   static const String monthsAgo = "months_ago";
   static const String yearsAgo = "years_ago";
-  
+
+  // Category
+  static const String categoriesOptional = "categories_optional";
+  static const String searchCategories = "search_categories";
+  static const String categoryName = "category_name";
+  static const String categorySavedSuccess = "category_saved_success";
+  static const String categoryUpdatedSuccess = "category_updated_success";
+  static const String deleteCategoryConfirmation = "delete_category_confirmation";
+  static const String deleteCategoryMessage = "delete_category_message";
+  static const String categoryDeletedSuccess = "category_deleted_success";
+  static const String failedSaveCategory = "failed_save_category";
+  static const String failedUpdateCategory = "failed_update_category";
+  static const String failedDeleteCategory = "failed_delete_category";
+  static const String categories = "categories";
+  static const String categoriesSubtitle = "categories_subtitle";
+  static const String noCategories = "no_categories";
+  static const String noCategoriesMessage = "no_categories_message";
+  static const String createCategory = "create_category";
+  static const String categoryExample = "category_example";
+  static const String categoryAlreadyExists = "category_already_exists";
+  static const String editCategory = "edit_category";
+
   // Popular Websites
   static const String linkedin = "linkedin";
   static const String facebook = "facebook";
@@ -162,11 +184,10 @@ class AppStrings {
   static const String clearHistory = "clear_history";
   static const String clearAllHistory = "clear_all_history";
   static const String clearAllHistoryMessage = "clear_all_history_message";
-  static const String removePassword = "remove_password";
-  static const String removePasswordMessage = "remove_password_message";
-  static const String passwordRemoved = "password_removed";
+  static const String deletePassword = "delete_password";
+  static const String deletePasswordMessage = "delete_password_message";
+  static const String passwordHistoryDeleted = "password_history_deleted";
   static const String historyCleared = "history_cleared";
-  static const String remove = "remove";
   static const String clearAll = "clear_all";
   static const String passwordCopied = "password_copied";
   static const String clickGenerateToCreate = "click_generate_to_create";
@@ -420,10 +441,10 @@ class AppStrings {
   static const String validationUrlInvalid = "validation_url_invalid";
 
 
-  static const String onboardingTitle1 = 'onboarding.title1';
-  static const String onboardingDesc1 = 'onboarding.desc1';
-  static const String onboardingTitle2 = 'onboarding.title2';
-  static const String onboardingDesc2 = 'onboarding.desc2';
-  static const String onboardingTitle3 = 'onboarding.title3';
-  static const String onboardingDesc3 = 'onboarding.desc3';
+  static const String onboardingTitle1 = "onboarding.title1";
+  static const String onboardingDesc1 = "onboarding.desc1";
+  static const String onboardingTitle2 = "onboarding.title2";
+  static const String onboardingDesc2 = "onboarding.desc2";
+  static const String onboardingTitle3 = "onboarding.title3";
+  static const String onboardingDesc3 = "onboarding.desc3";
 }

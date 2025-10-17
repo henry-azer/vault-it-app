@@ -13,6 +13,7 @@ import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart
 import 'package:vault_it/features/generator/presentation/providers/generator_provider.dart';
 import 'package:vault_it/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
+import 'package:vault_it/features/vault/presentation/providers/category_provider.dart';
 import 'package:provider/provider.dart';
 
 class VaultItApp extends StatelessWidget {
@@ -27,6 +28,7 @@ class VaultItApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => GeneratorProvider()),
       ],

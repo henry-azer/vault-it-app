@@ -9,6 +9,7 @@ import 'package:vault_it/core/utils/app_colors.dart';
 import 'package:vault_it/core/utils/app_strings.dart';
 import 'package:vault_it/data/entities/account.dart';
 import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
+import 'package:vault_it/features/vault/presentation/providers/category_provider.dart';
 import 'package:vault_it/features/vault/presentation/widgets/vault_account_card.dart';
 import 'package:provider/provider.dart';
 
@@ -27,6 +28,7 @@ class _VaultScreenState extends State<VaultScreen>
   bool _isSearchActive = false;
   AccountSortType _sortBy = AccountSortType.manual;
   AccountFilterType _filterBy = AccountFilterType.all;
+  String? _selectedCategoryId;
   int _refreshCounter = 0;
 
   @override
@@ -74,21 +76,21 @@ class _VaultScreenState extends State<VaultScreen>
   Future<void> _handleRefresh() async {
     try {
       final accountProvider = context.read<AccountProvider>();
-      
+
       imageCache.clear();
       imageCache.clearLiveImages();
-      
+
       await CachedNetworkImage.evictFromCache('');
       await DefaultCacheManager().emptyCache();
-      
+
       await accountProvider.loadAccounts();
-      
+
       if (mounted) {
         setState(() {
           _refreshCounter++;
         });
       }
-      
+
       HapticFeedback.mediumImpact();
     } catch (e) {
       debugPrint('Error refreshing: $e');
@@ -125,7 +127,7 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildHeader(bool isDark) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
@@ -139,10 +141,12 @@ class _VaultScreenState extends State<VaultScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderTitle(isDark),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           _buildStatsCards(isDark),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           _buildSearchBar(isDark),
+          const SizedBox(height: 5),
+          _buildCategoryFilterBar(isDark),
         ],
       ),
     );
@@ -169,7 +173,10 @@ class _VaultScreenState extends State<VaultScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -208,13 +215,16 @@ class _VaultScreenState extends State<VaultScreen>
   Widget _buildStatsCards(bool isDark) {
     return Consumer<AccountProvider>(
       builder: (context, provider, child) {
-        final accountCount = provider.accounts.length;
-        final filteredCount = provider.filteredAccounts.length;
-        final isSearching = provider.searchQuery.isNotEmpty;
-        final weakCount = _applyFilter(provider.accounts).where((a) {
-          final pwd = a.password;
-          return pwd.length < 8 || pwd == pwd.toLowerCase() || pwd == pwd.toUpperCase();
-        }).length;
+        // Start with base accounts (search filtered or all)
+        final baseAccounts = _hasSearch ? provider.filteredAccounts : provider.accounts;
+        
+        // Apply all filters (category + type filters)
+        final filteredAccounts = _applyFilter(baseAccounts);
+        
+        // Calculate counts from filtered results
+        final displayCount = _hasActiveFilters ? filteredAccounts.length : provider.accounts.length;
+        final weakCount = filteredAccounts.where((a) => _isWeakPassword(a.password)).length;
+        final strongCount = displayCount - weakCount;
 
         return Row(
           children: [
@@ -222,7 +232,7 @@ class _VaultScreenState extends State<VaultScreen>
               child: _buildStatCard(
                 icon: Icons.vpn_key_rounded,
                 label: AppStrings.accounts.tr,
-                value: isSearching ? filteredCount.toString() : accountCount.toString(),
+                value: displayCount.toString(),
                 color: Theme.of(context).colorScheme.primary,
                 isDark: isDark,
               ),
@@ -232,7 +242,7 @@ class _VaultScreenState extends State<VaultScreen>
               child: _buildStatCard(
                 icon: Icons.security_rounded,
                 label: AppStrings.strong.tr,
-                value: '${accountCount - weakCount}',
+                value: strongCount.toString(),
                 color: Colors.green,
                 isDark: isDark,
               ),
@@ -243,7 +253,11 @@ class _VaultScreenState extends State<VaultScreen>
                 icon: Icons.warning_amber_rounded,
                 label: AppStrings.weak.tr,
                 value: weakCount.toString(),
-                color: weakCount > 0 ? AppColors.warning : (isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled),
+                color: weakCount > 0
+                    ? AppColors.warning
+                    : (isDark
+                        ? AppColors.darkTextDisabled
+                        : AppColors.lightTextDisabled),
                 isDark: isDark,
               ),
             ),
@@ -282,15 +296,15 @@ class _VaultScreenState extends State<VaultScreen>
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
               color: color,
-              size: 20,
+              size: 18,
             ),
           ),
           const SizedBox(height: 8),
@@ -307,7 +321,9 @@ class _VaultScreenState extends State<VaultScreen>
             label,
             style: TextStyle(
               fontSize: 11,
-              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
@@ -326,7 +342,9 @@ class _VaultScreenState extends State<VaultScreen>
       decoration: BoxDecoration(
         color: _isSearchActive
             ? (isDark ? Color(0xFF1E2746) : Colors.white)
-            : (isDark ? Color(0xFF16213E).withOpacity(0.6) : AppColors.lightSurface),
+            : (isDark
+                ? Color(0xFF16213E).withOpacity(0.6)
+                : AppColors.lightSurface),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isSearchActive
@@ -368,7 +386,9 @@ class _VaultScreenState extends State<VaultScreen>
                     ? AppStrings.searchAccountsHintActive.tr
                     : AppStrings.searchAccounts.tr,
                 hintStyle: TextStyle(
-                  color: isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled,
+                  color: isDark
+                      ? AppColors.darkTextDisabled
+                      : AppColors.lightTextDisabled,
                   fontWeight: FontWeight.normal,
                   fontSize: 14,
                 ),
@@ -378,7 +398,9 @@ class _VaultScreenState extends State<VaultScreen>
                     Icons.search_rounded,
                     color: _isSearchActive
                         ? Theme.of(context).colorScheme.primary
-                        : (isDark ? AppColors.darkTextDisabled : AppColors.lightTextDisabled),
+                        : (isDark
+                            ? AppColors.darkTextDisabled
+                            : AppColors.lightTextDisabled),
                     size: _isSearchActive ? 24 : 22,
                   ),
                 ),
@@ -409,7 +431,7 @@ class _VaultScreenState extends State<VaultScreen>
   }
 
   Widget _buildHeaderActions(bool isDark) {
-    final bool isFilterActive = _filterBy != AccountFilterType.all;
+    final bool isFilterActive = _hasCategoryFilter || _hasTypeFilter;
     final bool isSortActive = _sortBy != AccountSortType.manual;
 
     return Row(
@@ -441,7 +463,9 @@ class _VaultScreenState extends State<VaultScreen>
       decoration: BoxDecoration(
         color: isActive
             ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-            : (isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground),
+            : (isDark
+                ? AppColors.darkCardBackground
+                : AppColors.lightCardBackground),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isActive
@@ -461,7 +485,6 @@ class _VaultScreenState extends State<VaultScreen>
       ),
     );
   }
-
 
   Widget _buildContent(bool isDark) {
     return RefreshIndicator(
@@ -507,10 +530,10 @@ class _VaultScreenState extends State<VaultScreen>
   }
 
   Widget _buildEmptyState(AccountProvider provider, bool isDark) {
-    if (provider.searchQuery.isNotEmpty) {
+    if (_hasSearch) {
       return _buildNoSearchResults(isDark);
     }
-    if (_filterBy != AccountFilterType.all) {
+    if (_hasCategoryFilter || _hasTypeFilter) {
       return _buildNoFilterResults(isDark);
     }
     return _buildNoAccounts(isDark);
@@ -521,7 +544,9 @@ class _VaultScreenState extends State<VaultScreen>
       physics: const AlwaysScrollableScrollPhysics(),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.02,
+              vertical: MediaQuery.of(context).size.height * 0.06),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -555,7 +580,9 @@ class _VaultScreenState extends State<VaultScreen>
                 AppStrings.tryDifferentKeywords.tr,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
                       height: 1.5,
                     ),
               ),
@@ -607,14 +634,15 @@ class _VaultScreenState extends State<VaultScreen>
       physics: const AlwaysScrollableScrollPhysics(),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).size.height * 0.02),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 25),
+              const SizedBox(height: 15),
               Container(
-                width: 140,
-                height: 140,
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -626,11 +654,11 @@ class _VaultScreenState extends State<VaultScreen>
                 ),
                 child: Icon(
                   filterIcon,
-                  size: 70,
+                  size: 60,
                   color: Colors.orange[400],
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 25),
               Text(
                 AppStrings.noResults.tr,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -642,7 +670,9 @@ class _VaultScreenState extends State<VaultScreen>
                 filterDescription,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
                       height: 1.5,
                     ),
               ),
@@ -651,6 +681,7 @@ class _VaultScreenState extends State<VaultScreen>
                 onPressed: () {
                   setState(() {
                     _filterBy = AccountFilterType.all;
+                    _selectedCategoryId = null;
                   });
                   HapticFeedback.lightImpact();
                 },
@@ -678,11 +709,11 @@ class _VaultScreenState extends State<VaultScreen>
       physics: const AlwaysScrollableScrollPhysics(),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 25),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 25),
+              const SizedBox(height: 10),
               Container(
                 width: 140,
                 height: 140,
@@ -725,7 +756,9 @@ class _VaultScreenState extends State<VaultScreen>
                 AppStrings.vaultEmptyDesc.tr,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
                       height: 1.6,
                     ),
               ),
@@ -738,10 +771,10 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildAccountList(List<Account> accounts, bool isDark) {
     final bool isManualSort = _sortBy == AccountSortType.manual;
-    
+
     if (isManualSort) {
       return ReorderableListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 100),
         itemCount: accounts.length,
         physics: const BouncingScrollPhysics(),
         onReorder: (oldIndex, newIndex) async {
@@ -760,7 +793,8 @@ class _VaultScreenState extends State<VaultScreen>
                 child: Material(
                   elevation: 8 * animValue,
                   borderRadius: BorderRadius.circular(16),
-                  shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  shadowColor:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.3),
                   child: child,
                 ),
               );
@@ -804,7 +838,7 @@ class _VaultScreenState extends State<VaultScreen>
         },
       );
     }
-    
+
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       itemCount: accounts.length,
@@ -864,28 +898,58 @@ class _VaultScreenState extends State<VaultScreen>
     _searchFocusNode.unfocus();
   }
 
+  // Helper methods for filter state
+  bool get _hasActiveFilters {
+    return _hasSearch || _hasCategoryFilter || _hasTypeFilter;
+  }
+
+  bool get _hasSearch => _searchController.text.isNotEmpty;
+  bool get _hasCategoryFilter => _selectedCategoryId != null;
+  bool get _hasTypeFilter => _filterBy != AccountFilterType.all;
+
+  bool _isWeakPassword(String password) {
+    return password.length < 8 ||
+        password == password.toLowerCase() ||
+        password == password.toUpperCase() ||
+        !RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
+  }
+
+  bool _isStaleAccount(Account account) {
+    final daysSinceModified = DateTime.now().difference(account.lastModified).inDays;
+    return daysSinceModified > 90;
+  }
+
   List<Account> _applyFilter(List<Account> accounts) {
-    switch (_filterBy) {
-      case AccountFilterType.weak:
-        return accounts.where((p) {
-          final pwd = p.password;
-          return pwd.length < 8 ||
-              pwd == pwd.toLowerCase() ||
-              pwd == pwd.toUpperCase() ||
-              !RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(pwd);
-        }).toList();
-      case AccountFilterType.stale:
-        return accounts.where((p) {
-          final daysSinceModified =
-              DateTime.now().difference(p.lastModified).inDays;
-          return daysSinceModified > 90;
-        }).toList();
-      case AccountFilterType.favorites:
-        return accounts.where((p) => p.isFavorite).toList();
-      case AccountFilterType.all:
-      default:
-        return accounts;
+    List<Account> filtered = List.from(accounts);
+
+    // Step 1: Apply category filter
+    if (_hasCategoryFilter) {
+      final accountProvider = context.read<AccountProvider>();
+      filtered = filtered.where((account) {
+        final categories = accountProvider.getCategoriesForAccount(account.id);
+        return categories.any((cat) => cat.id == _selectedCategoryId);
+      }).toList();
     }
+
+    // Step 2: Apply type filter (weak/stale/favorites)
+    if (_hasTypeFilter) {
+      switch (_filterBy) {
+        case AccountFilterType.weak:
+          filtered = filtered.where((account) => _isWeakPassword(account.password)).toList();
+          break;
+        case AccountFilterType.stale:
+          filtered = filtered.where((account) => _isStaleAccount(account)).toList();
+          break;
+        case AccountFilterType.favorites:
+          filtered = filtered.where((account) => account.isFavorite).toList();
+          break;
+        case AccountFilterType.all:
+        default:
+          break;
+      }
+    }
+
+    return filtered;
   }
 
   List<Account> _applySort(List<Account> accounts) {
@@ -984,15 +1048,14 @@ class _VaultScreenState extends State<VaultScreen>
               AccountFilterType.favorites,
               isDark,
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterOption(
-      IconData icon, String title, String subtitle, AccountFilterType value, bool isDark) {
+  Widget _buildFilterOption(IconData icon, String title, String subtitle,
+      AccountFilterType value, bool isDark) {
     final isSelected = _filterBy == value;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1014,12 +1077,18 @@ class _VaultScreenState extends State<VaultScreen>
           decoration: BoxDecoration(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
-                : (isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground),
+                : (isDark
+                    ? AppColors.darkCardBackground
+                    : AppColors.lightCardBackground),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            color: isSelected ? Colors.white : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+            color: isSelected
+                ? Colors.white
+                : (isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary),
             size: 20,
           ),
         ),
@@ -1034,7 +1103,9 @@ class _VaultScreenState extends State<VaultScreen>
           subtitle,
           style: TextStyle(
             fontSize: 12,
-            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : AppColors.lightTextSecondary,
           ),
         ),
         trailing: isSelected
@@ -1131,8 +1202,8 @@ class _VaultScreenState extends State<VaultScreen>
     );
   }
 
-  Widget _buildSortOption(
-      IconData icon, String title, String subtitle, AccountSortType value, bool isDark) {
+  Widget _buildSortOption(IconData icon, String title, String subtitle,
+      AccountSortType value, bool isDark) {
     final isSelected = _sortBy == value;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1154,12 +1225,18 @@ class _VaultScreenState extends State<VaultScreen>
           decoration: BoxDecoration(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
-                : (isDark ? AppColors.darkCardBackground : AppColors.lightCardBackground),
+                : (isDark
+                    ? AppColors.darkCardBackground
+                    : AppColors.lightCardBackground),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            color: isSelected ? Colors.white : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+            color: isSelected
+                ? Colors.white
+                : (isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary),
             size: 20,
           ),
         ),
@@ -1174,7 +1251,9 @@ class _VaultScreenState extends State<VaultScreen>
           subtitle,
           style: TextStyle(
             fontSize: 12,
-            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : AppColors.lightTextSecondary,
           ),
         ),
         trailing: isSelected
@@ -1190,6 +1269,111 @@ class _VaultScreenState extends State<VaultScreen>
           HapticFeedback.selectionClick();
           Navigator.pop(context);
         },
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilterBar(bool isDark) {
+    return Consumer<CategoryProvider>(
+      builder: (context, categoryProvider, child) {
+        final categories = categoryProvider.categories;
+
+        if (categories.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row(
+            //   children: [
+            //     Icon(
+            //       Icons.label_rounded,
+            //       size: 16,
+            //       color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+            //     ),
+            //     const SizedBox(width: 6),
+            //     Text(
+            //       'Categories',
+            //       style: TextStyle(
+            //         fontSize: 12,
+            //         fontWeight: FontWeight.w600,
+            //         color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildCategoryChip(null, 'All', isDark),
+                  const SizedBox(width: 8),
+                  ...categories.map((cat) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildCategoryChip(cat.id, cat.name, isDark),
+                      )),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryChip(String? categoryId, String label, bool isDark) {
+    final isSelected = _selectedCategoryId == categoryId;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedCategoryId = categoryId;
+          _filterBy = AccountFilterType.all;
+        });
+        HapticFeedback.selectionClick();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : (isDark
+                  ? AppColors.darkCardBackground
+                  : AppColors.lightCardBackground),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : (isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              categoryId == null ? Icons.apps_rounded : Icons.label_rounded,
+              size: 14,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                color: isSelected ? Colors.white : null,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

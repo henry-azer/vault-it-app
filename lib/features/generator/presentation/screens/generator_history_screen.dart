@@ -397,13 +397,13 @@ class GeneratorHistoryScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning_rounded, color: AppColors.warning, size: 28),
+            Icon(Icons.warning_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
             SizedBox(width: MediaQuery.of(context).size.width * 0.03),
-            Text(AppStrings.removePassword.tr),
+            Text(AppStrings.deletePassword.tr),
           ],
         ),
         content: Text(
-          AppStrings.removePasswordMessage.tr,
+          AppStrings.deletePasswordMessage.tr,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         actions: [
@@ -424,20 +424,18 @@ class GeneratorHistoryScreen extends StatelessWidget {
               HapticFeedback.mediumImpact();
               SnackBarHelper.showSuccess(
                 context,
-                AppStrings.passwordRemoved.tr,
+                AppStrings.passwordHistoryDeleted.tr,
                 duration: const Duration(seconds: 1),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.06,
                 vertical: MediaQuery.of(context).size.height * 0.015,
               ),
             ),
             child: Text(
-              AppStrings.remove.tr,
+              AppStrings.delete.tr,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -454,7 +452,7 @@ class GeneratorHistoryScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning_rounded, color: Colors.red[600], size: 28),
+            Icon(Icons.warning_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
             SizedBox(width: MediaQuery.of(context).size.width * 0.03),
             Text(AppStrings.clearAllHistory.tr),
           ],
@@ -486,8 +484,6 @@ class GeneratorHistoryScreen extends StatelessWidget {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.06,
                 vertical: MediaQuery.of(context).size.height * 0.015,

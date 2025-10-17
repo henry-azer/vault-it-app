@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:vault_it/data/datasources/account_local_datasource.dart';
+import 'package:vault_it/data/datasources/category_local_datasource.dart';
 import 'package:vault_it/data/entities/account.dart';
+import 'package:vault_it/data/entities/category.dart';
 
 class AccountProvider with ChangeNotifier {
   late AccountLocalDataSource _accountLocalDataSource;
+  late CategoryLocalDataSource _categoryLocalDataSource;
   List<Account> _accounts = [];
   List<Account> _filteredAccounts = [];
   bool _isLoading = false;
   String _searchQuery = '';
   Account? _selectedAccount;
+  Map<String, List<Category>> _accountCategories = {};
 
   AccountProvider() {
     _accountLocalDataSource = GetIt.instance<AccountLocalDataSource>();
+    _categoryLocalDataSource = GetIt.instance<CategoryLocalDataSource>();
     loadAccounts();
   }
 
@@ -31,6 +36,12 @@ class AccountProvider with ChangeNotifier {
 
   int get accountCount => _accounts.length;
 
+  Map<String, List<Category>> get accountCategories => _accountCategories;
+
+  List<Category> getCategoriesForAccount(String accountId) {
+    return _accountCategories[accountId] ?? [];
+  }
+
   Future<void> loadAccounts() async {
     _setLoading(true);
     try {
@@ -40,11 +51,27 @@ class AccountProvider with ChangeNotifier {
         await _initializeSortOrder();
       }
 
+      // Load categories for all accounts
+      await _loadAccountCategories();
+
       _applySearch();
     } catch (e) {
       debugPrint('Error loading accounts: $e');
     } finally {
       _setLoading(false);
+    }
+  }
+
+  Future<void> _loadAccountCategories() async {
+    _accountCategories.clear();
+    for (final account in _accounts) {
+      try {
+        final categories = await _categoryLocalDataSource.getCategoriesForAccount(account.id);
+        _accountCategories[account.id] = categories;
+      } catch (e) {
+        debugPrint('Error loading categories for account ${account.id}: $e');
+        _accountCategories[account.id] = [];
+      }
     }
   }
 
@@ -63,13 +90,23 @@ class AccountProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> addAccount(Account account) async {
+  Future<bool> addAccount(Account account, {List<String> categoryIds = const []}) async {
     try {
       final maxSortOrder = _accounts.isEmpty
           ? 0
           : _accounts.map((a) => a.sortOrder).reduce((a, b) => a > b ? a : b);
       final accountWithOrder = account.copyWith(sortOrder: maxSortOrder + 1);
       await _accountLocalDataSource.addAccount(accountWithOrder);
+      
+      // Link categories
+      if (categoryIds.isNotEmpty) {
+        await _categoryLocalDataSource.updateAccountCategories(accountWithOrder.id, categoryIds);
+        final categories = await _categoryLocalDataSource.getCategoriesForAccount(accountWithOrder.id);
+        _accountCategories[accountWithOrder.id] = categories;
+      } else {
+        _accountCategories[accountWithOrder.id] = [];
+      }
+      
       _accounts.add(accountWithOrder);
       _applySearch();
       return true;
@@ -79,7 +116,7 @@ class AccountProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updateAccount(Account account) async {
+  Future<bool> updateAccount(Account account, {List<String>? categoryIds}) async {
     try {
       final oldAccount = await _accountLocalDataSource.getAccountById(account.id);
       List<PasswordHistoryItem> updatedHistory = List.from(account.passwordHistory);
@@ -100,6 +137,14 @@ class AccountProvider with ChangeNotifier {
       );
 
       await _accountLocalDataSource.updateAccount(updatedAccount);
+      
+      // Update categories if provided
+      if (categoryIds != null) {
+        await _categoryLocalDataSource.updateAccountCategories(updatedAccount.id, categoryIds);
+        final categories = await _categoryLocalDataSource.getCategoriesForAccount(updatedAccount.id);
+        _accountCategories[updatedAccount.id] = categories;
+      }
+      
       final index = _accounts.indexWhere((p) => p.id == updatedAccount.id);
       if (index != -1) {
         _accounts[index] = updatedAccount;
@@ -116,6 +161,7 @@ class AccountProvider with ChangeNotifier {
     try {
       await _accountLocalDataSource.deleteAccount(id);
       _accounts.removeWhere((p) => p.id == id);
+      _accountCategories.remove(id);
       _applySearch();
       return true;
     } catch (e) {
@@ -172,7 +218,6 @@ class AccountProvider with ChangeNotifier {
 
   void selectAccount(Account account) {
     _selectedAccount = account;
-    debugPrint('Account selected: ${account.title}');
     notifyListeners();
   }
 
@@ -181,6 +226,7 @@ class AccountProvider with ChangeNotifier {
       await _accountLocalDataSource.deleteAllAccounts();
       _accounts.clear();
       _filteredAccounts.clear();
+      _accountCategories.clear();
       _selectedAccount = null;
       notifyListeners();
     } catch (e) {

@@ -17,7 +17,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
       path,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
-      version: 2,
+      version: 3,
       onConfigure: (db) async => await db.execute('PRAGMA foreign_keys = ON'),
     );
   }
@@ -26,6 +26,22 @@ class SqliteDatabaseManager extends IDatabaseManager {
     await db.execute(
       'CREATE TABLE ${AppLocalStorageKeys.accountsTable}(id TEXT PRIMARY KEY, title TEXT, url TEXT, username TEXT, password TEXT, notes TEXT, addedDate TEXT, lastModified TEXT, isFavorite INTEGER DEFAULT 0, passwordHistory TEXT, sortOrder INTEGER DEFAULT 0)',
     );
+    
+    await db.execute(
+      'CREATE TABLE ${AppLocalStorageKeys.categoriesTable}(id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT, icon TEXT, createdDate TEXT NOT NULL)',
+    );
+    
+    await db.execute(
+      'CREATE TABLE ${AppLocalStorageKeys.accountCategoriesTable}(accountId TEXT NOT NULL, categoryId TEXT NOT NULL, PRIMARY KEY (accountId, categoryId), FOREIGN KEY (accountId) REFERENCES ${AppLocalStorageKeys.accountsTable}(id) ON DELETE CASCADE, FOREIGN KEY (categoryId) REFERENCES ${AppLocalStorageKeys.categoriesTable}(id) ON DELETE CASCADE)',
+    );
+    
+    await db.execute(
+      'CREATE INDEX idx_account_categories_accountId ON ${AppLocalStorageKeys.accountCategoriesTable}(accountId)',
+    );
+    
+    await db.execute(
+      'CREATE INDEX idx_account_categories_categoryId ON ${AppLocalStorageKeys.accountCategoriesTable}(categoryId)',
+    );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -33,6 +49,27 @@ class SqliteDatabaseManager extends IDatabaseManager {
       // Add sortOrder column if it doesn't exist
       await db.execute(
         'ALTER TABLE ${AppLocalStorageKeys.accountsTable} ADD COLUMN sortOrder INTEGER DEFAULT 0',
+      );
+    }
+    
+    if (oldVersion < 3) {
+      // Create categories table
+      await db.execute(
+        'CREATE TABLE ${AppLocalStorageKeys.categoriesTable}(id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT, icon TEXT, createdDate TEXT NOT NULL)',
+      );
+      
+      // Create account_categories junction table
+      await db.execute(
+        'CREATE TABLE ${AppLocalStorageKeys.accountCategoriesTable}(accountId TEXT NOT NULL, categoryId TEXT NOT NULL, PRIMARY KEY (accountId, categoryId), FOREIGN KEY (accountId) REFERENCES ${AppLocalStorageKeys.accountsTable}(id) ON DELETE CASCADE, FOREIGN KEY (categoryId) REFERENCES ${AppLocalStorageKeys.categoriesTable}(id) ON DELETE CASCADE)',
+      );
+      
+      // Create indexes for better query performance
+      await db.execute(
+        'CREATE INDEX idx_account_categories_accountId ON ${AppLocalStorageKeys.accountCategoriesTable}(accountId)',
+      );
+      
+      await db.execute(
+        'CREATE INDEX idx_account_categories_categoryId ON ${AppLocalStorageKeys.accountCategoriesTable}(categoryId)',
       );
     }
   }

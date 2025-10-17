@@ -144,6 +144,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   _buildSectionHeader(AppStrings.dataManagement.tr),
                   _buildSettingsTile(
+                    icon: Icons.label_outline_rounded,
+                    title: AppStrings.categories.tr,
+                    subtitle: AppStrings.categoriesSubtitle.tr,
+                    onTap: () => Navigator.pushNamed(context, Routes.categories),
+                  ),
+                  _buildSettingsTile(
                     icon: Icons.backup_outlined,
                     title: AppStrings.exportData.tr,
                     subtitle: AppStrings.exportDataSubtitle.tr,

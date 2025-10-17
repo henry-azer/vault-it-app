@@ -15,6 +15,7 @@ import 'package:vault_it/features/settings/presentation/screens/settings_screen.
 import 'package:vault_it/features/settings/presentation/screens/user_profile_screen.dart';
 import 'package:vault_it/features/splash/presentation/screens/splash_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/account_screen.dart';
+import 'package:vault_it/features/settings/presentation/screens/category_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/vault_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/view_account_screen.dart';
 
@@ -35,6 +36,7 @@ class Routes {
 
   static const String settings = '/app/settings';
   static const String userProfile = '/app/settings/profile';
+  static const String categories = '/app/settings/categories';
   static const String bugReport = '/app/settings/bug-report';
   static const String helpSupport = '/app/settings/help';
   static const String rateApp = '/app/settings/rate';
@@ -99,6 +101,13 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (context) {
               return ViewAccountScreen(account: account);
+            },
+            settings: routeSettings);
+
+      case Routes.categories:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const CategoryScreen();
             },
             settings: routeSettings);
 

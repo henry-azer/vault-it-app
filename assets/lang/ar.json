@@ -1,220 +1,7 @@
 {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   "_metadata": {
     "language_code": "ar",
-    "language_name": "Arabic",
+    "language_name": "العربية",
     "language_native_name": "العربية",
     "text_direction": "rtl"
   },
@@ -224,6 +11,7 @@
   "ok": "موافق",
   "cancel": "إلغاء",
   "save": "حفظ",
+  "update": "تحديث",
   "back": "رجوع",
   "delete": "حذف",
   "edit": "تعديل",
@@ -304,6 +92,26 @@
   "failed_save_account": "حدث خطأ أثناء حفظ معلومات حسابك. يرجى المحاولة مرة أخرى.",
   "failed_delete_account": "حدث خطأ أثناء حذف حسابك. يرجى المحاولة مرة أخرى.",
 
+  "categories": "الفئات",
+  "categories_optional": "الفئات (اختياري)",
+  "search_categories": "البحث عن الفئات...",
+  "categories_subtitle": "إنشاء وتحرير وحذف الفئات",
+  "no_categories": "لا توجد فئات بعد",
+  "no_categories_message": "أنشئ أول فئة لك لتنظيم\nحساباتك بشكل فعّال.",
+  "create_category": "إنشاء فئة",
+  "category_example": "مثلاً: العمل، البنوك",
+  "category_already_exists": "الفئة موجودة بالفعل!",
+  "edit_category": "تعديل الفئة",
+  "category_name": "اسم الفئة",
+  "category_saved_success": "تم إنشاء الفئة بنجاح",
+  "category_updated_success": "تم تحديث الفئة بنجاح",
+  "delete_category_confirmation": "حذف الفئة",
+  "delete_category_message": "سيؤدي هذا الإجراء إلى حذف الفئة نهائيًا.",
+  "category_deleted_success": "تم حذف الفئة بنجاح",
+  "failed_update_category": "حدث خطأ أثناء تحديث الفئة. يرجى المحاولة مرة أخرى.",
+  "failed_save_category": "حدث خطأ أثناء حفظ الفئة. يرجى المحاولة مرة أخرى.",
+  "failed_delete_category": "حدث خطأ أثناء حذف الفئة. يرجى المحاولة مرة أخرى.",
+
   "view_account": "عرض الحساب",
   "title": "العنوان",
   "username": "اسم المستخدم",
@@ -367,9 +175,9 @@
   "clear_history": "مسح السجل",
   "clear_all_history": "مسح كل السجل",
   "clear_all_history_message": "هل أنت متأكد أنك تريد مسح كل سجل كلمات المرور؟",
-  "remove_password": "إزالة كلمة المرور",
-  "remove_password_message": "هل أنت متأكد أنك تريد إزالة كلمة المرور هذه من السجل؟",
-  "password_removed": "تمت إزالة كلمة المرور من السجل",
+  "delete_password": "إزالة كلمة المرور",
+  "delete_password_message": "هل أنت متأكد أنك تريد إزالة كلمة المرور هذه من السجل؟",
+  "password_history_deleted": "تمت إزالة كلمة المرور من السجل",
   "history_cleared": "تم مسح سجل كلمات المرور",
   "remove": "إزالة",
   "clear_all": "مسح الكل",

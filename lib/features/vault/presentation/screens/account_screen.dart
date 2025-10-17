@@ -10,6 +10,7 @@ import 'package:vault_it/core/utils/snackbar_helper.dart';
 import 'package:vault_it/data/entities/account.dart';
 import 'package:vault_it/features/generator/presentation/providers/generator_provider.dart';
 import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
+import 'package:vault_it/features/vault/presentation/widgets/account_category_selector.dart';
 import 'package:provider/provider.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -38,6 +39,7 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _isFavorite = false;
   String? _faviconUrl;
   double _passwordStrength = 0.0;
+  final Set<String> _selectedCategoryIds = {};
 
   void _onUrlFocusChanged() {
     setState(() {});
@@ -102,7 +104,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return url;
   }
 
-  void _populateFields() {
+  void _populateFields() async {
     final account = widget.accountToEdit!;
 
     _titleController.text = account.title;
@@ -116,6 +118,11 @@ class _AccountScreenState extends State<AccountScreen> {
     if (account.url != null && account.url!.isNotEmpty) {
       _faviconUrl = PopularWebsites.getFaviconUrl(account.url!);
     }
+
+    final categories = await context.read<AccountProvider>().getCategoriesForAccount(account.id);
+    setState(() {
+      _selectedCategoryIds.addAll(categories.map((c) => c.id));
+    });
   }
 
 
@@ -322,6 +329,17 @@ class _AccountScreenState extends State<AccountScreen> {
             children: [
               SizedBox(height: MediaQuery.of(context).size.height * 0.02),
               _buildSearchWebsites(isDark),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+              CategoryDropdownSelector(
+                selectedCategoryIds: _selectedCategoryIds,
+                onCategoriesChanged: (newCategories) {
+                  setState(() {
+                    _selectedCategoryIds.clear();
+                    _selectedCategoryIds.addAll(newCategories);
+                  });
+                },
+                isDark: isDark,
+              ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.02),
               _buildTextField(
                 key: _titleKey,
@@ -691,9 +709,9 @@ class _AccountScreenState extends State<AccountScreen> {
 
       bool success;
       if (isEditing) {
-        success = await accountProvider.updateAccount(account);
+        success = await accountProvider.updateAccount(account, categoryIds: _selectedCategoryIds.toList());
       } else {
-        success = await accountProvider.addAccount(account);
+        success = await accountProvider.addAccount(account, categoryIds: _selectedCategoryIds.toList());
       }
 
       if (mounted) {
@@ -1104,7 +1122,7 @@ class _AccountScreenState extends State<AccountScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning_rounded, color: Colors.red[600], size: 28),
+            Icon(Icons.warning_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
             SizedBox(width: MediaQuery.of(context).size.width * 0.03),
             Text(AppStrings.deleteAccountConfirmation.tr),
           ],
@@ -1130,8 +1148,6 @@ class _AccountScreenState extends State<AccountScreen> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.06,
                 vertical: MediaQuery.of(context).size.height * 0.015,
