@@ -625,6 +625,10 @@ class _VaultScreenState extends State<VaultScreen>
         filterIcon = Icons.star_rounded;
         filterDescription = AppStrings.noFavorites.tr;
         break;
+      case AccountFilterType.noCategories:
+        filterIcon = Icons.label_off_rounded;
+        filterDescription = AppStrings.noAccountsWithoutCategories.tr;
+        break;
       default:
         filterIcon = Icons.filter_alt_rounded;
         filterDescription = AppStrings.noFilterResults.tr;
@@ -771,8 +775,9 @@ class _VaultScreenState extends State<VaultScreen>
 
   Widget _buildAccountList(List<Account> accounts, bool isDark) {
     final bool isManualSort = _sortBy == AccountSortType.manual;
+    final bool canReorder = isManualSort && _selectedCategoryId == null;
 
-    if (isManualSort) {
+    if (canReorder) {
       return ReorderableListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 100),
         itemCount: accounts.length,
@@ -790,13 +795,7 @@ class _VaultScreenState extends State<VaultScreen>
               final scale = 1.0 + (animValue * 0.05);
               return Transform.scale(
                 scale: scale,
-                child: Material(
-                  elevation: 8 * animValue,
-                  borderRadius: BorderRadius.circular(16),
-                  shadowColor:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                  child: child,
-                ),
+                child: child,
               );
             },
             child: child,
@@ -931,7 +930,7 @@ class _VaultScreenState extends State<VaultScreen>
       }).toList();
     }
 
-    // Step 2: Apply type filter (weak/stale/favorites)
+    // Step 2: Apply type filter (weak/stale/favorites/noCategories)
     if (_hasTypeFilter) {
       switch (_filterBy) {
         case AccountFilterType.weak:
@@ -942,6 +941,13 @@ class _VaultScreenState extends State<VaultScreen>
           break;
         case AccountFilterType.favorites:
           filtered = filtered.where((account) => account.isFavorite).toList();
+          break;
+        case AccountFilterType.noCategories:
+          final accountProvider = context.read<AccountProvider>();
+          filtered = filtered.where((account) {
+            final categories = accountProvider.getCategoriesForAccount(account.id);
+            return categories.isEmpty;
+          }).toList();
           break;
         case AccountFilterType.all:
         default:
@@ -1046,6 +1052,13 @@ class _VaultScreenState extends State<VaultScreen>
               AppStrings.favoritesTitle.tr,
               AppStrings.favoritesDesc.tr,
               AccountFilterType.favorites,
+              isDark,
+            ),
+            _buildFilterOption(
+              Icons.label_off_rounded,
+              AppStrings.noCategoriesTitle.tr,
+              AppStrings.noCategoriesDesc.tr,
+              AccountFilterType.noCategories,
               isDark,
             ),
           ],
@@ -1308,7 +1321,7 @@ class _VaultScreenState extends State<VaultScreen>
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildCategoryChip(null, 'All', isDark),
+                  _buildCategoryChip(null, AppStrings.all.tr, isDark),
                   const SizedBox(width: 8),
                   ...categories.map((cat) => Padding(
                         padding: const EdgeInsets.only(right: 8),
@@ -1355,7 +1368,7 @@ class _VaultScreenState extends State<VaultScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              categoryId == null ? Icons.apps_rounded : Icons.label_rounded,
+              categoryId == null ? Icons.apps_rounded : Icons.label_outline_rounded,
               size: 14,
               color: isSelected
                   ? Colors.white

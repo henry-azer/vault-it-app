@@ -223,11 +223,7 @@ class LocalBackupProvider with ChangeNotifier {
 
       await file.writeAsString(jsonString);
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Vault It Backup',
-        text: 'Vault It backup containing ${accounts.length} accounts',
-      );
+      await Share.shareXFiles([XFile(file.path)]);
 
       _lastBackupDate = DateTime.now();
       

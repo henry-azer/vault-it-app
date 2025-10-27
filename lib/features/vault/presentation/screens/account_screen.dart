@@ -388,12 +388,14 @@ class _AccountScreenState extends State<AccountScreen> {
                 label: AppStrings.notesOptional.tr,
                 hint: AppStrings.addNotes.tr,
                 icon: Icons.note_outlined,
+                keyboardType: TextInputType.multiline,
                 isDark: isDark,
-                maxLines: 3,
-                maxLength: 200,
+                maxLength: 300,
+                maxLines: null
               ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.04),
               _buildActionButtons(isDark),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             ],
           ),
         ),
@@ -795,7 +797,7 @@ class _AccountScreenState extends State<AccountScreen> {
     bool readOnly = false,
     String? Function(String?)? validator,
     TextInputType? keyboardType,
-    int maxLines = 1,
+    int? maxLines = 1,
     int maxLength = 18,
     void Function(String)? onChanged,
   }) {
@@ -817,6 +819,7 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       child: TextFormField(
         key: key,
+        expands: false,
         controller: controller,
         validator: validator,
         keyboardType: keyboardType,

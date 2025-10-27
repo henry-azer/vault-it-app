@@ -128,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         icon: Icons.brightness_6,
                         title: AppStrings.theme.tr,
                         subtitle: _getThemeText(themeProvider.themeMode),
-                        onTap: () => _showThemeDialog(themeProvider),
+                        onTap: () => Navigator.pushNamed(context, Routes.theme),
                       );
                     },
                   ),
@@ -138,7 +138,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         icon: Icons.language,
                         title: AppStrings.language.tr,
                         subtitle: languageProvider.currentLanguageName,
-                        onTap: () => _showLanguageDialog(languageProvider),
+                        onTap: () =>
+                            Navigator.pushNamed(context, Routes.language),
                       );
                     },
                   ),
@@ -147,7 +148,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.label_outline_rounded,
                     title: AppStrings.categories.tr,
                     subtitle: AppStrings.categoriesSubtitle.tr,
-                    onTap: () => Navigator.pushNamed(context, Routes.categories),
+                    onTap: () =>
+                        Navigator.pushNamed(context, Routes.categories),
                   ),
                   _buildSettingsTile(
                     icon: Icons.backup_outlined,
@@ -409,115 +411,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showThemeDialog(ThemeProvider themeProvider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.themeDialogTitle.tr),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildThemeOption(
-              themeProvider,
-              ThemeMode.system,
-              AppStrings.themeSystemTitle.tr,
-              AppStrings.themeSystemDescription.tr,
-              Icons.brightness_auto,
-            ),
-            _buildThemeOption(
-              themeProvider,
-              ThemeMode.light,
-              AppStrings.themeLightTitle.tr,
-              AppStrings.themeLightDescription.tr,
-              Icons.brightness_7,
-            ),
-            _buildThemeOption(
-              themeProvider,
-              ThemeMode.dark,
-              AppStrings.themeDarkTitle.tr,
-              AppStrings.themeDarkDescription.tr,
-              Icons.brightness_2,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThemeOption(
-    ThemeProvider provider,
-    ThemeMode mode,
-    String title,
-    String subtitle,
-    IconData icon,
-  ) {
-    return RadioListTile<ThemeMode>(
-      title: Row(
-        children: [
-          Icon(icon, size: 20),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      value: mode,
-      groupValue: provider.themeMode,
-      onChanged: (value) {
-        if (value != null) {
-          provider.setThemeMode(value);
-          Navigator.pop(context);
-        }
-      },
-    );
-  }
-
-  void _showLanguageDialog(LanguageProvider languageProvider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.language.tr),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: languageProvider.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: languageProvider.availableLanguages.length,
-                  itemBuilder: (context, index) {
-                    final language = languageProvider.availableLanguages[index];
-                    return RadioListTile<String>(
-                      title: Text(language.name),
-                      value: language.code,
-                      groupValue: languageProvider.currentLanguageCode,
-                      onChanged: (value) {
-                        if (value != null) {
-                          languageProvider.changeLanguage(value);
-                          Navigator.pop(context);
-                        }
-                      },
-                    );
-                  },
-                ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _exportData() async {
     if (!mounted) return;
 
@@ -557,8 +450,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         result = await _backupProvider.shareBackup(accounts);
         if (result.success) {
           if (mounted) {
-            SnackBarHelper.showSuccess(
-                context, result.message ?? AppStrings.backupSharedSuccessfully.tr);
+            SnackBarHelper.showSuccess(context,
+                result.message ?? AppStrings.backupSharedSuccessfully.tr);
           }
         } else {
           if (mounted) {

@@ -19,6 +19,7 @@ class AppStrings {
   static const String done = "done";
   static const String created = "created";
   static const String modified = "modified";
+  static const String all = "all";
 
   // Auth
   static const String login = "login";
@@ -117,6 +118,7 @@ class AppStrings {
   static const String categoriesOptional = "categories_optional";
   static const String searchCategories = "search_categories";
   static const String categoryName = "category_name";
+  static const String categoryNameRequired = "category_name_required";
   static const String categorySavedSuccess = "category_saved_success";
   static const String categoryUpdatedSuccess = "category_updated_success";
   static const String deleteCategoryConfirmation = "delete_category_confirmation";
@@ -411,9 +413,12 @@ class AppStrings {
   static const String stalePasswordsDesc = "stale_passwords_desc";
   static const String favoritesTitle = "favorites_title";
   static const String favoritesDesc = "favorites_desc";
+  static const String noCategoriesTitle = "no_categories_title";
+  static const String noCategoriesDesc = "no_categories_desc";
   static const String noWeakPasswords = "no_weak_passwords";
   static const String noStalePasswords = "no_stale_passwords";
   static const String noFavorites = "no_favorites";
+  static const String noAccountsWithoutCategories = "no_accounts_without_categories";
   static const String noFilterResults = "no_filter_results";
   static const String vaultEmpty = "vault_empty";
   static const String vaultEmptyDesc = "vault_empty_desc";
@@ -427,6 +432,8 @@ class AppStrings {
   static const String sortNewestFirst = "sort_newest_first";
   static const String sortAlphabeticalOrder = "sort_alphabetical_order";
   static const String sortRecentlyUpdated = "sort_recently_updated";
+  static const String passwordHistoryItemDeleted = "password_history_item_deleted";
+  static const String failedDeletePasswordHistory = "failed_delete_password_history";
 
   // Validation
   static const String validationTitleRequired = "validation_title_required";

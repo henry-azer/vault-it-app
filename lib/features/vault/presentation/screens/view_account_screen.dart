@@ -24,6 +24,7 @@ class ViewAccountScreen extends StatefulWidget {
 
 class _ViewAccountScreenState extends State<ViewAccountScreen> {
   bool _obscurePassword = true;
+  bool _obscureNotes = true;
   bool _showPasswordHistory = false;
   List<Category> _categories = [];
 
@@ -423,22 +424,7 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
           _buildPasswordField(isDark: isDark, account: account),
           if (account.notes != null && account.notes!.isNotEmpty) ...[
             const SizedBox(height: 12),
-            _buildInfoField(
-              isDark: isDark,
-              icon: Icons.note_outlined,
-              label: AppStrings.notes.tr,
-              value: account.notes ?? '',
-              maxLines: 3,
-              onCopy: () {
-                Clipboard.setData(ClipboardData(text: account.notes!));
-                HapticFeedback.lightImpact();
-                SnackBarHelper.showSuccess(
-                  context,
-                  AppStrings.copiedToClipboard.tr,
-                  duration: const Duration(seconds: 1),
-                );
-              },
-            ),
+            _buildNotesField(isDark: isDark, account: account),
           ],
           if (_categories.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -533,6 +519,9 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                         height: maxLines > 1 ? 1.4 : 1,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
                       ),
                   maxLines: maxLines,
                   overflow: maxLines == 1 ? TextOverflow.ellipsis : null,
@@ -608,6 +597,9 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                         letterSpacing: _obscurePassword ? 4 : 0.5,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
                       ),
                 ),
               ),
@@ -668,6 +660,119 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
     );
   }
 
+  Widget _buildNotesField({required bool isDark, required Account account}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.note_outlined,
+                  size: 16, color: Theme.of(context).colorScheme.primary),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              AppStrings.notes.tr,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color:
+                isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  _obscureNotes
+                      ? '•' * account.notes!.length
+                      : account.notes!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                        letterSpacing: _obscureNotes ? 3 : 0.3,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _obscureNotes = !_obscureNotes;
+                      });
+                      HapticFeedback.lightImpact();
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.darkSurface.withOpacity(0.4)
+                            : AppColors.lightSurface.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        _obscureNotes
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: account.notes!));
+                      HapticFeedback.lightImpact();
+                      SnackBarHelper.showSuccess(
+                        context,
+                        AppStrings.copiedToClipboard.tr,
+                        duration: const Duration(seconds: 1),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.copy_rounded,
+                        size: 16,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildMetadataItem({
     required bool isDark,
     required IconData icon,
@@ -703,6 +808,9 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: 11.5,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
                     ),
               ),
               const SizedBox(height: 2),
@@ -711,6 +819,9 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
                     ),
               ),
             ],
@@ -832,6 +943,22 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                                     fontSize: 11, color: Colors.grey[600]),
                               ),
                             ),
+                            InkWell(
+                              onTap: () => _deletePasswordHistoryItem(account, index),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Icon(
+                                  Icons.delete_outline,
+                                  size: 14,
+                                  color: AppColors.error,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -848,6 +975,9 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                                     ?.copyWith(
                                       fontWeight: FontWeight.w500,
                                       letterSpacing: obscure ? 3 : 0.5,
+                                      color: isDark
+                                          ? AppColors.darkTextPrimary
+                                          : AppColors.lightTextPrimary,
                                     ),
                               ),
                             ),
@@ -917,6 +1047,32 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
         ],
       ],
     );
+  }
+
+  Future<void> _deletePasswordHistoryItem(Account account, int index) async {
+    final updatedHistory = List<PasswordHistoryItem>.from(account.passwordHistory);
+    updatedHistory.removeAt(index);
+    
+    final updatedAccount = account.copyWith(passwordHistory: updatedHistory);
+    
+    final success = await context.read<AccountProvider>().updateAccount(updatedAccount);
+    
+    if (mounted) {
+      if (success) {
+        HapticFeedback.mediumImpact();
+        SnackBarHelper.showSuccess(
+          context,
+          AppStrings.passwordHistoryItemDeleted.tr,
+          duration: const Duration(seconds: 1),
+        );
+        setState(() {});
+      } else {
+        SnackBarHelper.showError(
+          context,
+          AppStrings.failedDeletePasswordHistory.tr,
+        );
+      }
+    }
   }
 
   void _showDeleteConfirmation() {
@@ -1053,7 +1209,7 @@ class _ViewAccountScreenState extends State<ViewAccountScreen> {
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey[600]),
+                        color: isDark ? Colors.white : Colors.grey[600]),
                   ),
                 ],
               ),

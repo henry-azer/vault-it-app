@@ -2,7 +2,8 @@ enum AccountFilterType {
   all('all'),
   weak('weak'),
   stale('stale'),
-  favorites('favorites');
+  favorites('favorites'),
+  noCategories('noCategories');
 
   final String value;
   const AccountFilterType(this.value);

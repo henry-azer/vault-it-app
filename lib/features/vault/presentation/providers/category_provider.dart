@@ -23,6 +23,15 @@ class CategoryProvider with ChangeNotifier {
     _setLoading(true);
     try {
       _categories = await _categoryLocalDataSource.getCategories();
+      
+      // Initialize sortOrder for categories with default value
+      final categoriesWithDefaultOrder = _categories.where((c) => c.sortOrder == 0).toList();
+      if (categoriesWithDefaultOrder.isNotEmpty) {
+        await _initializeSortOrder();
+      }
+      
+      // Sort categories by sortOrder
+      _categories.sort((a, b) => b.sortOrder.compareTo(a.sortOrder));
     } catch (e) {
       debugPrint('Error loading categories: $e');
     } finally {
@@ -30,10 +39,35 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
+  Future<void> _initializeSortOrder() async {
+    try {
+      _categories.sort((a, b) => a.createdDate.compareTo(b.createdDate));
+      for (int i = 0; i < _categories.length; i++) {
+        if (_categories[i].sortOrder == 0) {
+          final updatedCategory = _categories[i].copyWith(sortOrder: i + 1);
+          _categories[i] = updatedCategory;
+          await _categoryLocalDataSource.updateCategory(updatedCategory);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error initializing category sort order: $e');
+    }
+  }
+
   Future<bool> addCategory(Category category) async {
     try {
-      await _categoryLocalDataSource.addCategory(category);
-      _categories.add(category);
+      // Assign sortOrder as the highest value + 1 (newest on top)
+      final maxSortOrder = _categories.isEmpty 
+          ? 0 
+          : _categories.map((c) => c.sortOrder).reduce((a, b) => a > b ? a : b);
+      final categoryWithOrder = category.copyWith(sortOrder: maxSortOrder + 1);
+      
+      await _categoryLocalDataSource.addCategory(categoryWithOrder);
+      _categories.add(categoryWithOrder);
+      
+      // Sort categories by sortOrder (highest first)
+      _categories.sort((a, b) => b.sortOrder.compareTo(a.sortOrder));
+      
       notifyListeners();
       return true;
     } catch (e) {
@@ -133,6 +167,37 @@ class CategoryProvider with ChangeNotifier {
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
+  }
+
+  Future<bool> reorderCategories(int oldIndex, int newIndex, List<Category> currentList) async {
+    try {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+
+      final item = currentList.removeAt(oldIndex);
+      currentList.insert(newIndex, item);
+
+      // Update sortOrder for all categories based on new positions
+      for (int i = 0; i < currentList.length; i++) {
+        final sortOrderValue = currentList.length - i;
+        final updatedCategory = currentList[i].copyWith(sortOrder: sortOrderValue);
+        currentList[i] = updatedCategory;
+        await _categoryLocalDataSource.updateCategory(updatedCategory);
+
+        // Update the main categories list immediately to avoid visual glitches
+        final mainIndex = _categories.indexWhere((c) => c.id == updatedCategory.id);
+        if (mainIndex != -1) {
+          _categories[mainIndex] = updatedCategory;
+        }
+      }
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Error reordering categories: $e');
+      return false;
+    }
   }
 
   // Predefined category colors

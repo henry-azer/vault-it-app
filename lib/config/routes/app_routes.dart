@@ -16,8 +16,12 @@ import 'package:vault_it/features/settings/presentation/screens/user_profile_scr
 import 'package:vault_it/features/splash/presentation/screens/splash_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/account_screen.dart';
 import 'package:vault_it/features/settings/presentation/screens/category_screen.dart';
+import 'package:vault_it/features/settings/presentation/screens/manage_category_screen.dart';
+import 'package:vault_it/features/settings/presentation/screens/theme_screen.dart';
+import 'package:vault_it/features/settings/presentation/screens/language_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/vault_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/view_account_screen.dart';
+import 'package:vault_it/data/entities/category.dart';
 
 class Routes {
   static const String initial = '/';
@@ -37,6 +41,9 @@ class Routes {
   static const String settings = '/app/settings';
   static const String userProfile = '/app/settings/profile';
   static const String categories = '/app/settings/categories';
+  static const String manageCategory = '/app/settings/categories/manage';
+  static const String theme = '/app/settings/theme';
+  static const String language = '/app/settings/language';
   static const String bugReport = '/app/settings/bug-report';
   static const String helpSupport = '/app/settings/help';
   static const String rateApp = '/app/settings/rate';
@@ -108,6 +115,28 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (context) {
               return const CategoryScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.manageCategory:
+        final category = routeSettings.arguments as Category?;
+        return MaterialPageRoute(
+            builder: (context) {
+              return ManageCategoryScreen(categoryToEdit: category);
+            },
+            settings: routeSettings);
+
+      case Routes.theme:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const ThemeScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.language:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const LanguageScreen();
             },
             settings: routeSettings);
 

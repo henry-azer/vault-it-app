@@ -4,6 +4,7 @@ class Category {
   final String? color;
   final String? icon;
   final DateTime createdDate;
+  final int sortOrder;
 
   const Category({
     required this.id,
@@ -11,6 +12,7 @@ class Category {
     required this.createdDate,
     this.color,
     this.icon,
+    this.sortOrder = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class Category {
       'color': color,
       'icon': icon,
       'createdDate': createdDate.toIso8601String(),
+      'sortOrder': sortOrder,
     };
   }
 
@@ -32,6 +35,7 @@ class Category {
       createdDate: map['createdDate'] != null
           ? DateTime.parse(map['createdDate'])
           : DateTime.now(),
+      sortOrder: map['sortOrder'] ?? 0,
     );
   }
 
@@ -41,6 +45,7 @@ class Category {
     String? color,
     String? icon,
     DateTime? createdDate,
+    int? sortOrder,
   }) {
     return Category(
       id: id ?? this.id,
@@ -48,6 +53,7 @@ class Category {
       color: color ?? this.color,
       icon: icon ?? this.icon,
       createdDate: createdDate ?? this.createdDate,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 

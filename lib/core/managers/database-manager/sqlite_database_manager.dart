@@ -17,7 +17,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
       path,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
-      version: 3,
+      version: 4,
       onConfigure: (db) async => await db.execute('PRAGMA foreign_keys = ON'),
     );
   }
@@ -28,7 +28,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
     );
     
     await db.execute(
-      'CREATE TABLE ${AppLocalStorageKeys.categoriesTable}(id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT, icon TEXT, createdDate TEXT NOT NULL)',
+      'CREATE TABLE ${AppLocalStorageKeys.categoriesTable}(id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT, icon TEXT, createdDate TEXT NOT NULL, sortOrder INTEGER DEFAULT 0)',
     );
     
     await db.execute(
@@ -55,7 +55,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
     if (oldVersion < 3) {
       // Create categories table
       await db.execute(
-        'CREATE TABLE ${AppLocalStorageKeys.categoriesTable}(id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT, icon TEXT, createdDate TEXT NOT NULL)',
+        'CREATE TABLE ${AppLocalStorageKeys.categoriesTable}(id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT, icon TEXT, createdDate TEXT NOT NULL, sortOrder INTEGER DEFAULT 0)',
       );
       
       // Create account_categories junction table
@@ -70,6 +70,13 @@ class SqliteDatabaseManager extends IDatabaseManager {
       
       await db.execute(
         'CREATE INDEX idx_account_categories_categoryId ON ${AppLocalStorageKeys.accountCategoriesTable}(categoryId)',
+      );
+    }
+    
+    if (oldVersion < 4) {
+      // Add sortOrder column to categories table
+      await db.execute(
+        'ALTER TABLE ${AppLocalStorageKeys.categoriesTable} ADD COLUMN sortOrder INTEGER DEFAULT 0',
       );
     }
   }
