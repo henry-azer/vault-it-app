@@ -312,11 +312,7 @@ flutter build ios --release
 ## 🎯 Roadmap
 
 ### Version 2.0 (Planned)
-- [ ] Biometric authentication (fingerprint/face ID)
-- [ ] Auto-fill integration
-- [ ] Two-factor authentication support
 - [ ] Google Drive sync integration
-- [ ] Auto-backup scheduling
 
 ---
 

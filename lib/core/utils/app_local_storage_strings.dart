@@ -12,4 +12,5 @@ class AppLocalStorageKeys {
   static const String selectedLanguage = 'selected_language';
   static const String tempPasswordId = 'temp_password_id';
   static const String lastBackupDate = 'last_backup_date';
+  static const String biometricEnabled = 'biometric_enabled';
 }

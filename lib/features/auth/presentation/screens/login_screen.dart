@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:vault_it/config/localization/app_localization.dart';
 import 'package:vault_it/config/routes/app_routes.dart';
 import 'package:vault_it/core/utils/app_assets_manager.dart';
+import 'package:vault_it/core/utils/app_colors.dart';
 import 'package:vault_it/core/utils/app_strings.dart';
 import 'package:vault_it/core/utils/snackbar_helper.dart';
 import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vault_it/features/settings/presentation/providers/biometric_provider.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,6 +23,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    // Trigger biometric authentication after frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        _attemptBiometricLogin();
+      }
+    });
   }
 
   @override
@@ -114,6 +123,104 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                   ),
+                  Consumer<BiometricProvider>(
+                    builder: (context, biometricProvider, child) {
+                      final isDark = Theme.of(context).brightness == Brightness.dark;
+
+                      if (!biometricProvider.isBiometricAvailable ||
+                          !biometricProvider.isBiometricEnabled) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        children: [
+                          const SizedBox(height: 25),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary.withOpacity(0.3)
+                                      : AppColors.lightTextSecondary.withOpacity(0.3),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  AppStrings.or.tr,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary.withOpacity(0.3)
+                                      : AppColors.lightTextSecondary.withOpacity(0.3),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).primaryColor,
+                                  Theme.of(context).primaryColor.withOpacity(0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _attemptBiometricLogin,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.fingerprint,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        AppStrings.useBiometric.tr.replaceAll(
+                                          '{type}',
+                                          biometricProvider.biometricTypeLabel,
+                                        ),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -136,6 +243,34 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBarHelper.showError(
           context,
           AppStrings.validationPasswordInvalid.tr,
+        );
+      }
+    }
+  }
+
+  Future<void> _attemptBiometricLogin() async {
+    final biometricProvider = Provider.of<BiometricProvider>(context, listen: false);
+    
+    if (!biometricProvider.isBiometricAvailable || 
+        !biometricProvider.isBiometricEnabled) {
+      return;
+    }
+
+    final authenticated = await biometricProvider.authenticate(
+      reason: AppStrings.authenticateToUnlock.tr,
+    );
+
+    if (authenticated && mounted) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      // Get stored password and login
+      final success = await authProvider.loginWithBiometric();
+      
+      if (success && mounted) {
+        Navigator.pushReplacementNamed(context, Routes.app);
+      } else if (mounted) {
+        SnackBarHelper.showError(
+          context,
+          AppStrings.biometricAuthFailed.tr,
         );
       }
     }

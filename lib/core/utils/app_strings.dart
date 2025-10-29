@@ -20,6 +20,7 @@ class AppStrings {
   static const String created = "created";
   static const String modified = "modified";
   static const String all = "all";
+  static const String or = "or";
 
   // Auth
   static const String login = "login";
@@ -165,7 +166,6 @@ class AppStrings {
   static const String generatePassword = "generate_password";
   static const String generatedPassword = "generated_password";
   static const String createStrongPasswords = "create_strong_passwords";
-  static const String usePassword = "use_password";
   static const String passwordLength = "password_length";
   static const String includeUppercase = "include_uppercase";
   static const String includeLowercase = "include_lowercase";
@@ -210,6 +210,18 @@ class AppStrings {
   static const String languagesFr = "languages.fr";
   static const String security = "security";
   static const String biometricAuth = "biometric_auth";
+  static const String biometricEnabled = "biometric_enabled";
+  static const String biometricDisabled = "biometric_disabled";
+  static const String biometricAuthFailed = "biometric_auth_failed";
+  static const String faceId = "face_id";
+  static const String touchId = "touch_id";
+  static const String faceUnlock = "face_unlock";
+  static const String fingerprint = "fingerprint";
+  static const String biometric = "biometric";
+  static const String authenticateToUnlock = "authenticate_to_unlock";
+  static const String authenticateToEnable = "authenticate_to_enable";
+  static const String useBiometric = "use_biometric";
+  static const String usePassword = "use_password";
   static const String autoLock = "auto_lock";
   static const String changeMasterPassword = "change_master_password";
   static const String dataManagement = "data_management";

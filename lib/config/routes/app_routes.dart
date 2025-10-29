@@ -45,7 +45,7 @@ class Routes {
 
   static const String theme = '/app/settings/theme';
   static const String language = '/app/settings/language';
-  
+
   static const String categories = '/app/settings/categories';
   static const String manageCategory = '/app/settings/categories/manage';
 

@@ -6,6 +6,7 @@ import 'package:vault_it/config/themes/theme_provider.dart';
 import 'package:vault_it/core/utils/app_colors.dart';
 import 'package:vault_it/core/utils/app_strings.dart';
 import 'package:vault_it/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vault_it/features/settings/presentation/providers/biometric_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -107,6 +108,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ],
                           ),
                         ),
+                      );
+                    },
+                  ),
+                  Consumer<BiometricProvider>(
+                    builder: (context, biometricProvider, child) {
+                      if (!biometricProvider.isBiometricAvailable) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader(AppStrings.security.tr),
+                          _buildSettingsTile(
+                            icon: Icons.fingerprint,
+                            title: biometricProvider.biometricTypeLabel,
+                            subtitle: biometricProvider.isBiometricEnabled
+                                ? AppStrings.biometricEnabled.tr
+                                : AppStrings.biometricDisabled.tr,
+                            trailing: Switch(
+                              value: biometricProvider.isBiometricEnabled,
+                              onChanged: (value) async {
+                                final success = await biometricProvider.toggleBiometric(value);
+                                if (!success && value && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(AppStrings.biometricAuthFailed.tr),
+                                      backgroundColor: AppColors.error,
+                                    ),
+                                  );
+                                }
+                              },
+                              activeColor: AppColors.success,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -301,7 +337,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildSectionHeader(String title, {Color? color}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Text(
         title.toUpperCase(),
         style: TextStyle(

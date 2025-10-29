@@ -237,6 +237,27 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> loginWithBiometric() async {
+    _setLoading(true);
+    try {
+      final storedPassword = await _userLocalDataSource.getUserPassword();
+      
+      if (storedPassword != null && storedPassword.isNotEmpty) {
+        await _userLocalDataSource.setAuthenticated(true);
+        _isAuthenticated = true;
+        _userPassword = storedPassword;
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Biometric login error: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> clearUserData() async {
     try {
       await _userLocalDataSource.clearUserData();
