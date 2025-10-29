@@ -19,6 +19,7 @@ class ManageCategoryScreen extends StatefulWidget {
 
 class _ManageCategoryScreenState extends State<ManageCategoryScreen> {
   final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormFieldState> _categoryNameKey = GlobalKey<FormFieldState>();
   final _nameController = TextEditingController();
   bool _isLoading = false;
 
@@ -131,6 +132,7 @@ class _ManageCategoryScreenState extends State<ManageCategoryScreen> {
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
+                        key: _categoryNameKey,
                         controller: _nameController,
                         decoration: InputDecoration(
                           hintText: AppStrings.categoryExample.tr,
@@ -147,9 +149,12 @@ class _ManageCategoryScreenState extends State<ManageCategoryScreen> {
                         textCapitalization: TextCapitalization.words,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return AppStrings.categoryName.tr;
+                            return AppStrings.categoryNameRequired.tr;
                           }
                           return null;
+                        },
+                        onChanged: (value) {
+                          _categoryNameKey.currentState?.validate();
                         },
                       ),
                       const SizedBox(height: 32),

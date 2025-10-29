@@ -17,7 +17,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
       path,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
-      version: 4,
+      version: 1,
       onConfigure: (db) async => await db.execute('PRAGMA foreign_keys = ON'),
     );
   }
@@ -44,42 +44,7 @@ class SqliteDatabaseManager extends IDatabaseManager {
     );
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      // Add sortOrder column if it doesn't exist
-      await db.execute(
-        'ALTER TABLE ${AppLocalStorageKeys.accountsTable} ADD COLUMN sortOrder INTEGER DEFAULT 0',
-      );
-    }
-    
-    if (oldVersion < 3) {
-      // Create categories table
-      await db.execute(
-        'CREATE TABLE ${AppLocalStorageKeys.categoriesTable}(id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT, icon TEXT, createdDate TEXT NOT NULL, sortOrder INTEGER DEFAULT 0)',
-      );
-      
-      // Create account_categories junction table
-      await db.execute(
-        'CREATE TABLE ${AppLocalStorageKeys.accountCategoriesTable}(accountId TEXT NOT NULL, categoryId TEXT NOT NULL, PRIMARY KEY (accountId, categoryId), FOREIGN KEY (accountId) REFERENCES ${AppLocalStorageKeys.accountsTable}(id) ON DELETE CASCADE, FOREIGN KEY (categoryId) REFERENCES ${AppLocalStorageKeys.categoriesTable}(id) ON DELETE CASCADE)',
-      );
-      
-      // Create indexes for better query performance
-      await db.execute(
-        'CREATE INDEX idx_account_categories_accountId ON ${AppLocalStorageKeys.accountCategoriesTable}(accountId)',
-      );
-      
-      await db.execute(
-        'CREATE INDEX idx_account_categories_categoryId ON ${AppLocalStorageKeys.accountCategoriesTable}(categoryId)',
-      );
-    }
-    
-    if (oldVersion < 4) {
-      // Add sortOrder column to categories table
-      await db.execute(
-        'ALTER TABLE ${AppLocalStorageKeys.categoriesTable} ADD COLUMN sortOrder INTEGER DEFAULT 0',
-      );
-    }
-  }
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {}
 
   @override
   Future<List<Map<String, dynamic>>> query(String table, {String? where, List<dynamic>? whereArgs}) async {

@@ -8,12 +8,14 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vault_it/config/localization/app_localization.dart';
 import 'package:vault_it/core/utils/app_strings.dart';
 import 'package:vault_it/data/entities/account.dart';
+import 'package:vault_it/data/entities/category.dart';
 
 class BackupInfo {
   final String appName;
   final String version;
   final DateTime exportDate;
   final int accountCount;
+  final int categoryCount;
   final String deviceId;
 
   BackupInfo({
@@ -21,6 +23,7 @@ class BackupInfo {
     required this.version,
     required this.exportDate,
     required this.accountCount,
+    required this.categoryCount,
     required this.deviceId,
   });
 
@@ -30,6 +33,7 @@ class BackupInfo {
       'version': version,
       'export_date': exportDate.toIso8601String(),
       'account_count': accountCount,
+      'category_count': categoryCount,
       'device_id': deviceId,
     };
   }
@@ -40,6 +44,7 @@ class BackupInfo {
       version: map['version'] ?? '',
       exportDate: DateTime.parse(map['export_date']),
       accountCount: map['account_count'] ?? 0,
+      categoryCount: map['category_count'] ?? 0,
       deviceId: map['device_id'] ?? 'unknown',
     );
   }
@@ -89,12 +94,16 @@ class ImportResult {
   final bool success;
   final String? error;
   final List<Account>? accounts;
+  final List<Category>? categories;
+  final Map<String, List<String>>? accountCategoryLinks;
   final BackupInfo? backupInfo;
 
   ImportResult({
     required this.success,
     this.error,
     this.accounts,
+    this.categories,
+    this.accountCategoryLinks,
     this.backupInfo,
   });
 }
@@ -111,7 +120,11 @@ class LocalBackupProvider with ChangeNotifier {
   String? get lastBackupPath => _lastBackupPath;
   DateTime? get lastBackupDate => _lastBackupDate;
 
-  Future<BackupResult> exportToFile(List<Account> accounts) async {
+  Future<BackupResult> exportToFile(
+    List<Account> accounts,
+    List<Category> categories,
+    Map<String, List<String>> accountCategoryLinks,
+  ) async {
     if (accounts.isEmpty) {
       return BackupResult(
         success: false,
@@ -130,42 +143,58 @@ class LocalBackupProvider with ChangeNotifier {
         version: packageInfo.version,
         exportDate: DateTime.now(),
         accountCount: accounts.length,
+        categoryCount: categories.length,
         deviceId: 'local_device',
       );
 
       final backupData = {
         'backup_info': backupInfo.toMap(),
         'accounts': accounts.map((account) => account.toMap()).toList(),
+        'categories': categories.map((category) => category.toMap()).toList(),
+        'account_category_links': accountCategoryLinks,
       };
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        return BackupResult(
-          success: false,
-          message: AppStrings.couldNotAccessStorage.tr,
-        );
-      }
+      final bytes = utf8.encode(jsonString);
 
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
       final fileName = 'vault_it_backup_$timestamp.json';
-      final file = File('${directory.path}/$fileName');
 
-      await file.writeAsString(jsonString);
+      // Use file picker to let user choose save location
+      String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Backup File',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: bytes,
+      );
 
-      _lastBackupPath = file.path;
+      if (outputPath == null) {
+        _isExporting = false;
+        notifyListeners();
+        return BackupResult(
+          success: false,
+          message: 'Export cancelled',
+        );
+      }
+
+      // For platforms that don't auto-save with bytes parameter, write manually
+      String? filePath = outputPath;
+      if (Platform.isAndroid || Platform.isIOS) {
+        // File picker handles saving on mobile when bytes are provided
+        // No additional write needed
+        filePath = outputPath;
+      } else {
+        // Desktop platforms may need manual write
+        if (!outputPath.endsWith('.json')) {
+          outputPath = '$outputPath.json';
+        }
+        final file = File(outputPath);
+        await file.writeAsBytes(bytes);
+        filePath = file.path;
+      }
+
+      _lastBackupPath = filePath;
       _lastBackupDate = DateTime.now();
       
       _isExporting = false;
@@ -174,7 +203,7 @@ class LocalBackupProvider with ChangeNotifier {
       return BackupResult(
         success: true,
         message: AppStrings.backupSavedSuccessfully.tr,
-        filePath: file.path,
+        filePath: filePath,
       );
     } catch (e) {
       _isExporting = false;
@@ -187,7 +216,11 @@ class LocalBackupProvider with ChangeNotifier {
     }
   }
 
-  Future<BackupResult> shareBackup(List<Account> accounts) async {
+  Future<BackupResult> shareBackup(
+    List<Account> accounts,
+    List<Category> categories,
+    Map<String, List<String>> accountCategoryLinks,
+  ) async {
     if (accounts.isEmpty) {
       return BackupResult(
         success: false,
@@ -206,12 +239,15 @@ class LocalBackupProvider with ChangeNotifier {
         version: packageInfo.version,
         exportDate: DateTime.now(),
         accountCount: accounts.length,
+        categoryCount: categories.length,
         deviceId: 'local_device',
       );
 
       final backupData = {
         'backup_info': backupInfo.toMap(),
         'accounts': accounts.map((account) => account.toMap()).toList(),
+        'categories': categories.map((category) => category.toMap()).toList(),
+        'account_category_links': accountCategoryLinks,
       };
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
@@ -291,8 +327,25 @@ class LocalBackupProvider with ChangeNotifier {
 
       final backupInfo = BackupInfo.fromMap(backupData['backup_info']);
 
+      // Parse accounts
       final List<dynamic> accountsList = backupData['accounts'];
       final accounts = accountsList.map((accountMap) => Account.fromMap(accountMap)).toList();
+
+      // Parse categories (if present)
+      final List<Category> categories = [];
+      if (backupData.containsKey('categories')) {
+        final List<dynamic> categoriesList = backupData['categories'];
+        categories.addAll(categoriesList.map((categoryMap) => Category.fromMap(categoryMap)));
+      }
+
+      // Parse account-category links (if present)
+      final Map<String, List<String>> accountCategoryLinks = {};
+      if (backupData.containsKey('account_category_links')) {
+        final Map<String, dynamic> linksMap = backupData['account_category_links'];
+        linksMap.forEach((accountId, categoryIds) {
+          accountCategoryLinks[accountId] = List<String>.from(categoryIds);
+        });
+      }
 
       _isImporting = false;
       notifyListeners();
@@ -300,6 +353,8 @@ class LocalBackupProvider with ChangeNotifier {
       return ImportResult(
         success: true,
         accounts: accounts,
+        categories: categories,
+        accountCategoryLinks: accountCategoryLinks,
         backupInfo: backupInfo,
       );
     } catch (e) {
@@ -349,10 +404,16 @@ class LocalBackupProvider with ChangeNotifier {
 
       final backupInfo = BackupInfo.fromMap(backupData['backup_info']);
       final accountCount = (backupData['accounts'] as List).length;
+      final categoryCount = backupData.containsKey('categories') 
+          ? (backupData['categories'] as List).length 
+          : 0;
 
       return ImportResult(
         success: true,
-        backupInfo: backupInfo.copyWith(accountCount: accountCount),
+        backupInfo: backupInfo.copyWith(
+          accountCount: accountCount,
+          categoryCount: categoryCount,
+        ),
       );
     } catch (e) {
       return ImportResult(
@@ -377,6 +438,7 @@ extension BackupInfoExtension on BackupInfo {
     String? version,
     DateTime? exportDate,
     int? accountCount,
+    int? categoryCount,
     String? deviceId,
   }) {
     return BackupInfo(
@@ -384,6 +446,7 @@ extension BackupInfoExtension on BackupInfo {
       version: version ?? this.version,
       exportDate: exportDate ?? this.exportDate,
       accountCount: accountCount ?? this.accountCount,
+      categoryCount: categoryCount ?? this.categoryCount,
       deviceId: deviceId ?? this.deviceId,
     );
   }

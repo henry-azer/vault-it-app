@@ -19,6 +19,8 @@ import 'package:vault_it/features/settings/presentation/screens/category_screen.
 import 'package:vault_it/features/settings/presentation/screens/manage_category_screen.dart';
 import 'package:vault_it/features/settings/presentation/screens/theme_screen.dart';
 import 'package:vault_it/features/settings/presentation/screens/language_screen.dart';
+import 'package:vault_it/features/settings/presentation/screens/backup_export_screen.dart';
+import 'package:vault_it/features/settings/presentation/screens/backup_import_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/vault_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/view_account_screen.dart';
 import 'package:vault_it/data/entities/category.dart';
@@ -40,14 +42,21 @@ class Routes {
 
   static const String settings = '/app/settings';
   static const String userProfile = '/app/settings/profile';
-  static const String categories = '/app/settings/categories';
-  static const String manageCategory = '/app/settings/categories/manage';
+
   static const String theme = '/app/settings/theme';
   static const String language = '/app/settings/language';
+  
+  static const String categories = '/app/settings/categories';
+  static const String manageCategory = '/app/settings/categories/manage';
+
+  static const String backupExport = '/app/settings/backup/export';
+  static const String backupImport = '/app/settings/backup/import';
+
   static const String bugReport = '/app/settings/bug-report';
   static const String helpSupport = '/app/settings/help';
   static const String rateApp = '/app/settings/rate';
   static const String about = '/app/settings/about';
+
 }
 
 class AppRoutes {
@@ -193,6 +202,20 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (context) {
               return const AboutScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.backupExport:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const BackupExportScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.backupImport:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const BackupImportScreen();
             },
             settings: routeSettings);
 

@@ -111,7 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.isEmpty) {
                         return AppStrings.validationPasswordRequired.tr;
                       }
-                      if (value.trim().length < 3) {
+                      if (value.trim().length < 4) {
                         return AppStrings.validationPasswordMinLength.tr;
                       }
                       return null;

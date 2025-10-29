@@ -88,14 +88,6 @@ ThemeData appTheme() {
       ),
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
-    cardTheme: CardTheme(
-      color: AppColors.lightCardBackground,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.lightCardBorder, width: 1),
-      ),
-    ),
     dividerTheme: DividerThemeData(
       color: AppColors.lightCardBorder,
       thickness: 1,
@@ -204,14 +196,6 @@ ThemeData appDarkTheme() {
         borderSide: BorderSide(color: AppColors.darkError, width: 2),
       ),
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    ),
-    cardTheme: CardTheme(
-      color: AppColors.darkCardBackground,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.darkCardBorder, width: 1),
-      ),
     ),
     dividerTheme: DividerThemeData(
       color: AppColors.darkCardBorder,

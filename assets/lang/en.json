@@ -233,7 +233,7 @@
   "backup_date": "Date",
   "backup_account_count": "Accounts",
   "backup_age": "Age",
-  "duplicate_warning": "Duplicate accounts will be skipped. This operation cannot be undone.",
+  "duplicate_warning": "Duplicate accounts will be skipped.\nThis operation cannot be undone.",
   "import_complete": "Import complete! {imported} imported, {skipped} skipped",
   "valid_backup_file": "Valid Backup File",
   "invalid_backup_file": "Invalid backup file",

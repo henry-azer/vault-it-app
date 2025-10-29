@@ -233,7 +233,7 @@
   "backup_date": "التاريخ",
   "backup_account_count": "الحسابات",
   "backup_age": "العمر",
-  "duplicate_warning": "سيتم تخطي الحسابات المكررة. لا يمكن التراجع عن هذه العملية.",
+  "duplicate_warning": "سيتم تخطي الحسابات المكررة.\nلا يمكن التراجع عن هذه العملية.",
   "import_complete": "اكتمل الاستيراد! تم استيراد {imported}، تم تخطي {skipped}",
   "valid_backup_file": "ملف نسخ احتياطي صالح",
   "invalid_backup_file": "ملف نسخ احتياطي غير صالح",

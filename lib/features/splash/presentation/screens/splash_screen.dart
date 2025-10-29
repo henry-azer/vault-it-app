@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vault_it/config/localization/app_localization.dart';
 import 'package:vault_it/config/routes/app_routes.dart';
-import 'package:vault_it/config/themes/theme_provider.dart';
 import 'package:vault_it/core/utils/app_assets_manager.dart';
 import 'package:vault_it/core/utils/app_media_query_values.dart';
 import 'package:vault_it/core/utils/app_strings.dart';
@@ -16,7 +15,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -26,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _navigateToNextScreen() async {
     await Future.delayed(const Duration(seconds: 4));
     if (!mounted) return;
-    
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final isUserOnboarded = await authProvider.isUserOnboarded();
     final isUserCreated = await authProvider.isUserCreated();
@@ -52,15 +50,13 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Consumer<ThemeProvider>(builder: (context, theme, child) {
-                return Image.asset(
-                  theme.isDarkMode
-                      ? AppImageAssets.darkLogo
-                      : AppImageAssets.lightLogo,
-                  height: 220,
-                  width: 350,
-                );
-              }),
+              Image.asset(
+                Theme.of(context).brightness == Brightness.dark
+                    ? AppImageAssets.darkLogo
+                    : AppImageAssets.lightLogo,
+                height: 220,
+                width: 350,
+              ),
               SizedBox(
                 height: context.height * 0.01,
               ),
