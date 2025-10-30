@@ -15,6 +15,7 @@ import 'package:vault_it/features/onboarding/presentation/providers/onboarding_p
 import 'package:vault_it/features/settings/presentation/providers/biometric_provider.dart';
 import 'package:vault_it/features/vault/presentation/providers/account_provider.dart';
 import 'package:vault_it/features/vault/presentation/providers/category_provider.dart';
+import 'package:vault_it/core/purchase/purchase_provider.dart';
 import 'package:provider/provider.dart';
 
 class VaultItApp extends StatelessWidget {
@@ -33,6 +34,7 @@ class VaultItApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => GeneratorProvider()),
+        ChangeNotifierProvider(create: (_) => PurchaseProvider()),
       ],
       builder: (context, child) {
         _removeSplash();

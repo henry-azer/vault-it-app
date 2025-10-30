@@ -298,8 +298,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildHeaderActions(bool isDark) {
     return _buildActionButton(
-      icon: Icons.add_shopping_cart_outlined,
-      onPressed: () {},
+      icon: Icons.workspace_premium,
+      onPressed: () {
+        Navigator.pushNamed(context, Routes.premium);
+      },
       isDark: isDark,
     );
   }

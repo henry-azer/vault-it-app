@@ -24,6 +24,7 @@ import 'package:vault_it/features/settings/presentation/screens/backup_import_sc
 import 'package:vault_it/features/vault/presentation/screens/vault_screen.dart';
 import 'package:vault_it/features/vault/presentation/screens/view_account_screen.dart';
 import 'package:vault_it/data/entities/category.dart';
+import 'package:vault_it/features/premium/presentation/screens/premium_screen.dart';
 
 class Routes {
   static const String initial = '/';
@@ -56,6 +57,8 @@ class Routes {
   static const String helpSupport = '/app/settings/help';
   static const String rateApp = '/app/settings/rate';
   static const String about = '/app/settings/about';
+  
+  static const String premium = '/app/premium';
 
 }
 
@@ -216,6 +219,13 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (context) {
               return const BackupImportScreen();
+            },
+            settings: routeSettings);
+
+      case Routes.premium:
+        return MaterialPageRoute(
+            builder: (context) {
+              return const PremiumScreen();
             },
             settings: routeSettings);
 

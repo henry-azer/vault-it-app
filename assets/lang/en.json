@@ -468,6 +468,29 @@
     "desc2": "Your passwords stay encrypted on your device never stored in the cloud. \n— never out of your control.",
     "title3": "Smarter Passwords in Seconds",
     "desc3": "Generate strong, unique passwords instantly. \n— so you never have to reuse or remember one again."
-  }
+  },
+
+  "premium_title": "Premium",
+  "premium_subtitle": "Unlock all features",
+  "premium_features": "Premium Features",
+  "premium_active": "You're Premium!",
+  "premium_active_message": "Thank you for supporting Vault It. Enjoy your ad-free experience!",
+  "upgrade_to_premium": "Upgrade to Premium",
+  "unlock_all_features": "Unlock all premium features",
+  "remove_ads_forever": "Remove All Ads Forever",
+  "enjoy_ad_free_experience": "Enjoy a clean, ad-free experience",
+  "restore_purchases": "Restore Purchases",
+  "purchase_success": "Purchase successful! Welcome to Premium!",
+  "purchase_failed": "Purchase failed. Please try again.",
+  "purchase_restored": "Purchases restored successfully!",
+  "no_purchases_to_restore": "No purchases found to restore",
+  "go_premium": "Go Premium",
+  "remove_ads": "Remove Ads",
+  "premium_badge": "Premium",
+  "ads_free": "Ad-Free",
+  "special_offer": "Special Offer",
+  "limited_time": "Limited Time",
+  "one_time_payment": "One-time payment",
+  "lifetime_access": "Lifetime access"
 
 }

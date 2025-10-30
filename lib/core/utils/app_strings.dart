@@ -466,4 +466,28 @@ class AppStrings {
   static const String onboardingDesc2 = "onboarding.desc2";
   static const String onboardingTitle3 = "onboarding.title3";
   static const String onboardingDesc3 = "onboarding.desc3";
+
+  // Premium & Ads
+  static const String premiumTitle = "premium_title";
+  static const String premiumSubtitle = "premium_subtitle";
+  static const String premiumFeatures = "premium_features";
+  static const String premiumActive = "premium_active";
+  static const String premiumActiveMessage = "premium_active_message";
+  static const String upgradeToPremium = "upgrade_to_premium";
+  static const String unlockAllFeatures = "unlock_all_features";
+  static const String removeAdsForever = "remove_ads_forever";
+  static const String enjoyAdFreeExperience = "enjoy_ad_free_experience";
+  static const String restorePurchases = "restore_purchases";
+  static const String purchaseSuccess = "purchase_success";
+  static const String purchaseFailed = "purchase_failed";
+  static const String purchaseRestored = "purchase_restored";
+  static const String noPurchasesToRestore = "no_purchases_to_restore";
+  static const String goPremium = "go_premium";
+  static const String removeAds = "remove_ads";
+  static const String premiumBadge = "premium_badge";
+  static const String adsFree = "ads_free";
+  static const String specialOffer = "special_offer";
+  static const String limitedTime = "limited_time";
+  static const String oneTimePayment = "one_time_payment";
+  static const String lifetimeAccess = "lifetime_access";
 }
